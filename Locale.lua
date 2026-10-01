@@ -306,6 +306,12 @@ ru["BANK_SECTION"]="Материалы в банке"
 en["BANK_SECTION"]="Bank materials"
 ru["NEXT_SECTION"]="Что делать дальше"
 en["NEXT_SECTION"]="What to do next"
+ru["PROJECT_GITHUB"]="Проект на GitHub"
+en["PROJECT_GITHUB"]="Project on GitHub"
+ru["SUPPORT_BOOSTY"]="Поддержать автора на Boosty"
+en["SUPPORT_BOOSTY"]="Support the author on Boosty"
+ru["COPY_LINK_HINT"]="Нажмите на ссылку, затем Ctrl+C, чтобы скопировать."
+en["COPY_LINK_HINT"]="Click a link, then press Ctrl+C to copy."
 function F.L(key)
     local locale = F.db and F.db.settings.locale or GetLocale()
     if locale == 'ruRU' then return key == 'HELP' and helpRU or ru[key] or key end

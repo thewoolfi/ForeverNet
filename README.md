@@ -73,7 +73,7 @@ The **Example** button shows an isolated sample chain that is never published to
 | Minimap right-click | Open help |
 | Drag the minimap button | Reposition it; the position is saved |
 
-Settings include language, sharing, automatic bank scanning, inclusion of bank stock in plans, and minimap button visibility.
+Settings include language, sharing, automatic bank scanning, inclusion of bank stock in plans, and minimap button visibility. The About section provides GitHub and Boosty links: click a URL and press Ctrl+C to copy it.
 
 ### Bank data and sharing
 
@@ -122,6 +122,10 @@ These `custom:*` identifiers are fictional and are added to your local profile. 
 ```
 
 Raw materials appear as missing in this example. Use `/fn help` for additional commands. Command names are the same in both languages. Received recipe names may retain the sender's language; local item names are used when available from the client cache.
+
+### Support
+
+If you would like to support development: [Andrew Woolfi on Boosty](https://boosty.to/andrewwoolfi).
 
 ### Documentation and license
 
@@ -199,7 +203,7 @@ ForeverNet объединяет профили профессий участни
 | Правый клик по кнопке миникарты | Открыть справку |
 | Перетаскивание кнопки миникарты | Изменить положение; оно сохраняется |
 
-В настройках доступны язык, обмен, автосканирование банка, учёт банковских запасов и видимость кнопки миникарты.
+В настройках доступны язык, обмен, автосканирование банка, учёт банковских запасов и видимость кнопки миникарты. В разделе об аддоне есть ссылки на GitHub и Boosty: нажмите на адрес и скопируйте его через Ctrl+C.
 
 ### Банк и обмен данными
 
@@ -248,6 +252,10 @@ python tests/run.py
 ```
 
 В этом примере сырьё отображается как недостающее. Дополнительные команды доступны через `/fn help`. Их имена одинаковы на обоих языках. Названия полученных рецептов могут сохранять язык отправителя; локальные названия предметов используются при наличии в кэше клиента.
+
+### Поддержка
+
+Поддержать разработку: [Andrew Woolfi на Boosty](https://boosty.to/andrewwoolfi).
 
 ### Документация и лицензия
 

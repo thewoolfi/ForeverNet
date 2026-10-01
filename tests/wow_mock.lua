@@ -99,3 +99,6 @@ function widget:SetFrameStrata(value) self.strata=value end
 function texture:SetColorTexture(...) self.color={...} end
 
 function font:SetSpacing(value) self.spacing=value end
+
+function edit:SetFocus() self.focused=true; if self.scripts.OnEditFocusGained then self.scripts.OnEditFocusGained(self) end end
+function edit:HighlightText() self.highlighted=true end

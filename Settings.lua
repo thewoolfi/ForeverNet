@@ -1,6 +1,8 @@
 local _,F=...
 F.Settings={}
 local S=F.Settings
+S.githubURL='https://github.com/thewoolfi/ForeverNet'
+S.supportURL='https://boosty.to/andrewwoolfi'
 local function label(parent,y,text)
     local l=parent:CreateFontString(nil,'OVERLAY','GameFontHighlight')
     l:SetPoint('TOPLEFT',28,y); l:SetWidth(470); l:SetJustifyH('LEFT'); l:SetText(text); return l
@@ -16,12 +18,15 @@ function S.Refresh()
     S.languageLabel:SetText(F.L('LANGUAGE'))
     for locale,b in pairs(S.languages or {}) do b:SetEnabled(locale~=(F.db.settings.locale or 'auto')) end
     S.bank:SetText(F.Bank.Status())
+    S.githubLabel:SetText(F.L('PROJECT_GITHUB'))
+    S.supportLabel:SetText(F.L('SUPPORT_BOOSTY'))
+    S.linkHint:SetText(F.L('COPY_LINK_HINT'))
     S.about:SetText(F.L('ABOUT')..'\nForeverNet '..F.version..'\n'..F.L('AUTHOR')..'Andrew Woolfi\n\n'..F.L('ABOUT_TEXT'))
 end
 function S.Open()
     if not S.frame then
         local frame=CreateFrame('Frame','ForeverNetSettings',UIParent,'PortraitFrameTemplate')
-        frame:SetSize(530,480); frame:SetPoint('CENTER'); frame:SetFrameStrata('FULLSCREEN_DIALOG')
+        frame:SetSize(530,630); frame:SetPoint('CENTER'); frame:SetFrameStrata('FULLSCREEN_DIALOG')
         frame:SetPortraitToAsset('Interface\\Icons\\Trade_Engineering')
         frame:SetMovable(true); frame:EnableMouse(true); frame:RegisterForDrag('LeftButton')
         frame:SetScript('OnDragStart',frame.StartMoving); frame:SetScript('OnDragStop',frame.StopMovingOrSizing)
@@ -59,6 +64,24 @@ function S.Open()
         end
         S.bank=label(frame,-270,''); S.bank:SetHeight(36)
         S.about=label(frame,-318,''); S.about:SetHeight(140)
+        S.githubLabel=label(frame,-474,'')
+        S.supportLabel=label(frame,-534,'')
+        local function linkField(url,y)
+            local field=CreateFrame('EditBox',nil,frame,'InputBoxTemplate')
+            field:SetSize(464,24); field:SetPoint('TOPLEFT',33,y)
+            field:SetAutoFocus(false); field:SetFontObject('GameFontHighlightSmall'); field:SetText(url)
+            field:SetScript('OnEditFocusGained',function(self) self:HighlightText() end)
+            field:SetScript('OnMouseUp',function(self) self:SetFocus(); self:HighlightText() end)
+            field:SetScript('OnEscapePressed',function(self) self:ClearFocus() end)
+            field:SetScript('OnEnterPressed',function(self) self:ClearFocus() end)
+            field:SetScript('OnTextChanged',function(self)
+                if self:GetText()~=url then self:SetText(url); self:HighlightText() end
+            end)
+            return field
+        end
+        S.githubLink=linkField(S.githubURL,-496)
+        S.supportLink=linkField(S.supportURL,-556)
+        S.linkHint=label(frame,-594,''); S.linkHint:SetHeight(24)
         UISpecialFrames[#UISpecialFrames+1]='ForeverNetSettings'
     end
     S.Refresh(); S.frame:Show()

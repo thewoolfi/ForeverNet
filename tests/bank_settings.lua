@@ -43,3 +43,14 @@ assert(F.Settings.frame.strata=='FULLSCREEN_DIALOG')
 assert(F.Settings.background.color[4]==1)
 F.UI.DataChanged(); F.UI.Tick(1)
 assert(F.Settings.frame:IsShown() and F.Settings.frame.strata=='FULLSCREEN_DIALOG')
+
+-- External links are copyable and remain correct in both languages.
+assert(F.version=='0.3.2')
+for _,field in ipairs({F.Settings.githubLink,F.Settings.supportLink}) do
+    field.scripts.OnMouseUp(field); assert(field.highlighted and field.focused)
+    local url=field:GetText(); field:SetText('modified'); assert(field:GetText()==url)
+end
+assert(F.Settings.githubLink:GetText()=='https://github.com/thewoolfi/ForeverNet')
+assert(F.Settings.supportLink:GetText()=='https://boosty.to/andrewwoolfi')
+F.db.settings.locale='ruRU'; F.Settings.Refresh(); assert(F.Settings.supportLabel:GetText()=='Поддержать автора на Boosty')
+F.db.settings.locale='enUS'; F.Settings.Refresh(); assert(F.Settings.supportLabel:GetText()=='Support the author on Boosty')
