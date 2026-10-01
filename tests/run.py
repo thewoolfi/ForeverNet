@@ -1,0 +1,182 @@
+"""Execute WoW-free Lua 5.1 tests. pip install -r requirements-dev.txt"""
+import sys
+from pathlib import Path
+if len(sys.argv) > 1:
+    sys.path.insert(0, sys.argv[1])
+from lupa.lua51 import LuaRuntime
+
+ROOT = Path(__file__).resolve().parents[1]
+MOCK = (ROOT / 'tests/wow_mock.lua').read_text(encoding='utf-8')
+
+def client(name):
+    lua = LuaRuntime(unpack_returned_tuples=True)
+    lua.globals().playerName = name
+    lua.execute(MOCK)
+    namespace = lua.table()
+    for line in (ROOT / 'ForeverNet.toc').read_text().splitlines():
+        if line.endswith('.lua'):
+            lua.execute('return assert(loadstring(...))', (ROOT / line).read_text(encoding='utf-8'))('ForeverNet', namespace)
+    lua.execute("frames[1].scripts.OnEvent(frames[1], 'ADDON_LOADED', 'ForeverNet')")
+    return lua
+
+a, b = client('Alice'), client('Bob')
+tests = [
+('planner demo and graph', r'''
+local F = ForeverNet
+local demo = F.Adapter.Demo()
+local p = F.Planner.Build(demo, 'demo:bag', 2, {['demo:ore']=6, ['demo:cloth']=8})
+assert(p.complete and #p.steps == 2 and p.steps[1].quantity == 2)
+assert(p.steps[2].stations['demo:workshop'] == 'DemoEngineer-Realm')
+assert(#F.SkillGraph(demo).edges >= 10)
+local missing = F.Planner.Build(demo, 'demo:bag', 2, {['demo:ore']=3})
+assert(not missing.complete and missing.missing['demo:ore']==3 and missing.missing['demo:cloth']==8)
+demo['DemoEngineer-Realm'].camps['demo:workshop'] = clock + 5
+assert(not F.Planner.Build(demo, 'demo:bag', 1, {}).complete)
+'''),
+('cycles and shared inventory', r'''
+local F=ForeverNet; local p=F.NewProfile()
+local function recipe(output, reagents, qty)
+ return {name=output, output=output, quantity=qty or 1, profession='engineering', blueprint=false, reagents=reagents, stations={}}
+end
+p.recipes.a=recipe('a',{b=1}); p.recipes.b=recipe('b',{a=1})
+assert(not F.Planner.Build({X=p},'a',1,{}).complete)
+p.recipes.a=recipe('a',{b=1,c=1}); p.recipes.b=recipe('b',{ore=1},2); p.recipes.c=recipe('c',{b=1})
+local plan=F.Planner.Build({X=p},'a',1,{ore=1})
+assert(plan.complete and #plan.steps==3 and plan.steps[1].batches==1)
+'''),
+('codec and schema boundaries', r'''
+local F=ForeverNet; local p=F.Adapter.Demo()['DemoEngineer-Realm']
+local wire=F.Codec.Encode(p); assert(F.ValidProfile(F.Codec.Decode(wire)))
+assert(F.Codec.Decode(wire..'bad')==nil)
+assert(F.Codec.Decode('m2:s1:at s1:af')==nil)
+assert(F.Codec.Decode('s9999999999:x')==nil)
+p.recipes['demo:engine'].quantity=0; assert(not F.ValidProfile(p))
+assert(F.Codec.Decode('n2147483648:')==nil)
+'''),
+('locale fallback and commands', r'''
+local F=ForeverNet
+assert(F.L('Сеть')=='Network')
+F.Command('language ruRU'); assert(F.L('Сеть')=='Сеть')
+F.Command('language auto'); clientLocale='deDE'; assert(F.L('Сеть')=='Network')
+clientLocale='enUS'
+F.Command('profession engineering 300')
+F.Command('recipe custom:gear item:999 1 engineering item:123=2')
+F.Command('blueprint custom:gear on'); F.Command('station custom:gear workshop on'); F.Command('camp workshop 0')
+assert(F.localProfile.recipes['custom:gear'].blueprint and F.localProfile.camps.workshop==clock)
+F.Command('demo'); F.Command('show'); F.Command('graph'); F.Command('help')
+assert(F.ValidProfile(F.localProfile))
+local before=F.Codec.Encode(F.localProfile); F.Command('recipe bad'); assert(before==F.Codec.Encode(F.localProfile))
+F.Command('share on')
+'''),
+]
+for name, body in tests:
+    a.execute(body)
+    print('PASS', name)
+
+def drain(sender, receiver, name, reverse=False):
+    queue = sender.globals().ForeverNet.Net.queue
+    messages = [queue[i].text for i in range(1, len(queue) + 1)]
+    sender.execute('ForeverNet.Net.queue = {}')
+    if reverse: messages.reverse()
+    for text in messages:
+        receiver.globals().ForeverNet.Net.Receive('ForeverNet1', text, 'GUILD', name + '-Realm')
+    return messages
+
+b.execute('ForeverNet.db.settings.sharing=true')
+a.execute('assert(ForeverNet.Net.Publish())')
+wire = drain(a,b,'Alice',reverse=True)
+b.execute("assert(ForeverNet.db.profiles['Alice-Realm'].recipes['custom:gear'].blueprint)")
+for text in wire: b.globals().ForeverNet.Net.Receive('ForeverNet1',text,'GUILD','Alice-Realm')
+b.execute("assert(ForeverNet.ValidProfile(ForeverNet.db.profiles['Alice-Realm']))")
+print('PASS P2P profile reassembly, reverse order and duplicates')
+
+ok, request_id = a.globals().ForeverNet.Requests.Create('item:999', 1)
+assert ok
+drain(a,b,'Alice')
+assert b.globals().ForeverNet.Requests.Accept(request_id) is True
+drain(b,a,'Bob')
+drain(a,b,'Alice')
+for lua in [a,b]:
+    r=lua.globals().ForeverNet.db.requests[request_id]
+    assert r.status=='accepted' and r.assignee=='Bob-Realm'
+a.globals().ForeverNet.Requests.Receive('OFFER',a.table(id=request_id),'Charlie-Realm','GUILD')
+assert a.globals().ForeverNet.db.requests[request_id].assignee=='Bob-Realm'
+assert a.globals().ForeverNet.Requests.Close(request_id,'done') is True
+drain(a,b,'Alice')
+assert b.globals().ForeverNet.db.requests[request_id].status=='done'
+print('PASS request lifecycle and first-offer arbitration')
+b.execute("clock=clock+1801; ForeverNet.Prune(); assert(next(ForeverNet.db.requests)==nil); assert(ForeverNet.db.profiles['Alice-Realm']==nil)")
+print('PASS expiry and stale peer cleanup')
+a.execute("ForeverNet.Command('share off'); assert(#ForeverNet.Net.queue==0); assert(not ForeverNet.Net.Publish())")
+print('PASS sharing off clears queue')
+a.execute(r'''
+local F=ForeverNet
+function GetTradeSkillLine() return 'Leatherworking',72 end
+function GetNumTradeSkills() return 1 end
+function GetTradeSkillInfo() return 'Test item','optimal' end
+function GetTradeSkillItemLink() return 'item:222' end
+function GetTradeSkillRecipeLink() return 'enchant:333' end
+function GetTradeSkillNumReagents() return 1 end
+function GetTradeSkillReagentInfo() return 'Test reagent',nil,2 end
+function GetTradeSkillReagentItemLink() return 'item:444' end
+function GetTradeSkillNumMade() return 1,1 end
+assert(F.Adapter.Scan())
+assert(F.localProfile.recipes['spell:333'].reagents['item:444']==2)
+F.localProfile.recipes['spell:333'].blueprint=true
+assert(F.Adapter.Scan() and F.localProfile.recipes['spell:333'].blueprint)
+function IsTradeSkillLinked() return true end
+assert(not F.Adapter.Scan())
+function IsTradeSkillLinked() return false end
+function GetTradeSkillReagentItemLink() return nil end
+local snapshot=F.Codec.Encode(F.localProfile)
+assert(not F.Adapter.Scan() and F.Codec.Encode(F.localProfile)==snapshot)
+''')
+print('PASS scan merge, Blueprint preservation, linked profession and cache miss')
+a.execute(r'''
+local F=ForeverNet
+F.db.settings.sharing=true
+local r={id='NewPeer-Realm:123:1',item='item:222',quantity=1,rev=2,expires=clock+100,status='accepted',assignee='Bob-Realm'}
+F.Requests.Receive('REQUEST',r,'NewPeer-Realm','GUILD')
+assert(F.db.requests[r.id].status=='accepted')
+local forged=F.Copy(r); forged.id='Alice-Realm:forged'
+F.Requests.Receive('REQUEST',forged,'NewPeer-Realm','GUILD')
+assert(F.db.requests[forged.id]==nil)
+local bad=F.Copy(r); bad.assignee=nil; assert(not F.Requests.Valid(bad))
+F.Net.Receive('ForeverNet1','1|1.1|999|1|junk','GUILD','NewPeer-Realm')
+F.Net.Receive('ForeverNet1','2|1.1|1|1|junk','GUILD','NewPeer-Realm')
+assert(next(F.Net.buffers)==nil)
+F.UI.page='recipes'; F.UI.Status()
+F.UI.rows[1].scripts.OnClick(F.UI.rows[1]); assert(F.UI.item:GetText()~='')
+F.UI.page='requests'; F.UI.Status(); F.UI.rows[1].scripts.OnClick(F.UI.rows[1]); assert(F.UI.requestID~=nil)
+''')
+print('PASS late snapshots, forged owners, malformed fragments and UI selections')
+ui = client('UIRegression')
+ui.execute(r'''
+local F=ForeverNet
+assert(CreateFrame('EditBox').GetTextHeight==nil)
+assert(CreateFrame('EditBox').GetStringHeight==nil)
+F.UI.Status() -- Direct call: no command pcall can conceal this regression.
+assert(F.UI.body:GetObjectType()=='Frame')
+assert(F.UI.bodyText:GetObjectType()=='FontString')
+for _, page in ipairs({'network','recipes','requests','chain'}) do
+    F.UI.navigation[page].scripts.OnClick()
+    assert(F.UI.page==page)
+end
+F.UI.Show(string.rep('Long line for testing text wrapping. ',100))
+assert(F.UI.body:GetHeight()>290)
+F.UI.details:SetVerticalScroll(200)
+F.UI.Show('Short text')
+assert(F.UI.body:GetHeight()==240 and F.UI.details:GetVerticalScroll()==0)
+F.UI.Show('item|text'); assert(F.UI.bodyText:GetText()=='item||text')
+''')
+print('PASS UI regression: strict widget types, all tabs, long text and scroll reset')
+modern = client('Modern')
+modern.execute((ROOT/'tests/modern_scan.lua').read_text(encoding='utf-8'))
+print('PASS Forever scan: no legacy API, learned recipes, atomic merge and unsupported costs')
+workflow = client('Workflow')
+workflow.execute((ROOT/'tests/workflow.lua').read_text(encoding='utf-8'))
+print('PASS item selection, preferred crafter, shortages, requests, demo isolation and minimap')
+bank = client('BankTest')
+bank.execute((ROOT/'tests/bank_settings.lua').read_text(encoding='utf-8'))
+print('PASS bank visits, transfers, loading, empty bank, character isolation and settings')
+print('All Lua 5.1 checks passed. Client rendering still requires an in-game check.')

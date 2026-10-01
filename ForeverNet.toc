@@ -1,0 +1,24 @@
+## Interface: 16001
+## Title: ForeverNet
+## IconTexture: Interface\Icons\Trade_Engineering
+## Notes: Peer profession network and production planner (experimental)
+## Author: Andrew Woolfi
+## X-License: MIT
+## Version: 0.3.2
+## X-Compatibility: Forever 1.60.1 (70124); in-game validation in progress
+## SavedVariables: ForeverNetDB
+
+Locale.lua
+Core.lua
+Model.lua
+Catalog.lua
+Codec.lua
+Planner.lua
+Adapters.lua
+Bank.lua
+Network.lua
+Requests.lua
+UI.lua
+Minimap.lua
+Settings.lua
+Bootstrap.lua

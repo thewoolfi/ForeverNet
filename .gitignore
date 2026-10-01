@@ -1,0 +1,7 @@
+__pycache__/
+.venv/
+*.pyc
+*.zip
+work/
+outputs/
+/CHANGELOG.md
