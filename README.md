@@ -126,9 +126,6 @@ Raw materials appear as missing in this example. Use `/fn help` for additional c
 ### Documentation and license
 
 - [Architecture and protocol — Russian](docs/ARCHITECTURE.md)
-- [GitHub and CurseForge publishing guide — Russian](docs/Publishing-guide-ru.md)
-- [CurseForge description — English](docs/CurseForge-en.md)
-- [CurseForge description — Russian](docs/CurseForge-ru.md)
 
 **MIT License. Copyright (c) 2026 Andrew Woolfi.** See [LICENSE](LICENSE) for the full terms. Include the license with distributed copies.
 
@@ -255,8 +252,5 @@ python tests/run.py
 ### Документация и лицензия
 
 - [Архитектура и протокол](docs/ARCHITECTURE.md)
-- [Публикация на GitHub и CurseForge](docs/Publishing-guide-ru.md)
-- [Описание CurseForge на английском](docs/CurseForge-en.md)
-- [Описание CurseForge на русском](docs/CurseForge-ru.md)
 
 **MIT License. Copyright (c) 2026 Andrew Woolfi.** Полный текст находится в [LICENSE](LICENSE). Включайте лицензию в распространяемые копии.
