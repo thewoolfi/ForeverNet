@@ -24,6 +24,24 @@ ForeverNet connects profession profiles within your guild or group. Select an it
 - Item cards, separate help sections, settings, and a movable minimap button using game textures and fonts.
 - English and Russian localization, with English fallback for other client languages.
 
+### Screenshots
+
+**Recipe catalog and material stock**
+
+![Recipe catalog and material stock](docs/screenshots/recipes.png)
+
+**Production chain example**
+
+![Production chain example](docs/screenshots/production-chain.png)
+
+**Guild and group network**
+
+![Guild and group network](docs/screenshots/network.png)
+
+**Settings and addon information**
+
+![Settings and addon information](docs/screenshots/settings.png)
+
 ### Installation
 
 1. Place the `ForeverNet` folder in your client's `Interface/AddOns` directory. `ForeverNet.toc` must be directly inside that folder.
@@ -134,6 +152,24 @@ ForeverNet объединяет профили профессий участни
 - Ручные метки Blueprint и требования к объектам Camping.
 - Карточки предметов, справка по шагам, настройки и перемещаемая кнопка миникарты с игровыми текстурами и шрифтами.
 - Русская и английская локализация; для остальных языков клиента используется английский.
+
+### Скриншоты
+
+**Каталог рецептов и запасы материалов**
+
+![Каталог рецептов и запасы материалов](docs/screenshots/recipes.png)
+
+**Пример производственной цепочки**
+
+![Пример производственной цепочки](docs/screenshots/production-chain.png)
+
+**Сеть гильдии и группы**
+
+![Сеть гильдии и группы](docs/screenshots/network.png)
+
+**Настройки и информация об аддоне**
+
+![Настройки и информация об аддоне](docs/screenshots/settings.png)
 
 ### Установка
 
