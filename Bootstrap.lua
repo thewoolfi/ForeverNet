@@ -24,9 +24,7 @@ function F.Command(input)
             F.UI.Status()
         elseif cmd == 'sync' then
             assert(F.Net.available, F.L('API обмена недоступен.'))
-            local sent, why = F.Net.Publish(); assert(sent, why)
-            F.Net.Send('HELLO', {})
-            for _, r in pairs(F.db.requests) do if r.owner == F.me and r.expires > F.Now() then F.Net.Send('REQUEST', r, r.channel) end end
+            local sent,why=F.Net.Sync(); assert(sent,why)
             F.Print(F.L('Синхронизация поставлена в очередь.'))
         elseif cmd == 'scan' then local scanned, why = F.Adapter.Scan(); F.Print(why); if scanned then F.UI.Navigate('recipes') end
         elseif cmd == 'profession' then change(function(p) assert(F.ID(a) and F.Integer(tonumber(b), 0, 1000)); p.professions[a] = tonumber(b) end)
@@ -74,12 +72,16 @@ frame:SetScript('OnEvent', function(self, event, ...)
         if not F.Init() then return end
         F.Net.Start(); F.Minimap.Init(); self:RegisterEvent('CHAT_MSG_ADDON')
         for _,event in ipairs({'BANKFRAME_OPENED','BANKFRAME_CLOSED','PLAYERBANKSLOTS_CHANGED','BANK_TABS_CHANGED','BAG_CONTAINER_UPDATE'}) do self:RegisterEvent(event) end
+        self:RegisterEvent('GROUP_ROSTER_UPDATE'); self:RegisterEvent('PLAYER_GUILD_UPDATE'); self:RegisterEvent('PLAYER_ENTERING_WORLD')
         self:RegisterEvent('PLAYER_LOGIN'); self:RegisterEvent('BAG_UPDATE_DELAYED'); self:RegisterEvent('GET_ITEM_INFO_RECEIVED')
         self:SetScript('OnUpdate', function(_, elapsed) F.Net.Tick(elapsed); F.UI.Tick(elapsed); F.Bank.Tick(elapsed) end)
         SLASH_FOREVERNET1, SLASH_FOREVERNET2 = '/fn', '/forevernet'
         SlashCmdList.FOREVERNET = F.Command
         F.Print(F.L('Загружен. /fn demo — пример, /fn help — команды.'))
     elseif event == 'CHAT_MSG_ADDON' then F.Net.Receive(...)
-    elseif event == 'PLAYER_LOGIN' then F.Minimap.Init()
+    elseif event == 'PLAYER_LOGIN' then F.Minimap.Init(); if F.db.settings.sharing then F.Net.ScheduleSync() end
+    elseif event=='GROUP_ROSTER_UPDATE' or event=='PLAYER_GUILD_UPDATE' or event=='PLAYER_ENTERING_WORLD' then
+        if F.db.settings.sharing then F.Net.ScheduleSync() end
+        F.UI.DataChanged()
     else F.Bank.Event(event); F.UI.DataChanged() end
 end)

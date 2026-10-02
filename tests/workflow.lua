@@ -7,10 +7,19 @@ end
 F.localProfile.recipes.mine=recipe('Кожаная сумка',2)
 local remote=F.NewProfile(); remote.recipes.theirs=recipe('Кожаная сумка',3)
 F.db.profiles['Other-Realm']=remote
+local found=F.Catalog.Recipes(F.db.profiles,'Other-Realm')
+assert(#found==1 and #found[1].providers==2 and found[1].owner==F.me)
+F.localProfile.recipes.variant=recipe('Кожаная сумка',4)
+found=F.Catalog.Recipes(F.db.profiles,'')
+assert(#found==1 and #found[1].providers==3)
+F.localProfile.recipes.variant=nil
 function GetItemCount(id) return id==200 and 1 or 0 end
 U.Navigate('recipes'); U.search:SetText('КОЖАНАЯ')
-assert(#U.entries==2 and U.entries[1].owner==F.me, tostring(#U.entries)..' / '..F.Catalog.Fold('КОЖАНАЯ')..' / '..F.Catalog.Fold('Кожаная сумка'))
-U.Select(U.entries[2]); U.qty:SetText('2'); U.BuildSelected()
+assert(#U.entries==1 and U.entries[1].owner==F.me and #U.entries[1].providers==2)
+U.Select(U.entries[1]); assert(U.crafter:IsShown()); U.CycleCrafter()
+assert(U.selectedEntry.owner=='Other-Realm' and #U.entries==1)
+U.Status(); assert(U.selectedEntry.owner=='Other-Realm')
+U.qty:SetText('2'); U.BuildSelected()
 assert(U.planData.steps[1].owner=='Other-Realm')
 assert(U.planData.missing['item:200']==5 and U.planData.supplied['item:200']==1)
 U.qty:SetText('3'); U.BuildSelected()

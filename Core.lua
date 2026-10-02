@@ -1,6 +1,6 @@
 local addonName, F = ...
 _G.ForeverNet = F
-F.name, F.version = addonName, '0.3.2'
+F.name, F.version = addonName, '0.3.3'
 F.MAX_RECIPES, F.PEER_TTL = 1000, 1800
 function F.Now() return time() end
 function F.Identity(name)

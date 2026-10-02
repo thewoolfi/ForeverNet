@@ -64,11 +64,11 @@
 - Глубина декодирования 12, до 30000 значений, размер одной таблицы до 2000 записей.
 - До 100 профилей и 100 активных заявок в кэше.
 
-При HELLO участники отвечают с задержкой 0–3 секунды, не чаще раза за 30 секунд одному отправителю. Нет gossip/relay, ACK, повторной передачи, сжатия, delta sync и гарантии доставки. Потерянный профиль следует запросить через Sync. Ошибки Lua при отправке показываются игроку; enum-результаты конкретного клиента ещё требуют адаптации.
+При входе, включении обмена и изменении состава группы/гильдии запускается HELLO и публикация снимка. При HELLO участники отвечают своим профилем и собственными неистёкшими заявками исходного канала с задержкой 0–3 секунды, не чаще раза за 30 секунд одному отправителю. HELLO, REQUEST и OFFER получают приоритет перед фрагментами профилей. Регистрация префикса и отправка проверяют enum-результаты клиента 70124; при throttling фрагмент повторяется до 20 раз с паузой. Остальные ошибки и потеря канала показываются игроку. Нет gossip/relay, ACK, сжатия, delta sync, периодического heartbeat и гарантии доставки. Потерянный снимок можно запросить через Sync.
 
 ## Skill Graph и производство
 
-Узлы: `player`, `profession`, `recipe:<owner>:<id>`, `item`, `camp`. Рёбра: `practices`, `knows`/`blueprint`, `produces`, `requires`, `provides`, `needs`. Все рецепты принадлежат отдельным игрокам; одинаковые выходы не объединяют их возможности.
+Узлы: `player`, `profession`, `recipe:<owner>:<id>`, `item`, `camp`. Рёбра: `practices`, `knows`/`blueprint`, `produces`, `requires`, `provides`, `needs`. Все рецепты принадлежат отдельным игрокам. Каталог группирует их по выходному item ID в одну строку, сохраняя все варианты изготовления. По умолчанию выбирается локальный мастер; кнопка смены мастера/рецепта позволяет закрепить другой вариант для конечного предмета. Раздел «Сеть» скрывает локального персонажа, не удаляя его профиль из расчёта.
 
 Планировщик рекурсивно раскрывает зависимости до 20 уровней / 2000 посещений. Использует копию вашего запаса; сначала списывает доступное, затем округляет число изготовлений вверх и сохраняет излишек для общих зависимостей. Исполнители и рецепты обходятся в стабильном порядке. Шаги записываются после зависимостей, поэтому вывод соответствует порядку изготовления. Зависимость от лагеря включает поставщика; объект с временем готовности в будущем пока делает рецепт недоступным. При цикле или отсутствии изготовителя появляется дефицит. Шаги при дефиците остаются предварительным планом, а не разрешением на выполнение.
 
@@ -85,13 +85,13 @@ ID `<owner>:<server time>:<saved counter>`. Поля: item, quantity, expires, r
 1. Проверить исправление окна и новый сканер в клиенте Forever 1.60.1 (70124); Interface 16001 уже указан.
 2. Добавить автоматическое обнаружение Blueprint/Camping, сохранив ручной override.
 3. Добавить enGB/deDE/frFR/esES/esMX/itIT/ptBR/koKR/zhCN/zhTW по тому же словарю; пока они используют английский fallback. Названия предметов локализует сам клиент.
-4. ACK/retry, контроль кодов отправки, delta-профили и сжатие для больших каталогов.
+4. ACK и повторная доставка потерянных сообщений, delta-профили и сжатие для больших каталогов.
 5. Отдельные подзадачи цепочки и маршруты с альтернативными рецептами.
 
 ## Источники и референсы
 
 - [Blizzard: Forever Deep Dive](https://worldofwarcraft.blizzard.com/en-us/news/24303313) — описание систем; не спецификация Lua API.
-- [Зеркало исходников клиента: ChatInfo](https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_APIDocumentationGenerated/ChatInfoDocumentation.lua) — базовые API сообщений; ветка live не подтверждает Forever.
+- [ChatInfo для клиента 70124](https://github.com/Gethe/wow-ui-source/blob/966519cf0ad2c10301ea011a88c14b25697c9687/Interface/AddOns/Blizzard_APIDocumentationGenerated/ChatInfoDocumentation.lua) и [enum-результаты](https://github.com/Gethe/wow-ui-source/blob/966519cf0ad2c10301ea011a88c14b25697c9687/Interface/AddOns/Blizzard_APIDocumentationGenerated/ChatConstantsDocumentation.lua).
 - [TradeSkillUI для Forever 1.60.1 (70124)](https://github.com/Gethe/wow-ui-source/blob/966519cf0ad2c10301ea011a88c14b25697c9687/Interface/AddOns/Blizzard_APIDocumentationGenerated/TradeSkillUIDocumentation.lua) и [структуры результата/реагентов](https://github.com/Gethe/wow-ui-source/blob/966519cf0ad2c10301ea011a88c14b25697c9687/Interface/AddOns/Blizzard_APIDocumentationGenerated/TradeSkillUITypesDocumentation.lua).
 - [Список рецептов Blizzard](https://github.com/Gethe/wow-ui-source/blob/966519cf0ad2c10301ea011a88c14b25697c9687/Interface/AddOns/Blizzard_ProfessionsTemplates/Blizzard_Professions.lua) — GetFilteredRecipeIDs и проверки чужой профессии; [Camelot override](https://github.com/Gethe/wow-ui-source/blob/966519cf0ad2c10301ea011a88c14b25697c9687/Interface/AddOns/Blizzard_ProfessionsTemplates/Camelot/Blizzard_Professions.lua) — GetBaseProfessionInfo.
 - [FontString API этой сборки](https://github.com/Gethe/wow-ui-source/blob/966519cf0ad2c10301ea011a88c14b25697c9687/Interface/AddOns/Blizzard_APIDocumentationGenerated/SimpleFontStringAPIDocumentation.lua) — GetStringHeight.

@@ -9,12 +9,13 @@
 
 ForeverNet connects profession profiles within your guild or group. Select an item and quantity to see materials, missing components, crafting steps, and potential crafters.
 
-**Version:** 0.3.2 · **Target client:** Forever 1.60.1 (70124), Interface 16001  
+**Version:** 0.3.3 · **Target client:** Forever 1.60.1 (70124), Interface 16001<br>
 **Author:** Andrew Woolfi · **License:** [MIT](LICENSE)
 
 ### Features
 
-- Searchable catalog of learned recipes scanned from your open profession.
+- Searchable catalog of learned recipes scanned from your open profession; each item appears once, with a choice of crafters.
+- The Network page lists other players; your own capabilities remain available for planning.
 - Production chains with component quantities, crafting order, and potential crafters.
 - Stock calculation using carried items and saved personal bank contents.
 - Automatic personal bank snapshots on visits and inventory changes, stored per character.
@@ -54,7 +55,7 @@ ForeverNet connects profession profiles within your guild or group. Select an it
 2. Open your own profession and click **Scan**. Clear the profession window's filters and search to include more learned recipes.
 3. Select a recipe, enter a quantity, and click **Build chain**.
 4. Visit your personal bank to save its contents. Withdraw required materials before crafting and rebuild the plan after stock changes.
-5. To cooperate, join the same guild or group as other ForeverNet users, enable **Sharing**, and click **Sync**.
+5. To cooperate, join the same guild or group as other ForeverNet users, enable **Sharing** on both sides. Discovery starts automatically; **Sync** also refreshes profiles and requests manually.
 6. Select a missing component and click **Ask for help**.
 
 The **Example** button shows an isolated sample chain that is never published to other players.
@@ -79,7 +80,7 @@ Settings include language, sharing, automatic bank scanning, inclusion of bank s
 
 Personal bank scanning and bank stock inclusion are enabled by default. Snapshots cover purchased personal bank tabs, not account or guild banks. Outside a bank visit, plans use the last saved snapshot; its age is displayed. An unavailable or incompletely loaded tab does not replace the previous snapshot.
 
-Sharing is disabled on first installation. Enabling it allows profession, recipe, camp, and request messages through guild or group channels. Bag and bank inventories are not shared. Network synchronization is manual; there is no external server or bundled runtime library.
+Sharing is disabled on first installation. Enabling it allows profession, recipe, camp, and request messages through guild or group channels. Bag and bank inventories are not shared. Discovery runs on login, enabling sharing, and group/guild changes. New participants receive existing unexpired requests in that channel. Sync refreshes snapshots manually; there is no periodic heartbeat or external server.
 
 Peer profiles expire after 30 minutes without an update; requests last 30 minutes. Offers use the request's original channel, so leaving that channel can prevent delivery. Disabling sharing clears outgoing messages but does not immediately erase profiles already received by others.
 
@@ -90,7 +91,7 @@ ForeverNet is an early MVP targeting Forever. Compatibility with other WoW clien
 - The scanner reads the current filtered list of learned item recipes and merges it with saved recipes. Remove obsolete entries with `/fn forget RECIPE_ID` after losing a profession.
 - Recipes with unsupported alternative reagents, variable costs, currency costs, or ambiguous item outputs are skipped. Optional reagents are not included in the base calculation.
 - Blueprint flags and Camping requirements are entered manually. Camp availability is declared by the player, not verified in the world.
-- Selecting a recipe pins its crafter for the final item. Intermediate components prefer the local character, then use a stable ordering. The bounded greedy planner detects shortages and cycles but can miss a workable alternative route.
+- Selecting an item pins the chosen recipe and crafter for the final item; use Change crafter / recipe to switch between available options. Intermediate components prefer the local character, then use a stable ordering. The bounded greedy planner detects shortages and cycles but can miss a workable alternative route.
 - Plans do not optimize prices, travel, layers, or other players' inventory. Players craft, travel, and trade manually; a plan is not a confirmed order.
 - Friends outside the supported group/guild channels, cross-faction networking, automatic whispers, material reservations, and automatic orders for every chain step are not supported.
 
@@ -139,12 +140,13 @@ If you would like to support development: [Andrew Woolfi on Boosty](https://boos
 
 ForeverNet объединяет профили профессий участников гильдии или группы. Выберите предмет и количество — аддон покажет материалы, недостающие компоненты, этапы изготовления и возможных исполнителей.
 
-**Версия:** 0.3.2 · **Целевой клиент:** Forever 1.60.1 (70124), Interface 16001  
+**Версия:** 0.3.3 · **Целевой клиент:** Forever 1.60.1 (70124), Interface 16001<br>
 **Автор:** Andrew Woolfi · **Лицензия:** [MIT](LICENSE)
 
 ### Возможности
 
-- Каталог изученных рецептов с поиском и сканированием открытой профессии.
+- Каталог изученных рецептов с поиском и сканированием открытой профессии: один предмет — одна строка, с выбором мастера.
+- В разделе «Сеть» отображаются другие игроки; ваши возможности продолжают учитываться в расчётах.
 - Производственные цепочки с количеством компонентов, порядком изготовления и возможными исполнителями.
 - Расчёт запасов с учётом предметов при персонаже и сохранённого личного банка.
 - Автосканирование личного банка при посещении и изменении содержимого; отдельные снимки для каждого персонажа.
@@ -184,7 +186,7 @@ ForeverNet объединяет профили профессий участни
 2. Откройте свою профессию и нажмите **«Сканировать»**. Очистите фильтры и поиск окна профессии, чтобы включить больше изученных рецептов.
 3. Выберите рецепт, укажите количество и нажмите **«Собрать цепочку»**.
 4. Посетите личный банк, чтобы сохранить содержимое. Перед изготовлением заберите нужные материалы и пересчитайте цепочку после изменения запасов.
-5. Для совместной работы вступите в одну гильдию или группу с другими пользователями ForeverNet, включите **«Обмен»** и нажмите **«Обновить»**.
+5. Для совместной работы вступите в одну гильдию или группу с другими пользователями ForeverNet, включите **«Обмен»** у обоих. Поиск участников запускается автоматически; **«Обновить»** также позволяет вручную обновить профили и запросы.
 6. Выберите недостающий компонент и нажмите **«Запросить помощь»**.
 
 Кнопка **«Пример»** показывает изолированную учебную цепочку, которая не публикуется другим игрокам.
@@ -209,7 +211,7 @@ ForeverNet объединяет профили профессий участни
 
 Автосканирование и учёт банка включены по умолчанию. Снимки охватывают купленные вкладки личного банка; банк аккаунта и гильдии не сканируется. Вне посещения банка используются последние сохранённые данные, возраст которых отображается в интерфейсе. Недоступная или не полностью загруженная вкладка не заменяет предыдущий снимок.
 
-Обмен выключен при первой установке. После включения через каналы гильдии или группы передаются профессии, рецепты, лагерные возможности и запросы. Содержимое сумок и банка не передаётся. Синхронизация запускается вручную; отдельный внешний сервер и встроенные библиотеки исполнения не нужны.
+Обмен выключен при первой установке. После включения через каналы гильдии или группы передаются профессии, рецепты, лагерные возможности и запросы. Содержимое сумок и банка не передаётся. Поиск участников запускается при входе, включении обмена и изменении группы или гильдии. Новые участники получают существующие неистёкшие запросы этого канала. «Обновить» повторяет синхронизацию вручную; периодического обновления присутствия и внешнего сервера нет.
 
 Профили других игроков удаляются через 30 минут без обновления; заявки действуют 30 минут. Отклики идут по исходному каналу запроса, поэтому выход из него может помешать доставке. Отключение обмена очищает очередь отправки, но не удаляет немедленно профили, уже полученные другими игроками.
 

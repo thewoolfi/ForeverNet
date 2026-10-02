@@ -27,17 +27,37 @@ function C.Icon(id)
     return (numeric and C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(numeric)) or
         (numeric and GetItemIcon and GetItemIcon(numeric)) or 'Interface\\Icons\\INV_Misc_Gear_01'
 end
-function C.Recipes(profiles, query)
-    local entries, filter = {}, C.Fold(query)
+function C.Recipes(profiles, query, choices)
+    local entries, groups, filter = {}, {}, C.Fold(query)
     for _, owner in ipairs(F.Keys(profiles)) do
         for _, recipeID in ipairs(F.Keys(profiles[owner].recipes)) do
             local r = profiles[owner].recipes[recipeID]
             local name = C.ItemName(r.output, r.name)
             local searchable = C.Fold(name .. ' ' .. r.name .. ' ' .. owner .. ' ' .. r.output)
-            if filter == '' or searchable:find(filter,1,true) then
-                entries[#entries+1] = {key=owner .. '/' .. recipeID, kind='recipe', owner=owner,
-                    recipeID=recipeID, recipe=r, item=r.output, title=name, subtitle=owner == F.me and F.L('YOU') or owner}
+            local group=groups[r.output]
+            if not group then group={providers={},matches=false}; groups[r.output]=group end
+            group.providers[#group.providers+1]={key=owner..'/'..recipeID,owner=owner,recipeID=recipeID,recipe=r}
+            group.matches=group.matches or filter=='' or searchable:find(filter,1,true)~=nil
+        end
+    end
+    for item,group in pairs(groups) do
+        if group.matches then
+            table.sort(group.providers,function(a,b)
+                if (a.owner==F.me)~=(b.owner==F.me) then return a.owner==F.me end
+                return a.key<b.key
+            end)
+            local selected=group.providers[1]
+            local owners={}
+            for _,provider in ipairs(group.providers) do
+                owners[provider.owner]=true
+                if choices and choices[item]==provider.key then selected=provider end
             end
+            local count=#F.Keys(owners)
+            entries[#entries+1]={key='item/'..item,kind='recipe',owner=selected.owner,
+                recipeID=selected.recipeID,recipe=selected.recipe,item=item,
+                title=C.ItemName(item,selected.recipe.name),providers=group.providers,
+                subtitle=count>1 and string.format(F.L('CRAFTER_COUNT'),count) or
+                    (selected.owner==F.me and F.L('YOU') or selected.owner)}
         end
     end
     table.sort(entries, function(a,b)

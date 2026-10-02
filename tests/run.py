@@ -179,4 +179,6 @@ print('PASS item selection, preferred crafter, shortages, requests, demo isolati
 bank = client('BankTest')
 bank.execute((ROOT/'tests/bank_settings.lua').read_text(encoding='utf-8'))
 print('PASS bank visits, transfers, loading, empty bank, character isolation and settings')
+from network_transport import run_transport_tests
+run_transport_tests(client)
 print('All Lua 5.1 checks passed. Client rendering still requires an in-game check.')

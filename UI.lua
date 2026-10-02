@@ -1,5 +1,5 @@
 local _, F = ...
-F.UI = {page='recipes', rows={}, filter='', entries={}}
+F.UI = {page='recipes', rows={}, filter='', entries={}, recipeChoices={}}
 local U, C = F.UI, F.Catalog
 local function skin(frame, dark)
     frame:SetBackdrop({bgFile='Interface\\ChatFrame\\ChatFrameBackground', edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
@@ -67,6 +67,7 @@ function U.Ensure()
     U.accept=button(right,'',12,-319,150,function() U.RequestAction('accept') end)
     U.done=button(right,'',169,-319,150,function() U.RequestAction('done') end)
     U.cancel=button(right,'',326,-319,150,function() U.RequestAction('cancel') end)
+    U.crafter=button(right,'',12,-319,220,function() U.CycleCrafter() end)
     U.itemLabel=label(frame,'GameFontNormalSmall',24,-461,235,'')
     local chosen=CreateFrame('Frame',nil,frame,'BackdropTemplate')
     chosen:SetPoint('TOPLEFT',14,-479); chosen:SetSize(248,42); skin(chosen,true)
@@ -135,7 +136,7 @@ function U.Show(text,title,subtitle,tone)
     U.Ensure(); for _,block in ipairs(U.blocks or {}) do block.title:Hide(); block.text:Hide() end
     U.bodyText:Show(); for _,card in ipairs(U.cards or {}) do card:Hide() end
     U.hero:SetTexture(U.selectedEntry and U.selectedEntry.item and C.Icon(U.selectedEntry.item) or 'Interface\\Icons\\INV_Misc_EngGizmos_01')
-    U.accept:Hide(); U.done:Hide(); U.cancel:Hide()
+    U.accept:Hide(); U.done:Hide(); U.cancel:Hide(); U.crafter:Hide()
     U.detailTitle:SetText(C.Safe(title or F.L('PAGE_'..U.page)))
     U.summary:SetText(C.Safe(subtitle or ''))
     if tone=='good' then U.summary:SetTextColor(.35,.9,.45)
@@ -152,11 +153,11 @@ function U.RefreshRows()
         local text=C.Fold(entry.title..' '..(entry.subtitle or ''))
         if U.filter=='' or text:find(C.Fold(U.filter),1,true) then entries[#entries+1]=entry end
     end
-    if U.page=='recipes' then entries=C.Recipes(profiles,U.filter)
+    if U.page=='recipes' then entries=C.Recipes(profiles,U.filter,U.recipeChoices)
     elseif U.page=='network' then
         for _, owner in ipairs(F.Keys(profiles)) do
             local p=profiles[owner]
-            add({key=owner,kind='player',owner=owner,title=who(owner),subtitle=string.format(F.L('RECIPE_COUNT'),#F.Keys(p.recipes))})
+            if owner~=F.me then add({key=owner,kind='player',owner=owner,title=who(owner),subtitle=string.format(F.L('RECIPE_COUNT'),#F.Keys(p.recipes))}) end
         end
     elseif U.page=='requests' then
         for _, id in ipairs(F.Keys(F.db.requests)) do
@@ -186,7 +187,10 @@ function U.RefreshRows()
             U.rows[i]=b
         end
         b.entry,b.selected=entry,U.selectionKey==entry.key
-        if b.selected then U.selectedEntry=entry end
+        if b.selected then
+            U.selectedEntry=entry
+            if entry.kind=='recipe' then U.SetTarget(entry.item,U.Quantity() or 1,entry.owner,entry.recipeID) end
+        end
         b:SetPoint('TOPLEFT',0,-(i-1)*48); b.label:SetText(C.Safe(entry.title..'\n'..(entry.subtitle or '')))
         b.icon:SetTexture(entry.item and C.Icon(entry.item) or 'Interface\\Icons\\INV_Misc_GroupLooking')
         b:SetBackdropBorderColor(b.selected and .95 or .52,b.selected and .75 or .38,.18,1)
@@ -203,11 +207,27 @@ function U.Select(entry)
     elseif entry.kind=='step' then U.SetTarget(entry.item,entry.step.quantity,entry.step.owner,entry.step.recipeID,U.planData.demo) end
     U.Status()
 end
+function U.CycleCrafter()
+    local e=U.selectedEntry
+    if not e or e.kind~='recipe' or #e.providers<2 then return end
+    local index=1
+    for i,p in ipairs(e.providers) do if p.owner==e.owner and p.recipeID==e.recipeID then index=i; break end end
+    local provider=e.providers[index%#e.providers+1]
+    U.recipeChoices[e.item]=provider.key
+    U.SetTarget(e.item,U.Quantity() or 1,provider.owner,provider.recipeID)
+    U.Status()
+end
 function U.RenderSelection()
     local e=U.selectedEntry
     if U.view=='help' then U.RenderHelp(); return end
     if not e then
         if U.page=='chain' and U.planData then U.RenderPlan(); return end
+        if U.page=='network' then
+            local text=F.L(#U.entries>0 and 'NETWORK_PICK' or 'EMPTY_network')
+            text=text..'\n\n'..F.L('NETWORK_CHANNEL')..(F.Net.Channel() or F.L('NETWORK_NO_CHANNEL'))
+            if F.Net.lastError then text=text..'\n\n'..F.Net.lastError end
+            U.Show(text,F.L('PAGE_network')); return
+        end
         if U.page~='recipes' then U.Show(F.L('EMPTY_'..U.page),F.L('PAGE_'..U.page)); return end
         local hasRecipes=#C.Recipes(F.Profiles(),'')>0
         U.Show(F.L(hasRecipes and 'START_PICK' or 'START_SCAN'),F.L('WHAT_TO_MAKE'),F.L('START_SUBTITLE'))
@@ -218,18 +238,25 @@ function U.RenderSelection()
         if not F.Integer(qty,1,10000) then U.Show(F.L('QUANTITY_ERROR'),e.title); return end
         local inBags=F.Adapter.StockCount(e.item)
         local batches=math.ceil(math.max(0,qty-inBags)/r.quantity)
-        local lines={string.format(F.L('RECIPE_OVERVIEW'),qty,inBags,r.quantity,batches),'',F.L('DIRECT_REAGENTS')}
+        local lines={string.format(F.L('RECIPE_OVERVIEW'),qty,inBags,r.quantity,batches)}
         if next(r.reagents)==nil then lines[#lines+1]=F.L('NO_REAGENTS') end
         for _,station in ipairs(F.Keys(r.stations)) do lines[#lines+1]='\n'..F.L('CAMP')..station end
         if r.blueprint then lines[#lines+1]='\nBlueprint' end
         lines[#lines+1]='\n'..F.L('RECIPE_NEXT')
         U.Show(table.concat(lines,'\n'),e.title,F.L('CRAFTER')..who(e.owner))
+        U.crafter:SetText(F.L('CHANGE_CRAFTER')); U.crafter:SetShown(#e.providers>1)
         local cards={}
         for _,item in ipairs(F.Keys(r.reagents)) do
             local needed=r.reagents[item]*batches; local have=F.Adapter.StockCount(item)
             cards[#cards+1]={item=item,title=C.ItemName(item),text=string.format(F.L('MATERIAL_CARD'),F.Adapter.ItemCount(item),F.Bank.Count(item),needed),good=have>=needed}
         end
-        U.ShowCards(cards)
+        local y=U.ShowCards(cards)
+        local providers={}
+        for _,provider in ipairs(e.providers) do
+            providers[#providers+1]=who(provider.owner)..': '..provider.recipe.name
+        end
+        U.ShowBlocks({{title=F.L('AVAILABLE_CRAFTERS'),text=table.concat(providers,'\n')},
+            {title=F.L('RECIPE_DETAILS'),text=table.concat(lines,'\n')}},y)
     elseif e.kind=='player' then
         local p=F.db.profiles[e.owner]; if not p then return end
         local lines={F.L('PROFESSIONS')}
@@ -284,7 +311,7 @@ end
 function U.Status()
     U.Ensure(); F.Prune()
     U.heading:SetText(F.L(U.page=='recipes' and 'WHAT_TO_MAKE' or 'PAGE_'..U.page))
-    U.sharing:SetText(string.format(F.L('NETWORK_SUMMARY'),#C.Recipes(F.db.profiles,''),#F.Keys(F.db.profiles),F.L(F.db.settings.sharing and 'включён' or 'выключен')))
+    U.sharing:SetText(string.format(F.L('NETWORK_SUMMARY'),#C.Recipes(F.db.profiles,''),math.max(0,#F.Keys(F.db.profiles)-1),F.L(F.db.settings.sharing and 'включён' or 'выключен')))
     U.scan:SetText(F.L('Сканировать')); U.share:SetText(F.L(F.db.settings.sharing and 'SHARE_ON' or 'SHARE_OFF')); U.sync:SetText(F.L('Обновить'))
     U.searchLabel:SetText(F.L('SEARCH_LABEL')); U.itemLabel:SetText(F.L('CHOSEN_ITEM')); U.qtyLabel:SetText(F.L('QUANTITY_FIELD'))
     U.plan:SetText(F.L('Собрать цепочку')); U.request:SetText(F.L('ASK_HELP')); U.demo:SetText(F.L('DEMO_BUTTON')); U.help:SetText(F.L('HELP_BUTTON'))

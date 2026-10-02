@@ -4,7 +4,7 @@
 ## Notes: Peer profession network and production planner (experimental)
 ## Author: Andrew Woolfi
 ## X-License: MIT
-## Version: 0.3.2
+## Version: 0.3.3
 ## X-Compatibility: Forever 1.60.1 (70124); in-game validation in progress
 ## SavedVariables: ForeverNetDB
 
