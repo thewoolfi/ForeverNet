@@ -23,7 +23,8 @@ ForeverNet connects profession profiles within your guild or group. Select an it
 - Request lifecycle: open, accepted, completed, or cancelled; the first offer is accepted automatically by the owner's addon.
 - Manual Blueprint flags and Camping facility requirements.
 - Item cards, separate help sections, settings, and a movable minimap button using game textures and fonts.
-- English and Russian localization, with English fallback for other client languages.
+- Interface localization for all 12 WoW locale codes, with automatic detection and a language selector.
+- Optional notifications when a group/guild participant reports a newer addon version, with manual download instructions.
 
 ### Screenshots
 
@@ -66,15 +67,20 @@ The **Example** button shows an isolated sample chain that is never published to
 |---|---|
 | `/fn` | Open the main window |
 | `/fn settings` | Open settings and addon information |
+| `/fn updates` | Check participant versions and open download instructions |
 | `/fn help` | Show the command reference |
 | `/fn demo` | Show a sample production chain |
 | `/fn language auto` | Use the client language, with English fallback |
-| `/fn language enUS` / `/fn language ruRU` | Choose a language explicitly |
+| `/fn language LOCALE` | Choose enUS, enGB, ruRU, deDE, frFR, esES, esMX, itIT, ptBR, koKR, zhCN, or zhTW |
 | Minimap left-click | Toggle the main window |
 | Minimap right-click | Open help |
 | Drag the minimap button | Reposition it; the position is saved |
 
 Settings include language, sharing, automatic network refresh (on/off, 1/2/5-minute interval), automatic bank scanning, inclusion of bank stock in plans, and minimap button visibility. The About section provides GitHub and Boosty links: click a URL and press Ctrl+C to copy it.
+
+The update window compares versions advertised by participants while sharing is enabled. It does not query GitHub or install files in game. Use the download link to check published releases and update manually, or configure an external addon manager. Notifications can be disabled. New translations are machine-assisted and need further native-speaker review; see [localization](docs/LOCALIZATION.md).
+
+Forever's first name and surname are matched across native and chat-name forms. Existing copies of your own profile are merged automatically, preserving learned recipes and the newest bank snapshot. Your Network page shows other players; they see one profile for you. Different crafters remain separate even when they know the same recipe.
 
 ### Bank data and sharing
 
@@ -122,7 +128,7 @@ These `custom:*` identifiers are fictional and are added to your local profile. 
 /fn plan custom:bag 1
 ```
 
-Raw materials appear as missing in this example. Use `/fn help` for additional commands. Command names are the same in both languages. Received recipe names may retain the sender's language; local item names are used when available from the client cache.
+Raw materials appear as missing in this example. Use `/fn help` for additional commands. Command names are the same in every language. Received recipe names may retain the sender's language; local item names are used when available from the client cache.
 
 ### Support
 
@@ -154,7 +160,8 @@ ForeverNet объединяет профили профессий участни
 - Заявки: открыта, принята, завершена или отменена; первый отклик автоматически принимает аддон автора заявки.
 - Ручные метки Blueprint и требования к объектам Camping.
 - Карточки предметов, справка по шагам, настройки и перемещаемая кнопка миникарты с игровыми текстурами и шрифтами.
-- Русская и английская локализация; для остальных языков клиента используется английский.
+- Локализация интерфейса для всех 12 кодов языков WoW, автоподбор и список выбора языка.
+- Отключаемое уведомление о более новой версии у участника группы/гильдии и инструкция по ручному обновлению.
 
 ### Скриншоты
 
@@ -197,15 +204,20 @@ ForeverNet объединяет профили профессий участни
 |---|---|
 | `/fn` | Открыть главное окно |
 | `/fn settings` | Открыть настройки и информацию об аддоне |
+| `/fn updates` | Проверить версии участников и открыть инструкцию по скачиванию |
 | `/fn help` | Справка по командам |
 | `/fn demo` | Учебная производственная цепочка |
 | `/fn language auto` | Язык клиента с английским резервным вариантом |
-| `/fn language enUS` / `/fn language ruRU` | Выбрать язык вручную |
+| `/fn language LOCALE` | Выбрать enUS, enGB, ruRU, deDE, frFR, esES, esMX, itIT, ptBR, koKR, zhCN или zhTW |
 | Левый клик по кнопке миникарты | Открыть или закрыть главное окно |
 | Правый клик по кнопке миникарты | Открыть справку |
 | Перетаскивание кнопки миникарты | Изменить положение; оно сохраняется |
 
 В настройках доступны язык, обмен, автообновление сети (вкл./выкл. и интервал 1/2/5 минут), автосканирование банка, учёт банковских запасов и видимость кнопки миникарты. В разделе об аддоне есть ссылки на GitHub и Boosty: нажмите на адрес и скопируйте его через Ctrl+C.
+
+Окно обновлений сравнивает версии, сообщённые участниками при включённом обмене. Оно не обращается к GitHub и не устанавливает файлы из игры. По ссылке можно проверить опубликованные выпуски и обновиться вручную либо настроить внешний менеджер аддонов. Уведомления отключаются. Новые переводы подготовлены с помощью машинного перевода и требуют дальнейшей проверки носителями; подробнее — [локализация](docs/LOCALIZATION.md).
+
+Имя и фамилия Forever сопоставляются между формами игрового API и чата. Сохранённые дубли собственного профиля объединяются автоматически с сохранением рецептов и последнего снимка банка. В вашей «Сети» остаются другие игроки, а они видят один ваш профиль. Разные мастера продолжают учитываться отдельно, даже когда знают одинаковый рецепт.
 
 ### Банк и обмен данными
 

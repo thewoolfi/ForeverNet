@@ -13,9 +13,10 @@ function F.Command(input)
     local ok, err = pcall(function()
         if cmd == 'help' then F.UI.Show(F.L("HELP"))
         elseif cmd == 'settings' then F.Settings.Open()
+        elseif cmd == 'updates' then F.Updates.Open()
         elseif cmd == 'show' then F.UI.Status()
         elseif cmd == 'language' then
-            assert(a == 'auto' or a == 'enUS' or a == 'ruRU', 'language auto|enUS|ruRU')
+            assert(a == 'auto' or F.Locales[a], 'language auto|enUS|enGB|ruRU|deDE|frFR|esES|esMX|itIT|ptBR|koKR|zhCN|zhTW')
             F.db.settings.locale = a ~= 'auto' and a or nil; F.UI.Status()
         elseif cmd == 'share' then
             assert(a == 'on' or a == 'off', 'share on|off')
@@ -81,6 +82,7 @@ frame:SetScript('OnEvent', function(self, event, ...)
     elseif event == 'CHAT_MSG_ADDON' then F.Net.Receive(...)
     elseif event == 'PLAYER_LOGIN' then F.Minimap.Init(); if F.db.settings.sharing then F.Net.ScheduleSync() end
     elseif event=='GROUP_ROSTER_UPDATE' or event=='PLAYER_GUILD_UPDATE' or event=='PLAYER_ENTERING_WORLD' then
+        F.RefreshIdentityAliases(); F.CleanSelfAliases()
         if F.db.settings.sharing then F.Net.ScheduleSync() end
         F.UI.DataChanged()
     else F.Bank.Event(event); F.UI.DataChanged() end

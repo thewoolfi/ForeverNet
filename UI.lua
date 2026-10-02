@@ -251,9 +251,15 @@ function U.RenderSelection()
             cards[#cards+1]={item=item,title=C.ItemName(item),text=string.format(F.L('MATERIAL_CARD'),F.Adapter.ItemCount(item),F.Bank.Count(item),needed),good=have>=needed}
         end
         local y=U.ShowCards(cards)
-        local providers={}
+        local providers,counts={},{}
         for _,provider in ipairs(e.providers) do
-            providers[#providers+1]=who(provider.owner)..': '..provider.recipe.name
+            counts[provider.owner]=(counts[provider.owner] or 0)+1
+        end
+        local owners=F.Keys(counts)
+        table.sort(owners,function(a,b) if (a==F.me)~=(b==F.me) then return a==F.me end; return a<b end)
+        for _,owner in ipairs(owners) do
+            local variants=counts[owner]>1 and ' ('..string.format(F.L('RECIPE_COUNT'),counts[owner])..')' or ''
+            providers[#providers+1]=who(owner)..': '..e.title..variants
         end
         U.ShowBlocks({{title=F.L('AVAILABLE_CRAFTERS'),text=table.concat(providers,'\n')},
             {title=F.L('RECIPE_DETAILS'),text=table.concat(lines,'\n')}},y)

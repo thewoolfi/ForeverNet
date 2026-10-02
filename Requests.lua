@@ -52,7 +52,14 @@ function R.Receive(kind, data, sender, channel)
         end
         return
     end
-    if not R.Valid(data) or data.id:sub(1, #sender + 1) ~= sender .. ':' then return end
+    if not R.Valid(data) then return end
+    local author=data.id:match('^(.-):')
+    if not author then return end
+    -- A guild peer may not have a unit in our party roster. Its first native
+    -- request ID teaches the surname form of the already authenticated sender.
+    sender=F.ResolveSender(sender,author)
+    if not sender then return end
+    F.Prune()
     local old = F.db.requests[data.id]
     if old then
         if old.owner ~= sender or data.rev <= old.rev or old.status == 'done' or old.status == 'cancelled' then return end

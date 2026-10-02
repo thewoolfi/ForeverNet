@@ -8,12 +8,14 @@ from lupa.lua51 import LuaRuntime
 ROOT = Path(__file__).resolve().parents[1]
 MOCK = (ROOT / 'tests/wow_mock.lua').read_text(encoding='utf-8')
 
-def client(name):
+def client(name, setup=None):
     lua = LuaRuntime(unpack_returned_tuples=True)
     lua.globals().playerName = name
     lua.execute(MOCK)
+    if setup:
+        lua.execute(setup)
     namespace = lua.table()
-    for line in (ROOT / 'ForeverNet.toc').read_text().splitlines():
+    for line in (ROOT / 'ForeverNet.toc').read_text(encoding='utf-8-sig').splitlines():
         if line.endswith('.lua'):
             lua.execute('return assert(loadstring(...))', (ROOT / line).read_text(encoding='utf-8'))('ForeverNet', namespace)
     lua.execute("frames[1].scripts.OnEvent(frames[1], 'ADDON_LOADED', 'ForeverNet')")
@@ -57,7 +59,7 @@ assert(F.Codec.Decode('n2147483648:')==nil)
 local F=ForeverNet
 assert(F.L('Сеть')=='Network')
 F.Command('language ruRU'); assert(F.L('Сеть')=='Сеть')
-F.Command('language auto'); clientLocale='deDE'; assert(F.L('Сеть')=='Network')
+F.Command('language auto'); clientLocale='xxXX'; assert(F.L('Сеть')=='Network')
 clientLocale='enUS'
 F.Command('profession engineering 300')
 F.Command('recipe custom:gear item:999 1 engineering item:123=2')
@@ -181,4 +183,16 @@ bank.execute((ROOT/'tests/bank_settings.lua').read_text(encoding='utf-8'))
 print('PASS bank visits, transfers, loading, empty bank, character isolation and settings')
 from network_transport import run_transport_tests
 run_transport_tests(client)
+updates=client('UpdatesTest')
+updates.execute((ROOT/'tests/updates.lua').read_text(encoding='utf-8'))
+print('PASS addon update hints: semantic versions, P2P advertisement, old clients, notification toggle and download URL')
+locales=client('LocaleTest')
+locales.execute((ROOT/'tests/localization.lua').read_text(encoding='utf-8'))
+print('PASS all 12 locales: full dictionaries, format tokens, commands, language selector, UTF-8 search and localized update windows')
+identity=client('IdentityTest')
+identity.execute((ROOT/'tests/identity.lua').read_text(encoding='utf-8'))
+print('PASS Forever name/surname identity: self aliases, saved profile/bank migration, distinct crafters and old request IDs')
+from forever_transport import run_forever_transport_tests
+run_forever_transport_tests(client)
+run_forever_transport_tests(client,guild=True)
 print('All Lua 5.1 checks passed. Client rendering still requires an in-game check.')

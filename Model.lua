@@ -34,11 +34,29 @@ function F.ValidProfile(p)
     return true
 end
 function F.Prune()
+    F.CleanSelfAliases()
+    -- Normalize known roster aliases before building the shared catalog.
+    for _,owner in ipairs(F.Keys(F.db.profiles)) do
+        local canonical=F.Identity(owner)
+        if owner~=canonical and canonical~=F.me then
+            local old,current=F.db.profiles[owner],F.db.profiles[canonical]
+            if not current or old.rev>current.rev or (old.rev==current.rev and (old.seen or 0)>(current.seen or 0)) then
+                F.db.profiles[canonical]=old
+            end
+            F.db.profiles[owner]=nil
+        end
+    end
     local now = F.Now()
     for owner, p in pairs(F.db.profiles) do
         if owner ~= F.me and now - (p.seen or 0) > F.PEER_TTL then F.db.profiles[owner] = nil end
     end
-    for id, r in pairs(F.db.requests) do if r.expires <= now then F.db.requests[id] = nil end end
+    for id, r in pairs(F.db.requests) do
+        if r.expires <= now then F.db.requests[id] = nil
+        else
+            if type(r.owner)=='string' then r.owner=F.Identity(r.owner) end
+            if type(r.assignee)=='string' and r.assignee~='' then r.assignee=F.Identity(r.assignee) end
+        end
+    end
 end
 function F.Profiles()
     F.Prune(); return F.db.profiles

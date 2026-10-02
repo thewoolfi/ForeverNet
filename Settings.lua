@@ -16,6 +16,7 @@ function S.Refresh()
         check.label:SetText(F.L(check.locale))
     end
     S.languageLabel:SetText(F.L('LANGUAGE'))
+    S.languageButton:SetText(F.db.settings.locale and F.LocaleNames[F.db.settings.locale] or F.L('LANG_AUTO'))
     S.intervalLabel:SetText(F.L('SYNC_INTERVAL'))
     for seconds,b in pairs(S.intervals) do
         b:SetText(string.format(F.L('SYNC_MINUTES'),seconds/60))
@@ -27,6 +28,7 @@ function S.Refresh()
     S.supportLabel:SetText(F.L('SUPPORT_BOOSTY'))
     S.linkHint:SetText(F.L('COPY_LINK_HINT'))
     S.about:SetText(F.L('ABOUT')..'\nForeverNet '..F.version..'\n'..F.L('AUTHOR')..'Andrew Woolfi\n\n'..F.L('ABOUT_TEXT'))
+    S.updates:SetText(F.L('ADDON_UPDATES'))
 end
 function S.Open()
     if not S.frame then
@@ -71,16 +73,32 @@ function S.Open()
             S.intervals[seconds]=b
         end
         S.languageLabel=label(frame,-278,'')
-        S.languages={}
-        for i,locale in ipairs({'auto','ruRU','enUS'}) do
-            local b=CreateFrame('Button',nil,frame,'UIPanelButtonTemplate')
+        S.languageButton=CreateFrame('Button',nil,frame,'UIPanelButtonTemplate')
+        S.languageButton:SetSize(470,24); S.languageButton:SetPoint('TOPLEFT',28,-303)
+        S.languageMenu=CreateFrame('Frame',nil,frame,'BackdropTemplate')
+        S.languageMenu:SetPoint('TOPLEFT',28,-331); S.languageMenu:SetSize(470,154)
+        S.languageMenu:SetFrameLevel(frame:GetFrameLevel()+20)
+        S.languageMenu:SetBackdrop({bgFile='Interface\\ChatFrame\\ChatFrameBackground',edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',edgeSize=16,insets={left=4,right=4,top=4,bottom=4}})
+        S.languageMenu:SetBackdropColor(.075,.055,.035,1); S.languageMenu:SetBackdropBorderColor(.6,.45,.22,1)
+        S.languageMenu:Hide()
+        S.languageButton:SetScript('OnClick',function() S.languageMenu:SetShown(not S.languageMenu:IsShown()) end)
+        S.languages={}; local locales={'auto'}
+        for _,locale in ipairs(F.LocaleOrder) do locales[#locales+1]=locale end
+        for i,locale in ipairs(locales) do
+            local b=CreateFrame('Button',nil,S.languageMenu,'UIPanelButtonTemplate')
             S.languages[locale]=b
-            b:SetSize(145,24); b:SetPoint('TOPLEFT',28+(i-1)*157,-303)
-            b:SetText(locale=='auto' and 'Auto' or locale=='ruRU' and 'Русский' or 'English')
-            b:SetScript('OnClick',function() F.db.settings.locale=locale~='auto' and locale or nil; S.Refresh(); F.UI.DataChanged() end)
+            b:SetSize(145,24); b:SetPoint('TOPLEFT',9+((i-1)%3)*153,-9-math.floor((i-1)/3)*28)
+            b:SetText(locale=='auto' and 'Auto' or F.LocaleNames[locale])
+            b:SetScript('OnClick',function()
+                F.db.settings.locale=locale~='auto' and locale or nil
+                S.languageMenu:Hide(); S.Refresh(); F.Updates.Refresh(); F.UI.DataChanged()
+            end)
         end
         S.bank=label(frame,-348,''); S.bank:SetHeight(36)
         S.about=label(frame,-396,''); S.about:SetHeight(140)
+        S.updates=CreateFrame('Button',nil,frame,'UIPanelButtonTemplate')
+        S.updates:SetSize(195,26); S.updates:SetPoint('TOPLEFT',307,-395)
+        S.updates:SetScript('OnClick',function() F.Updates.Open() end)
         S.githubLabel=label(frame,-552,'')
         S.supportLabel=label(frame,-612,'')
         local function linkField(url,y)
@@ -101,5 +119,5 @@ function S.Open()
         S.linkHint=label(frame,-672,''); S.linkHint:SetHeight(36)
         UISpecialFrames[#UISpecialFrames+1]='ForeverNetSettings'
     end
-    S.Refresh(); S.frame:Show()
+    S.languageMenu:Hide(); S.Refresh(); S.frame:Show()
 end

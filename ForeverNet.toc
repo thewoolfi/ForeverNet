@@ -2,6 +2,16 @@
 ## Title: ForeverNet
 ## IconTexture: Interface\Icons\Trade_Engineering
 ## Notes: Peer profession network and production planner (experimental)
+## Notes-ruRU: Сеть профессий и планирование изготовления (экспериментальный аддон)
+## Notes-deDE: Berufsnetzwerk und Herstellungsplanung (experimentell)
+## Notes-frFR: Réseau de métiers et planification de fabrication (expérimental)
+## Notes-esES: Red de profesiones y planificación de fabricación (experimental)
+## Notes-esMX: Red de profesiones y planificación de fabricación (experimental)
+## Notes-itIT: Rete di professioni e pianificazione della creazione (sperimentale)
+## Notes-ptBR: Rede de profissões e planejamento de fabricação (experimental)
+## Notes-koKR: 전문 기술 공유 및 제작 계획 (실험적)
+## Notes-zhCN: 专业技能共享网络与制作规划（实验版）
+## Notes-zhTW: 專業技能共享網路與製作規劃（實驗版）
 ## Author: Andrew Woolfi
 ## X-License: MIT
 ## Version: 0.3.3
@@ -9,8 +19,18 @@
 ## SavedVariables: ForeverNetDB
 
 Locale.lua
+Locales/deDE.lua
+Locales/frFR.lua
+Locales/esES.lua
+Locales/esMX.lua
+Locales/itIT.lua
+Locales/ptBR.lua
+Locales/koKR.lua
+Locales/zhCN.lua
+Locales/zhTW.lua
 Core.lua
 Model.lua
+Updates.lua
 Catalog.lua
 Codec.lua
 Planner.lua

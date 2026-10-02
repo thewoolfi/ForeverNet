@@ -338,9 +338,39 @@ ru["SYNC_INTERVAL"]="Интервал обновления"
 en["SYNC_INTERVAL"]="Refresh interval"
 ru["SYNC_MINUTES"]="%d мин."
 en["SYNC_MINUTES"]="%d min"
+ru["ADDON_UPDATES"]="Обновление аддона"
+en["ADDON_UPDATES"]="Addon updates"
+ru["UPDATE_INSTALLED"]="Установлена версия: %s"
+en["UPDATE_INSTALLED"]="Installed version: %s"
+ru["UPDATE_FOUND"]="У участника обнаружена версия %s (%s). Проверьте опубликованные файлы по ссылке ниже."
+en["UPDATE_FOUND"]="A participant reported version %s (%s). Check the published files using the link below."
+ru["UPDATE_NOT_FOUND"]="Более новая версия у участников пока не обнаружена. Проверить опубликованные версии можно по ссылке ниже."
+en["UPDATE_NOT_FOUND"]="No newer version has been seen from participants yet. Check published versions using the link below."
+ru["UPDATE_NOTIFICATION"]="У %s обнаружен ForeverNet %s. У вас %s. Подробнее: /fn updates."
+en["UPDATE_NOTIFICATION"]="%s reported ForeverNet %s. You have %s. Details: /fn updates."
+ru["UPDATE_NOTIFY_SETTING"]="Уведомлять о новых версиях у участников"
+en["UPDATE_NOTIFY_SETTING"]="Notify when participants report newer versions"
+ru["UPDATE_CHECK_PEERS"]="Проверить версии у участников"
+en["UPDATE_CHECK_PEERS"]="Check participant versions"
+ru["UPDATE_CHECK_QUEUED"]="Проверка версий у участников поставлена в очередь. Для неё нужен включённый обмен и общая группа или гильдия."
+en["UPDATE_CHECK_QUEUED"]="Participant version check queued. It requires sharing enabled and a shared group or guild."
+ru["UPDATE_DOWNLOAD"]="Скачать опубликованную версию — GitHub"
+en["UPDATE_DOWNLOAD"]="Download a published version — GitHub"
+ru["UPDATE_INSTRUCTIONS"]="Вручную: скачайте ZIP, замените папку ForeverNet в Interface/AddOns и выполните /reload.\n\nАвтоматически: в приложении CurseForge включите Auto Install Updates для нужной установки WoW. Версия должна быть опубликована на CurseForge."
+en["UPDATE_INSTRUCTIONS"]="Manual: download the ZIP, replace the ForeverNet folder in Interface/AddOns, and use /reload.\n\nAutomatic: enable Auto Install Updates for your WoW installation in the CurseForge app. The version must be published on CurseForge."
+en["LANG_AUTO"]="Automatic (client language)"
+ru["LANG_AUTO"]="Авто (язык клиента)"
+en.HELP=en.HELP:gsub('language auto|enUS|ruRU', 'language LOCALE'):gsub('scan the open Classic profession','scan your open profession')..'\nsettings — settings\nupdates — addon versions and downloads'
+helpRU=helpRU:gsub('language auto|enUS|ruRU', 'language LOCALE'):gsub('Classic%-профессию','профессию')..'\nsettings — настройки\nupdates — версии аддона и скачивание'
+ru.HELP=helpRU
+F.Locales={enUS=en,enGB=en,ruRU=ru}
+F.LocaleOrder={'enUS','enGB','ruRU','deDE','frFR','esES','esMX','itIT','ptBR','koKR','zhCN','zhTW'}
+F.LocaleNames={enUS='English (US)',enGB='English (UK)',ruRU='Русский',deDE='Deutsch',frFR='Français',
+    esES='Español (ES)',esMX='Español (AL)',itIT='Italiano',ptBR='Português (BR)',koKR='한국어',zhCN='简体中文',zhTW='繁體中文'}
 function F.L(key)
     local locale = F.db and F.db.settings.locale or GetLocale()
-    if locale == 'ruRU' then return key == 'HELP' and helpRU or ru[key] or key end
-    return en[key] or key
+    local dictionary=F.Locales[locale] or en
+    if locale=='ruRU' then return dictionary[key] or key end
+    return dictionary[key] or en[key] or key
 end
 F.LocaleEnglish = en
