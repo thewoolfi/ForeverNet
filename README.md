@@ -74,13 +74,13 @@ The **Example** button shows an isolated sample chain that is never published to
 | Minimap right-click | Open help |
 | Drag the minimap button | Reposition it; the position is saved |
 
-Settings include language, sharing, automatic bank scanning, inclusion of bank stock in plans, and minimap button visibility. The About section provides GitHub and Boosty links: click a URL and press Ctrl+C to copy it.
+Settings include language, sharing, automatic network refresh (on/off, 1/2/5-minute interval), automatic bank scanning, inclusion of bank stock in plans, and minimap button visibility. The About section provides GitHub and Boosty links: click a URL and press Ctrl+C to copy it.
 
 ### Bank data and sharing
 
 Personal bank scanning and bank stock inclusion are enabled by default. Snapshots cover purchased personal bank tabs, not account or guild banks. Outside a bank visit, plans use the last saved snapshot; its age is displayed. An unavailable or incompletely loaded tab does not replace the previous snapshot.
 
-Sharing is disabled on first installation. Enabling it allows profession, recipe, camp, and request messages through guild or group channels. Bag and bank inventories are not shared. Discovery runs on login, enabling sharing, and group/guild changes. New participants receive existing unexpired requests in that channel. Sync refreshes snapshots manually; there is no periodic heartbeat or external server.
+Sharing is disabled on first installation. Enabling it allows profession, recipe, camp, and request messages through guild or group channels. Bag and bank inventories are not shared. Automatic network refresh is enabled by default, every 2 minutes; choose 1, 2, or 5 minutes in settings. It also discovers participants on login, enabling sharing, and group/guild changes, and publishes your profile after a scan or manual recipe edit. New participants receive existing unexpired requests in that channel. Refresh waits for outgoing transfers to finish and coalesces identical profiles. Disabling automatic refresh stops initiated background synchronization; Sync still works, and enabled sharing still receives messages and answers other participants. There is no external server. Scanning your open profession remains a separate action.
 
 Peer profiles expire after 30 minutes without an update; requests last 30 minutes. Offers use the request's original channel, so leaving that channel can prevent delivery. Disabling sharing clears outgoing messages but does not immediately erase profiles already received by others.
 
@@ -205,13 +205,13 @@ ForeverNet объединяет профили профессий участни
 | Правый клик по кнопке миникарты | Открыть справку |
 | Перетаскивание кнопки миникарты | Изменить положение; оно сохраняется |
 
-В настройках доступны язык, обмен, автосканирование банка, учёт банковских запасов и видимость кнопки миникарты. В разделе об аддоне есть ссылки на GitHub и Boosty: нажмите на адрес и скопируйте его через Ctrl+C.
+В настройках доступны язык, обмен, автообновление сети (вкл./выкл. и интервал 1/2/5 минут), автосканирование банка, учёт банковских запасов и видимость кнопки миникарты. В разделе об аддоне есть ссылки на GitHub и Boosty: нажмите на адрес и скопируйте его через Ctrl+C.
 
 ### Банк и обмен данными
 
 Автосканирование и учёт банка включены по умолчанию. Снимки охватывают купленные вкладки личного банка; банк аккаунта и гильдии не сканируется. Вне посещения банка используются последние сохранённые данные, возраст которых отображается в интерфейсе. Недоступная или не полностью загруженная вкладка не заменяет предыдущий снимок.
 
-Обмен выключен при первой установке. После включения через каналы гильдии или группы передаются профессии, рецепты, лагерные возможности и запросы. Содержимое сумок и банка не передаётся. Поиск участников запускается при входе, включении обмена и изменении группы или гильдии. Новые участники получают существующие неистёкшие запросы этого канала. «Обновить» повторяет синхронизацию вручную; периодического обновления присутствия и внешнего сервера нет.
+Обмен выключен при первой установке. После включения через каналы гильдии или группы передаются профессии, рецепты, лагерные возможности и запросы. Содержимое сумок и банка не передаётся. Автообновление сети включено по умолчанию раз в 2 минуты; в настройках доступны интервалы 1, 2 и 5 минут. Оно также находит участников при входе, включении обмена и изменении группы/гильдии и отправляет профиль после сканирования или ручного изменения рецептов. Новые участники получают существующие неистёкшие запросы этого канала. Обновление ждёт окончания текущей отправки; одинаковые профили не дублируются в очереди. Выключение автообновления прекращает самостоятельные фоновые синхронизации; кнопка «Обновить», приём сообщений и ответы участникам при включённом обмене продолжают работать. Внешнего сервера нет. Сканирование открытой профессии остаётся отдельным действием.
 
 Профили других игроков удаляются через 30 минут без обновления; заявки действуют 30 минут. Отклики идут по исходному каналу запроса, поэтому выход из него может помешать доставке. Отключение обмена очищает очередь отправки, но не удаляет немедленно профили, уже полученные другими игроками.
 

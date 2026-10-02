@@ -54,3 +54,11 @@ assert(F.Settings.githubLink:GetText()=='https://github.com/thewoolfi/ForeverNet
 assert(F.Settings.supportLink:GetText()=='https://boosty.to/andrewwoolfi')
 F.db.settings.locale='ruRU'; F.Settings.Refresh(); assert(F.Settings.supportLabel:GetText()=='Поддержать автора на Boosty')
 F.db.settings.locale='enUS'; F.Settings.Refresh(); assert(F.Settings.supportLabel:GetText()=='Support the author on Boosty')
+local automatic=F.Settings.checks[5]
+assert(automatic.key=='autoSync' and automatic:GetChecked())
+automatic:SetChecked(false); automatic.scripts.OnClick(automatic)
+assert(not F.Net.AutoEnabled() and not F.Settings.intervals[60]:IsEnabled())
+automatic:SetChecked(true); automatic.scripts.OnClick(automatic)
+F.Settings.intervals[300].scripts.OnClick()
+assert(F.Net.Interval()==300 and not F.Settings.intervals[300]:IsEnabled() and F.Settings.intervals[60]:IsEnabled())
+F.db.settings.locale='ruRU'; F.Settings.Refresh(); assert(automatic.label:GetText()=='Автообновление сети')

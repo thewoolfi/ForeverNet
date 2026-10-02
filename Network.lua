@@ -1,6 +1,14 @@
 local _, F = ...
-F.Net = {prefix='ForeverNet1', queue={}, buffers={}, rates={}, serial=0, elapsed=0, hello={}, stats={sent=0,received=0}}
+F.Net = {prefix='ForeverNet1', queue={}, buffers={}, rates={}, serial=0, elapsed=0, hello={}, followupProfiles={}, stats={sent=0,received=0}}
 local N=F.Net
+function N.AutoEnabled() return F.db.settings.autoSync~=false end
+function N.Interval()
+    local seconds=F.db.settings.syncInterval
+    return (seconds==60 or seconds==120 or seconds==300) and seconds or 120
+end
+function N.ProfileChanged()
+    if F.db.settings.sharing and N.AutoEnabled() then N.pendingPublish=.5 end
+end
 local function homeCategory()
     return (Enum and Enum.PartyCategory and Enum.PartyCategory.Home) or LE_PARTY_CATEGORY_HOME or 1
 end
@@ -39,12 +47,26 @@ function N.Send(kind,value,channel)
         while N.queue[position] and N.queue[position].urgent do position=position+1 end
     end
     for i=1,total do
-        local msg={channel=channel,urgent=urgent,kind=kind,text='1|'..token..'|'..i..'|'..total..'|'..payload:sub((i-1)*200+1,i*200)}
+        local msg={channel=channel,urgent=urgent,kind=kind,profileRev=kind=='PROFILE' and value.rev or nil,
+            text='1|'..token..'|'..i..'|'..total..'|'..payload:sub((i-1)*200+1,i*200)}
         if urgent then table.insert(N.queue,position,msg); position=position+1 else N.queue[#N.queue+1]=msg end
     end
     return true
 end
-function N.Publish(channel) return N.Send('PROFILE',F.localProfile,channel) end
+function N.Publish(channel)
+    channel=channel or N.Channel()
+    -- Complete a profile already in flight; do not queue identical snapshots
+    -- for every HELLO in a group. Send a newer revision once this one finishes.
+    for _,msg in ipairs(N.queue) do
+        if msg.kind=='PROFILE' and msg.channel==channel then
+            if msg.profileRev~=F.localProfile.rev then N.followupProfiles[channel]=true end
+            return true
+        end
+    end
+    local ok,why=N.Send('PROFILE',F.localProfile,channel)
+    if ok then N.pendingPublish=nil; if channel then N.followupProfiles[channel]=nil end end
+    return ok,why
+end
 function N.Snapshot(channel)
     -- A late arrival needs requests as well as profession capabilities.
     F.Prune()
@@ -57,11 +79,14 @@ function N.Snapshot(channel)
     return N.Publish(channel)
 end
 function N.Sync(channel)
+    N.autoElapsed=0
     channel=channel or N.Channel()
     local ok,why=N.Send('HELLO',{},channel); if not ok then return false,why end
     return N.Snapshot(channel)
 end
-function N.ScheduleSync() N.pendingSync=.5 end
+function N.ScheduleSync()
+    if F.db.settings.sharing and N.AutoEnabled() then N.pendingSync=.5 end
+end
 function N.Start()
     local register=C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix or RegisterAddonMessagePrefix
     local ok,result=false,nil
@@ -76,17 +101,44 @@ local function sendAccepted(result)
 end
 function N.Tick(elapsed)
     local channel=N.Channel()
-    if N.sharingState~=F.db.settings.sharing or N.activeChannel~=channel then
-        N.sharingState,N.activeChannel=F.db.settings.sharing,channel
+    local automatic=N.AutoEnabled()
+    if N.sharingState~=F.db.settings.sharing or N.activeChannel~=channel or N.autoState~=automatic then
+        N.sharingState,N.activeChannel,N.autoState=F.db.settings.sharing,channel,automatic
+        N.autoElapsed=0
         if F.db.settings.sharing and channel then N.ScheduleSync() end
     end
-    if not F.db.settings.sharing then N.queue,N.buffers,N.pendingSync={},{},nil; return end
+    if not F.db.settings.sharing then
+        N.queue,N.buffers,N.followupProfiles,N.pendingSync,N.pendingPublish,N.autoElapsed={},{},{},nil,nil,0; return
+    end
+    if not automatic then N.pendingSync,N.pendingPublish,N.autoElapsed=nil,nil,0
+    elseif channel and N.available then
+        N.autoElapsed=(N.autoElapsed or 0)+elapsed
+        if N.autoElapsed>=N.Interval() and not N.pendingSync then N.pendingSync=0 end
+    end
     if N.pendingSync then
         N.pendingSync=N.pendingSync-elapsed
-        if N.pendingSync<=0 then
+        if N.pendingSync<=0 and #N.queue==0 then
             N.pendingSync=nil
             if channel and N.available then
                 local ok,why=N.Sync(channel); if not ok then N.Error(why) end
+            end
+        end
+    end
+    if N.pendingPublish then
+        N.pendingPublish=N.pendingPublish-elapsed
+        if N.pendingPublish<=0 and #N.queue==0 then
+            N.pendingPublish=nil
+            if automatic and channel and N.available then
+                local ok,why=N.Publish(channel); if not ok then N.Error(why) end
+            end
+        end
+    end
+    if #N.queue==0 then
+        for _,originalChannel in ipairs(F.Keys(N.followupProfiles)) do
+            N.followupProfiles[originalChannel]=nil
+            if N.ChannelAvailable(originalChannel) and N.available then
+                local ok,why=N.Publish(originalChannel); if not ok then N.Error(why) end
+                break
             end
         end
     end

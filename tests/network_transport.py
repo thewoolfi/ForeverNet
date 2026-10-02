@@ -45,7 +45,9 @@ def run_transport_tests(client):
     def settle():
         for _ in range(2000):
             tick()
-            if all(len(c.globals().ForeverNet.Net.queue)==0 and c.globals().ForeverNet.Net.pendingSync is None for name,c in clients.items() if name in active): return
+            if all(c.execute('''local N=ForeverNet.Net; return #N.queue==0 and
+                N.pendingSync==nil and N.pendingPublish==nil and next(N.followupProfiles)==nil''')
+                for name,c in clients.items() if name in active): return
         raise AssertionError('Transport did not settle')
     alice=add('PartyAlice')
     alice.execute('''
@@ -111,6 +113,50 @@ def run_transport_tests(client):
     ''')
     previous=len(deliveries); tick(4)
     assert len(carol.globals().ForeverNet.Net.queue)==0
+    # Manual mode never starts discovery or pushes edited recipes on its own.
+    for lua in [alice,bob]: lua.execute('ForeverNet.db.settings.autoSync=false')
+    settle()
+    alice.execute('''
+        local F=ForeverNet
+        F.localProfile.recipes={}
+        F.localProfile.recipes.changed={name='Changed recipe',output='item:2001',quantity=1,
+            profession='engineering',blueprint=false,reagents={},stations={}}
+        F.Touch(); F.Net.ScheduleSync()
+    ''')
+    previous=len(deliveries); tick(1300)
+    assert len(deliveries)==previous
+    assert bob.globals().ForeverNet.db.profiles['PartyAlice-Realm'].recipes.changed is None
+    alice.execute('assert(ForeverNet.Net.Sync())')
+    settle()
+    assert bob.globals().ForeverNet.db.profiles['PartyAlice-Realm'].recipes.changed is not None
+    # Default interval is 120s; selecting 60s produces an idle periodic refresh.
+    alice.execute('''
+        local F=ForeverNet
+        assert(F.Net.Interval()==120)
+        F.db.settings.autoSync=true; F.db.settings.syncInterval=60
+    ''')
+    settle()
+    alice.execute('ForeverNet.Net.autoElapsed=0')
+    serial=alice.globals().ForeverNet.Net.serial
+    tick(236); assert alice.globals().ForeverNet.Net.serial==serial
+    tick(4); assert alice.globals().ForeverNet.Net.serial>serial
+    settle()
+    # Recipe edits publish after a debounce without a HELLO roundtrip.
+    alice.execute("ForeverNet.localProfile.recipes.changed.name='New recipe name'; ForeverNet.Touch()")
+    settle()
+    assert bob.globals().ForeverNet.db.profiles['PartyAlice-Realm'].recipes.changed.name=='New recipe name'
+    # A manual refresh while an older revision is queued delivers the new revision
+    # afterwards, even with automation disabled. Identical profiles are coalesced.
+    alice.execute('''
+        local F=ForeverNet; F.db.settings.autoSync=false
+        assert(F.Net.Publish())
+        local size=#F.Net.queue; assert(F.Net.Publish() and #F.Net.queue==size)
+        F.localProfile.recipes.changed.name='Latest manual revision'; F.Touch()
+        assert(F.Net.Sync())
+    ''')
+    settle()
+    assert bob.globals().ForeverNet.db.profiles['PartyAlice-Realm'].recipes.changed.name=='Latest manual revision'
+    print('PASS automatic/manual refresh: interval, disabled timer, manual catch-up, edit debounce and profile coalescing')
     carol.execute('''
         C_ChatInfo.RegisterAddonMessagePrefix=function() return Enum.RegisterAddonMessagePrefixResult.MaxPrefixes end
         ForeverNet.Net.Start(); assert(not ForeverNet.Net.available)

@@ -332,6 +332,12 @@ ru["AVAILABLE_CRAFTERS"]="Доступные мастера"
 en["AVAILABLE_CRAFTERS"]="Available crafters"
 ru["RECIPE_DETAILS"]="Расчёт рецепта"
 en["RECIPE_DETAILS"]="Recipe calculation"
+ru["SETTING_AUTOSYNC"]="Автообновление сети"
+en["SETTING_AUTOSYNC"]="Automatically refresh the network"
+ru["SYNC_INTERVAL"]="Интервал обновления"
+en["SYNC_INTERVAL"]="Refresh interval"
+ru["SYNC_MINUTES"]="%d мин."
+en["SYNC_MINUTES"]="%d min"
 function F.L(key)
     local locale = F.db and F.db.settings.locale or GetLocale()
     if locale == 'ruRU' then return key == 'HELP' and helpRU or ru[key] or key end

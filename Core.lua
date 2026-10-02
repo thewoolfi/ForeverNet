@@ -38,4 +38,5 @@ end
 function F.Touch()
     F.localProfile.rev = F.localProfile.rev + 1
     F.localProfile.seen = F.Now()
+    if F.Net then F.Net.ProfileChanged() end
 end

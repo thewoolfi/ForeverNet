@@ -16,6 +16,11 @@ function S.Refresh()
         check.label:SetText(F.L(check.locale))
     end
     S.languageLabel:SetText(F.L('LANGUAGE'))
+    S.intervalLabel:SetText(F.L('SYNC_INTERVAL'))
+    for seconds,b in pairs(S.intervals) do
+        b:SetText(string.format(F.L('SYNC_MINUTES'),seconds/60))
+        b:SetEnabled(F.Net.AutoEnabled() and seconds~=F.Net.Interval())
+    end
     for locale,b in pairs(S.languages or {}) do b:SetEnabled(locale~=(F.db.settings.locale or 'auto')) end
     S.bank:SetText(F.Bank.Status())
     S.githubLabel:SetText(F.L('PROJECT_GITHUB'))
@@ -26,7 +31,7 @@ end
 function S.Open()
     if not S.frame then
         local frame=CreateFrame('Frame','ForeverNetSettings',UIParent,'PortraitFrameTemplate')
-        frame:SetSize(530,630); frame:SetPoint('CENTER'); frame:SetFrameStrata('FULLSCREEN_DIALOG')
+        frame:SetSize(530,730); frame:SetPoint('CENTER'); frame:SetFrameStrata('FULLSCREEN_DIALOG')
         frame:SetPortraitToAsset('Interface\\Icons\\Trade_Engineering')
         frame:SetMovable(true); frame:EnableMouse(true); frame:RegisterForDrag('LeftButton')
         frame:SetScript('OnDragStart',frame.StartMoving); frame:SetScript('OnDragStop',frame.StopMovingOrSizing)
@@ -37,7 +42,7 @@ function S.Open()
         background:SetColorTexture(.075,.055,.035,1)
         S.background=background
         S.frame=frame; S.checks={}
-        local choices={{'sharing','SETTING_SHARE'},{'autoBank','SETTING_AUTOBANK'},{'useBank','SETTING_USEBANK'},{'showMinimap','SETTING_MINIMAP'}}
+        local choices={{'sharing','SETTING_SHARE'},{'autoBank','SETTING_AUTOBANK'},{'useBank','SETTING_USEBANK'},{'showMinimap','SETTING_MINIMAP'},{'autoSync','SETTING_AUTOSYNC'}}
         for i,choice in ipairs(choices) do
             local check=CreateFrame('CheckButton',nil,frame,'UICheckButtonTemplate')
             check:SetSize(28,28); check:SetPoint('TOPLEFT',24,-55-(i-1)*34)
@@ -49,23 +54,35 @@ function S.Open()
                 if self.key=='sharing' and not self:GetChecked() then F.Net.queue,F.Net.buffers={},{} end
                 if self.key=='showMinimap' then F.Minimap.ApplyVisibility() end
                 if self.key=='autoBank' and self:GetChecked() and F.Bank.open then F.Bank.Event('BANKFRAME_OPENED') end
+                if self.key=='autoSync' then
+                    F.Net.pendingSync,F.Net.pendingPublish,F.Net.autoElapsed=nil,nil,0
+                    if self:GetChecked() then F.Net.ScheduleSync() end
+                end
                 F.UI.DataChanged(); S.Refresh()
             end)
             S.checks[i]=check
         end
-        S.languageLabel=label(frame,-200,'')
+        S.intervalLabel=label(frame,-239,''); S.intervalLabel:SetWidth(180)
+        S.intervals={}
+        for i,seconds in ipairs({60,120,300}) do
+            local b=CreateFrame('Button',nil,frame,'UIPanelButtonTemplate')
+            b:SetSize(85,24); b:SetPoint('TOPLEFT',221+(i-1)*94,-235)
+            b:SetScript('OnClick',function() F.db.settings.syncInterval=seconds; F.Net.autoElapsed=0; S.Refresh() end)
+            S.intervals[seconds]=b
+        end
+        S.languageLabel=label(frame,-278,'')
         S.languages={}
         for i,locale in ipairs({'auto','ruRU','enUS'}) do
             local b=CreateFrame('Button',nil,frame,'UIPanelButtonTemplate')
             S.languages[locale]=b
-            b:SetSize(145,24); b:SetPoint('TOPLEFT',28+(i-1)*157,-225)
+            b:SetSize(145,24); b:SetPoint('TOPLEFT',28+(i-1)*157,-303)
             b:SetText(locale=='auto' and 'Auto' or locale=='ruRU' and 'Русский' or 'English')
             b:SetScript('OnClick',function() F.db.settings.locale=locale~='auto' and locale or nil; S.Refresh(); F.UI.DataChanged() end)
         end
-        S.bank=label(frame,-270,''); S.bank:SetHeight(36)
-        S.about=label(frame,-318,''); S.about:SetHeight(140)
-        S.githubLabel=label(frame,-474,'')
-        S.supportLabel=label(frame,-534,'')
+        S.bank=label(frame,-348,''); S.bank:SetHeight(36)
+        S.about=label(frame,-396,''); S.about:SetHeight(140)
+        S.githubLabel=label(frame,-552,'')
+        S.supportLabel=label(frame,-612,'')
         local function linkField(url,y)
             local field=CreateFrame('EditBox',nil,frame,'InputBoxTemplate')
             field:SetSize(464,24); field:SetPoint('TOPLEFT',33,y)
@@ -79,9 +96,9 @@ function S.Open()
             end)
             return field
         end
-        S.githubLink=linkField(S.githubURL,-496)
-        S.supportLink=linkField(S.supportURL,-556)
-        S.linkHint=label(frame,-594,''); S.linkHint:SetHeight(24)
+        S.githubLink=linkField(S.githubURL,-574)
+        S.supportLink=linkField(S.supportURL,-634)
+        S.linkHint=label(frame,-672,''); S.linkHint:SetHeight(36)
         UISpecialFrames[#UISpecialFrames+1]='ForeverNetSettings'
     end
     S.Refresh(); S.frame:Show()
