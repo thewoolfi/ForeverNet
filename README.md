@@ -33,21 +33,29 @@ ForeverNet connects profession profiles within your guild or group. Select an it
 
 ### Screenshots
 
-**Recipe catalog and material stock**
+**Recipe catalog and favorites**
 
-![Recipe catalog and material stock](docs/screenshots/recipes.png)
+<img src="docs/screenshots/recipes.png" alt="Recipe catalog and favorites" width="832">
 
 **Production chain example**
 
-![Production chain example](docs/screenshots/production-chain.png)
+<img src="docs/screenshots/production-chain.png" alt="Production chain example" width="832">
 
 **Guild and group network**
 
-![Guild and group network](docs/screenshots/network.png)
+<img src="docs/screenshots/network.png" alt="Guild and group network" width="827">
 
 **Settings and addon information**
 
-![Settings and addon information](docs/screenshots/settings.png)
+<img src="docs/screenshots/settings.png" alt="Settings and addon information" width="528">
+
+**Interface language selection**
+
+<img src="docs/screenshots/languages.png" alt="Interface language selection, including Korean and Chinese" width="493">
+
+**Addon update information**
+
+<img src="docs/screenshots/updates.png" alt="Addon update information and download instructions" width="563">
 
 ### Installation
 
@@ -179,21 +187,29 @@ ForeverNet объединяет профили профессий участни
 
 ### Скриншоты
 
-**Каталог рецептов и запасы материалов**
+**Каталог рецептов и избранное**
 
-![Каталог рецептов и запасы материалов](docs/screenshots/recipes.png)
+<img src="docs/screenshots/recipes.png" alt="Каталог рецептов и избранное" width="832">
 
 **Пример производственной цепочки**
 
-![Пример производственной цепочки](docs/screenshots/production-chain.png)
+<img src="docs/screenshots/production-chain.png" alt="Пример производственной цепочки" width="832">
 
 **Сеть гильдии и группы**
 
-![Сеть гильдии и группы](docs/screenshots/network.png)
+<img src="docs/screenshots/network.png" alt="Сеть гильдии и группы" width="827">
 
 **Настройки и информация об аддоне**
 
-![Настройки и информация об аддоне](docs/screenshots/settings.png)
+<img src="docs/screenshots/settings.png" alt="Настройки и информация об аддоне" width="528">
+
+**Выбор языка интерфейса**
+
+<img src="docs/screenshots/languages.png" alt="Выбор языка интерфейса, включая корейский и китайский" width="493">
+
+**Информация об обновлениях аддона**
+
+<img src="docs/screenshots/updates.png" alt="Информация об обновлениях аддона и инструкция по скачиванию" width="563">
 
 ### Установка
 
