@@ -33,6 +33,9 @@ function F.ValidProfile(p)
     end
     return true
 end
+function F.ProfileStale(profile)
+    return not profile or type(profile.seen)~='number' or F.Now()-profile.seen>F.PEER_TTL
+end
 function F.Prune()
     F.CleanSelfAliases()
     -- Normalize known roster aliases before building the shared catalog.
@@ -44,11 +47,14 @@ function F.Prune()
                 F.db.profiles[canonical]=old
             end
             F.db.profiles[owner]=nil
+            if F.IsFavorite('profiles',owner) then
+                F.db.favorites.profiles[owner]=nil; F.db.favorites.profiles[canonical]=true
+            end
         end
     end
     local now = F.Now()
-    for owner, p in pairs(F.db.profiles) do
-        if owner ~= F.me and now - (p.seen or 0) > F.PEER_TTL then F.db.profiles[owner] = nil end
+    for owner,profile in pairs(F.db.profiles) do
+        if owner~=F.me and F.ProfileStale(profile) and not F.IsFavorite('profiles',owner) then F.db.profiles[owner]=nil end
     end
     for id, r in pairs(F.db.requests) do
         if r.expires <= now then F.db.requests[id] = nil

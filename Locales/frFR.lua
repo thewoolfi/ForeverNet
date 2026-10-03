@@ -1,6 +1,9 @@
 -- Machine-assisted translation; core game terms and formatting reviewed.
 local _,F=...
 F.Locales.frFR = {
+    SKILL_RANK = 'Compétence : %d',
+    PROFILE_RECIPE_HINT = 'Cliquez sur une recette pour voir ses composants et planifier une chaîne de fabrication.',
+    PROFILE_EMPTY = 'Ce joueur n’a pas encore partagé de recettes apprises.',
     ["\nhelp — команды; demo — безопасный пример цепочки; scan — считать открытую профессию"] = "\naide — commandes ; démo – exemple de chaîne ; scanner — scanner une profession ouverte",
     ["\nАвтор: "] = "\nPropriétaire : ",
     ["\nЗапросы:"] = "\nDemandes :",
@@ -202,3 +205,69 @@ F.Locales.frFR = {
     ["включён"] = "activé",
     ["выключен"] = "désactivé",
 }
+
+-- Recipe filters and display names; transport codes remain unchanged.
+F.Locales.frFR.CHANNEL_PARTY="Groupe"
+F.Locales.frFR.CHANNEL_RAID="Raid"
+F.Locales.frFR.CHANNEL_GUILD="Guilde"
+F.Locales.frFR.FILTER_BUTTON="Filtre"
+F.Locales.frFR.FILTER_PROFESSION="Métier"
+F.Locales.frFR.FILTER_ALL="Tous"
+F.Locales.frFR.FILTER_TYPE="Type de recette"
+F.Locales.frFR.FILTER_REGULAR="Classiques"
+F.Locales.frFR.FILTER_BLUEPRINT="Plans"
+F.Locales.frFR.FILTER_CRAFTERS="Artisans"
+F.Locales.frFR.FILTER_MINE="Mes recettes"
+F.Locales.frFR.FILTER_NETWORK="Réseau"
+F.Locales.frFR.FILTER_RESET="Réinitialiser les filtres"
+
+-- Retained peer profiles are not a promise of current availability.
+F.Locales.frFR.PROFILE_CACHED="Données enregistrées"
+F.Locales.frFR.PROFILE_CACHED_AGE="Données enregistrées : il y a %d min"
+F.Locales.frFR.FAVORITES="Favoris"
+F.Locales.frFR.FAVORITE_LIMIT="Vous pouvez enregistrer jusqu’à 5 profils et 5 recettes en favoris."
+F.Locales.frFR.FAVORITE_HINT="Ajouter/retirer des favoris (5 par type maximum)."
+
+-- Intermediate material source selection.
+F.Locales.frFR.SOURCE_TITLE="Sources des composants"
+F.Locales.frFR.SOURCE_CHOOSE="Choisir une source"
+F.Locales.frFR.SOURCE_BACK="Retour à la chaîne complète"
+F.Locales.frFR.SOURCE_AUTO="Choix automatique de recette"
+F.Locales.frFR.SOURCE_AUTO_HELP="Utiliser les stocks, puis la première recette connue disponible. Priorité à vous et aux profils récents. Les coûts ne sont pas comparés."
+F.Locales.frFR.SOURCE_EXTERNAL="Obtenir séparément"
+F.Locales.frFR.SOURCE_EXTERNAL_HELP="Obtenir le composant manquant au lieu de le fabriquer. Il reste manquant tant que vous ne le possédez pas."
+F.Locales.frFR.SOURCE_CRAFT="Fabriquer"
+F.Locales.frFR.SOURCE_STOCK="Utiliser les stocks"
+F.Locales.frFR.SOURCE_COUNTS="Nécessaire pour ce plan : %d ; prélevé dans les stocks : %d."
+F.Locales.frFR.SOURCE_PER_CRAFT="Produit %d par fabrication. Composants par fabrication :"
+F.Locales.frFR.SOURCE_USE="Choisir cette option"
+F.Locales.frFR.SOURCE_SELECTED="Sélectionné"
+F.Locales.frFR.SOURCE_REBUILD_HELP="Les stocks sont toujours utilisés en premier. Le choix recalcule l’objet initial, la quantité et toutes les étapes dépendantes. Il ne vaut que pour ce plan. Seules les recettes connues sont affichées ; les prix et lieux de récolte ne sont pas suivis."
+F.Locales.frFR.MISSING_REASON_external="Vous avez choisi d’obtenir ce composant séparément. Récoltez, achetez ou demandez la quantité manquante, puis recalculez le plan."
+F.Locales.frFR.MISSING_REASON_source="L’artisan ou la recette sélectionné n’est plus connu. Choisissez une autre source ; aucun remplacement automatique ne sera effectué."
+
+-- Plain-language, inline crafting plan.
+F.Locales.frFR.CHAIN_GET="1. Quoi obtenir"
+F.Locales.frFR.CHAIN_GET_HELP="Obtenez ces composants, puis suivez les étapes ci-dessous."
+F.Locales.frFR.CHAIN_MAKE="2. Quoi fabriquer"
+F.Locales.frFR.CHAIN_MAKE_WAIT="Après avoir obtenu les composants, fabriquez dans cet ordre."
+F.Locales.frFR.CHAIN_MAKE_HELP="Fabriquez dans cet ordre avec vos composants."
+F.Locales.frFR.CHAIN_GET_COUNT="Obtenez encore %d."
+F.Locales.frFR.CHAIN_HAVE="Depuis vos stocks : %d."
+F.Locales.frFR.CHAIN_OR_MAKE="Ou fabriquez ce composant :"
+F.Locales.frFR.CHAIN_FROM="Il vous faudra :\n%s"
+F.Locales.frFR.CHAIN_SURPLUS="Surplus produit : %d."
+F.Locales.frFR.CHAIN_GET_BUTTON="Obtenir %d prêts"
+F.Locales.frFR.CHAIN_MAKE_BUTTON="Fabriquer %d"
+F.Locales.frFR.CHAIN_MAKE_ITEM="Fabriquer %s x%d"
+F.Locales.frFR.CHAIN_OTHER_RECIPES="Autres recettes"
+F.Locales.frFR.CHAIN_HIDE_RECIPES="Masquer les recettes"
+F.Locales.frFR.CHAIN_RECIPES="Comment fabriquer ce composant"
+F.Locales.frFR.CHAIN_RECIPES_HELP="Choisissez une recette pour la quantité nécessaire."
+F.Locales.frFR.CHAIN_USE_RECIPE="Utiliser cette recette"
+F.Locales.frFR.CHAIN_STOCK="Stocks utilisés"
+F.Locales.frFR.CHAIN_HIDE_STOCK="Masquer les stocks"
+F.Locales.frFR.CHAIN_SHOW_STOCK="Afficher les stocks"
+F.Locales.frFR.CHAIN_REFRESH="Recalculer la chaîne"
+
+F.Locales.frFR.CHAIN_PLAN_ONLY="Ceci est un plan. Fabriquez dans la fenêtre de métier."

@@ -55,11 +55,12 @@ function V.Observe(version,sender)
 end
 function V.Refresh()
     if not V.frame then return end
+    F.Theme.RefreshFonts()
     V.frame:SetTitle('ForeverNet - '..F.L('ADDON_UPDATES'))
     V.installed:SetText(string.format(F.L('UPDATE_INSTALLED'),F.version))
     local newer=V.latest and V.Newer(V.latest,F.version)
     V.status:SetText(newer and string.format(F.L('UPDATE_FOUND'),V.latest,V.source) or F.L('UPDATE_NOT_FOUND'))
-    V.status:SetTextColor(newer and 1 or .85,newer and .8 or .85,newer and .25 or .85)
+    if newer then F.Theme.Color(V.status,'missing') else F.Theme.Text(V.status) end
     V.notify.label:SetText(F.L('UPDATE_NOTIFY_SETTING'))
     V.notify:SetChecked(F.db.settings.updateNotifications~=false)
     V.check:SetText(F.L('UPDATE_CHECK_PEERS'))
@@ -71,14 +72,15 @@ function V.Open()
     if not V.frame then
         local frame=CreateFrame('Frame','ForeverNetUpdates',UIParent,'PortraitFrameTemplate')
         frame:SetSize(560,550); frame:SetPoint('CENTER'); frame:SetFrameStrata('FULLSCREEN_DIALOG')
-        frame:SetTitle('ForeverNet'); frame:SetPortraitToAsset('Interface\\Icons\\INV_Misc_Book_09')
+        frame:SetTitle('ForeverNet'); frame:SetPortraitToAsset(F.icon)
+        F.Theme.Title(frame)
         frame:SetMovable(true); frame:EnableMouse(true); frame:RegisterForDrag('LeftButton')
         frame:SetScript('OnDragStart',frame.StartMoving); frame:SetScript('OnDragStop',frame.StopMovingOrSizing)
-        local bg=frame:CreateTexture(nil,'BACKGROUND',nil,1)
-        bg:SetPoint('TOPLEFT',6,-30); bg:SetPoint('BOTTOMRIGHT',-6,6); bg:SetColorTexture(.075,.055,.035,1)
+        V.background,V.backgroundBase=F.Theme.Background(frame)
         local function label(y,font)
             local l=frame:CreateFontString(nil,'OVERLAY',font or 'GameFontHighlight')
             l:SetPoint('TOPLEFT',28,y); l:SetWidth(500); l:SetJustifyH('LEFT'); l:SetWordWrap(true); l:SetSpacing(4)
+            F.Theme.Text(l,font and font:find('Normal',1,true))
             return l
         end
         V.frame=frame; V.installed=label(-57,'GameFontNormalLarge')
@@ -87,9 +89,11 @@ function V.Open()
         V.notify:SetSize(28,28); V.notify:SetPoint('TOPLEFT',24,-184)
         V.notify.label=V.notify:CreateFontString(nil,'OVERLAY','GameFontHighlight')
         V.notify.label:SetPoint('LEFT',V.notify,'RIGHT',4,0); V.notify.label:SetWidth(467); V.notify.label:SetJustifyH('LEFT')
+        F.Theme.Text(V.notify.label)
         V.notify:SetScript('OnClick',function(self) F.db.settings.updateNotifications=not not self:GetChecked() end)
         V.check=CreateFrame('Button',nil,frame,'UIPanelButtonTemplate')
         V.check:SetSize(320,26); V.check:SetPoint('TOPLEFT',28,-224)
+        F.Theme.Button(V.check)
         V.check:SetScript('OnClick',function()
             local ok,why=F.Net.Sync()
             F.Print(ok and F.L('UPDATE_CHECK_QUEUED') or why)
@@ -98,6 +102,7 @@ function V.Open()
         V.link=CreateFrame('EditBox',nil,frame,'InputBoxTemplate')
         V.link:SetSize(490,24); V.link:SetPoint('TOPLEFT',33,-300); V.link:SetAutoFocus(false)
         V.link:SetFontObject('GameFontHighlightSmall'); V.link:SetText(V.releasesURL)
+        F.Theme.Font(V.link,12)
         V.link:SetScript('OnMouseUp',function(self) self:SetFocus(); self:HighlightText() end)
         V.link:SetScript('OnEditFocusGained',function(self) self:HighlightText() end)
         V.link:SetScript('OnEscapePressed',function(self) self:ClearFocus() end)
@@ -107,5 +112,18 @@ function V.Open()
         V.instructions=label(-378,'GameFontHighlightSmall')
         UISpecialFrames[#UISpecialFrames+1]='ForeverNetUpdates'
     end
+    -- PortraitFrameTemplate puts its border/title/close button hundreds of
+    -- levels above the body. Clear the entire settings frame, not just its base.
+    local settings=F.Settings.frame
+    local level=settings and settings:GetFrameLevel() or 0
+    if settings then
+        for _,key in ipairs({'NineSlice','PortraitContainer','TitleContainer','CloseButton'}) do
+            local part=settings[key]
+            if part then level=math.max(level,part:GetFrameLevel()) end
+        end
+    end
+    if F.Settings.languageMenu then level=math.max(level,F.Settings.languageMenu:GetFrameLevel()) end
+    V.frame:SetFrameLevel(level+10)
+    if V.frame.SetFrameLevelsFromBaseLevel then V.frame:SetFrameLevelsFromBaseLevel(level+10) end
     V.Refresh(); V.frame:Show()
 end

@@ -1,1 +1,2 @@
 lupa==2.8
+fonttools==4.66.1

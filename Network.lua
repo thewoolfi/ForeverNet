@@ -210,7 +210,9 @@ function N.Receive(prefix, text, channel, sender)
         sender=F.Identity(sender)
         local previous = F.db.profiles[sender]
         if not previous and #F.Keys(F.db.profiles) >= 100 then return end
-        if previous and previous.rev > message.data.rev then return end
+        -- A retained favorite can outlive the sender's SavedVariables/reinstall.
+        -- After freshness expires, accept a new session with a reset revision.
+        if previous and previous.rev > message.data.rev and not F.ProfileStale(previous) then return end
         message.data.seen = now; F.db.profiles[sender] = message.data; F.UI.DataChanged()
     elseif message.kind == 'HELLO' then
         if type(message.data)=='table' then F.Updates.Observe(message.data.version,sender) end

@@ -1,7 +1,20 @@
 local addonName, F = ...
 _G.ForeverNet = F
-F.name, F.version = addonName, '0.3.3'
+F.name, F.version = addonName, '0.4.0'
+F.icon = 'Interface\\Icons\\INV_Scroll_03'
 F.MAX_RECIPES, F.PEER_TTL = 1000, 1800
+F.MAX_FAVORITES=5
+function F.IsFavorite(kind,key)
+    return F.db and F.db.favorites and F.db.favorites[kind] and F.db.favorites[kind][key]==true or false
+end
+function F.ToggleFavorite(kind,key)
+    if kind~='profiles' and kind~='recipes' then return false end
+    local entries=F.db.favorites[kind]
+    if entries[key] then entries[key]=nil
+    elseif #F.Keys(entries)>=F.MAX_FAVORITES then return false,F.L('FAVORITE_LIMIT')
+    else entries[key]=true end
+    return true
+end
 function F.Now() return time() end
 local function compact(name) return (name:gsub('%s','')) end
 local function identityKey(name) return F.Catalog.Fold(compact(name)) end
@@ -108,6 +121,17 @@ function F.Init()
     F.db = ForeverNetDB
     F.db.profiles, F.db.requests = F.db.profiles or {}, F.db.requests or {}
     F.db.settings = F.db.settings or {sharing = false}
+    F.db.favorites=type(F.db.favorites)=='table' and F.db.favorites or {}
+    for _,kind in ipairs({'profiles','recipes'}) do
+        local saved=type(F.db.favorites[kind])=='table' and F.db.favorites[kind] or {}
+        local valid={}
+        for key,value in pairs(saved) do
+            if type(key)=='string' and value==true and (kind=='profiles' and F.Text(key) or kind=='recipes' and F.ID(key)) then valid[key]=true end
+        end
+        local keys=F.Keys(valid)
+        for i=F.MAX_FAVORITES+1,#keys do valid[keys[i]]=nil end
+        F.db.favorites[kind]=valid
+    end
     F.me = F.Identity()
     F.RefreshIdentityAliases()
     F.db.profiles[F.me] = F.db.profiles[F.me] or F.NewProfile()
@@ -117,6 +141,11 @@ function F.Init()
     return true
 end
 function F.CleanSelfAliases()
+    if F.db.favorites then
+        for owner in pairs(F.db.favorites.profiles) do
+            if F.IsSelf(owner) then F.db.favorites.profiles[owner]=nil end
+        end
+    end
     for _,owner in ipairs(F.Keys(F.db.profiles)) do
         if owner~=F.me and F.IsSelf(owner) then
             local old=F.db.profiles[owner]

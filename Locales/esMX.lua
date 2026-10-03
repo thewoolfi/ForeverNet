@@ -1,6 +1,9 @@
 -- Machine-assisted translation; core game terms and formatting reviewed.
 local _,F=...
 F.Locales.esMX = {
+    SKILL_RANK = 'Habilidad: %d',
+    PROFILE_RECIPE_HINT = 'Haz clic en una receta para ver sus materiales y planificar una cadena de fabricación.',
+    PROFILE_EMPTY = 'Este jugador aún no ha compartido recetas aprendidas.',
     ["\nhelp — команды; demo — безопасный пример цепочки; scan — считать открытую профессию"] = "\nayuda—órdenes; demostración - cadena de ejemplo; escanear — escanear profesión abierta",
     ["\nАвтор: "] = "\nPropietario: ",
     ["\nЗапросы:"] = "\nSolicitudes:",
@@ -202,3 +205,69 @@ F.Locales.esMX = {
     ["включён"] = "habilitado",
     ["выключен"] = "discapacitado",
 }
+
+-- Recipe filters and display names; transport codes remain unchanged.
+F.Locales.esMX.CHANNEL_PARTY="Grupo"
+F.Locales.esMX.CHANNEL_RAID="Banda"
+F.Locales.esMX.CHANNEL_GUILD="Hermandad"
+F.Locales.esMX.FILTER_BUTTON="Filtro"
+F.Locales.esMX.FILTER_PROFESSION="Profesión"
+F.Locales.esMX.FILTER_ALL="Todos"
+F.Locales.esMX.FILTER_TYPE="Tipo de receta"
+F.Locales.esMX.FILTER_REGULAR="Normales"
+F.Locales.esMX.FILTER_BLUEPRINT="Planos"
+F.Locales.esMX.FILTER_CRAFTERS="Artesanos"
+F.Locales.esMX.FILTER_MINE="Mías"
+F.Locales.esMX.FILTER_NETWORK="Red"
+F.Locales.esMX.FILTER_RESET="Restablecer filtros"
+
+-- Retained peer profiles are not a promise of current availability.
+F.Locales.esMX.PROFILE_CACHED="Datos guardados"
+F.Locales.esMX.PROFILE_CACHED_AGE="Datos guardados: hace %d min"
+F.Locales.esMX.FAVORITES="Favoritos"
+F.Locales.esMX.FAVORITE_LIMIT="Puedes guardar hasta 5 perfiles y 5 recetas como favoritos."
+F.Locales.esMX.FAVORITE_HINT="Añadir/quitar favorito (hasta 5 de cada tipo)."
+
+-- Intermediate material source selection.
+F.Locales.esMX.SOURCE_TITLE="Fuentes de materiales"
+F.Locales.esMX.SOURCE_CHOOSE="Elegir fuente"
+F.Locales.esMX.SOURCE_BACK="Volver a la cadena completa"
+F.Locales.esMX.SOURCE_AUTO="Selección automática de receta"
+F.Locales.esMX.SOURCE_AUTO_HELP="Usar primero las existencias y luego la primera receta conocida disponible. Prioridad para ti y los perfiles recientes. No compara costos."
+F.Locales.esMX.SOURCE_EXTERNAL="Conseguir por separado"
+F.Locales.esMX.SOURCE_EXTERNAL_HELP="Conseguir el material que falta en vez de fabricarlo. Seguirá faltando hasta que lo tengas."
+F.Locales.esMX.SOURCE_CRAFT="Fabricar"
+F.Locales.esMX.SOURCE_STOCK="Usar existencias"
+F.Locales.esMX.SOURCE_COUNTS="Necesario en este plan: %d; usado de existencias: %d."
+F.Locales.esMX.SOURCE_PER_CRAFT="Produce %d por fabricación. Materiales por fabricación:"
+F.Locales.esMX.SOURCE_USE="Elegir esta opción"
+F.Locales.esMX.SOURCE_SELECTED="Seleccionado"
+F.Locales.esMX.SOURCE_REBUILD_HELP="Siempre se usan primero las existencias. Elegir una fuente recalcula el objeto original, la cantidad y todos los pasos dependientes. Solo se aplica a este plan. Se muestran recetas conocidas; no se registran precios ni lugares de recolección."
+F.Locales.esMX.MISSING_REASON_external="Elegiste conseguir este material por separado. Recolecta, compra o solicita la cantidad que falta y recalcula el plan."
+F.Locales.esMX.MISSING_REASON_source="El artesano o la receta elegido ya no se conoce. Elige otra fuente; no se sustituirá automáticamente."
+
+-- Plain-language, inline crafting plan.
+F.Locales.esMX.CHAIN_GET="1. Qué conseguir"
+F.Locales.esMX.CHAIN_GET_HELP="Consigue estos materiales y sigue los pasos de abajo."
+F.Locales.esMX.CHAIN_MAKE="2. Qué fabricar"
+F.Locales.esMX.CHAIN_MAKE_WAIT="Tras conseguir los materiales, fabrica en este orden."
+F.Locales.esMX.CHAIN_MAKE_HELP="Fabrica en este orden con tus materiales."
+F.Locales.esMX.CHAIN_GET_COUNT="Consigue %d más."
+F.Locales.esMX.CHAIN_HAVE="De tus existencias: %d."
+F.Locales.esMX.CHAIN_OR_MAKE="O fabrica este material:"
+F.Locales.esMX.CHAIN_FROM="Necesitarás:\n%s"
+F.Locales.esMX.CHAIN_SURPLUS="Sobrante producido: %d."
+F.Locales.esMX.CHAIN_GET_BUTTON="Conseguir %d hechos"
+F.Locales.esMX.CHAIN_MAKE_BUTTON="Fabricar %d"
+F.Locales.esMX.CHAIN_MAKE_ITEM="Fabricar %s x%d"
+F.Locales.esMX.CHAIN_OTHER_RECIPES="Otras recetas"
+F.Locales.esMX.CHAIN_HIDE_RECIPES="Ocultar recetas"
+F.Locales.esMX.CHAIN_RECIPES="Cómo fabricar este material"
+F.Locales.esMX.CHAIN_RECIPES_HELP="Elige una receta para la cantidad necesaria."
+F.Locales.esMX.CHAIN_USE_RECIPE="Usar esta receta"
+F.Locales.esMX.CHAIN_STOCK="Existencias utilizadas"
+F.Locales.esMX.CHAIN_HIDE_STOCK="Ocultar existencias"
+F.Locales.esMX.CHAIN_SHOW_STOCK="Mostrar existencias"
+F.Locales.esMX.CHAIN_REFRESH="Recalcular cadena"
+
+F.Locales.esMX.CHAIN_PLAN_ONLY="Es un plan. Fabrica en la ventana de profesión."

@@ -25,18 +25,27 @@ function region:Show() self.shown = true end
 function region:Hide() self.shown = false end
 function region:IsShown() return self.shown end
 function region:SetShown(shown) self.shown = shown end
+function region:SetAlpha(alpha) self.alpha=alpha end
+function region:SetParent(parent) self.parent=parent end
 
 local font = {}
 function font:SetText(text) self.text = text end
 function font:GetText() return self.text end
 function font:GetStringHeight()
-    local height, columns = 0, math.max(1, math.floor(self.width / 7))
+    local size=self.fontSize or 12
+    local height, lines, columns = 0, 0, math.max(1, math.floor(self.width / (size*.55)))
     for line in (self.text .. '\n'):gmatch('(.-)\n') do
-        height = height + math.max(1, math.ceil(#line / columns)) * 14
+        local chars=#line:gsub('[\128-\191]','')
+        local count=math.max(1,math.ceil(chars / columns))
+        height=height+count*(size+2); lines=lines+count
     end
-    return height
+    return height+math.max(0,lines-1)*(self.spacing or 0)
 end
-for _, method in ipairs({'SetTextColor', 'SetJustifyH', 'SetJustifyV', 'SetWordWrap', 'SetFontObject'}) do font[method] = function() end end
+function font:GetFont() return self.fontFile or 'Fonts\\FRIZQT__.TTF',self.fontSize or 12,self.fontFlags or 'OUTLINE' end
+function font:SetFont(file,size,flags) self.fontFile,self.fontSize,self.fontFlags=file,size,flags; return true end
+function font:SetShadowOffset(x,y) self.shadow={x,y} end
+function font:SetTextColor(...) self.color={...} end
+for _, method in ipairs({'SetJustifyH', 'SetJustifyV', 'SetWordWrap', 'SetFontObject'}) do font[method] = function() end end
 
 local widget = {}
 function widget:SetScript(event, callback) self.scripts[event] = callback end
@@ -55,8 +64,10 @@ local scroll = {}
 function scroll:SetScrollChild(child) self.child = child end
 function scroll:SetVerticalScroll(value) self.verticalScroll = value end
 function scroll:GetVerticalScroll() return self.verticalScroll end
+function scroll:GetVerticalScrollRange() return math.max(0,(self.child and self.child:GetHeight() or 0)-self:GetHeight()) end
+function scroll:EnableMouseWheel(value) self.mouseWheelEnabled=value end
 local texture = {SetTexture = function(self, value) self.texture = value end}
-local specific = {Frame = {}, Button = button, CheckButton = button, EditBox = edit, ScrollFrame = scroll, FontString = font, Texture = texture}
+local specific = {Frame = {}, GameTooltip={}, EventFrame={}, Button = button, CheckButton = button, EditBox = edit, ScrollFrame = scroll, FontString = font, Font=font, Texture = texture}
 local function object(kind)
     assert(specific[kind], 'Unknown widget type: ' .. tostring(kind))
     return setmetatable({kind = kind, scripts = {}, events = {}, text = '', width = 0, height = 0, shown = true}, {
@@ -66,16 +77,66 @@ local function object(kind)
         end,
     })
 end
-function widget:CreateFontString() return object('FontString') end
+function widget:CreateFontString(_,_,template)
+    local f=object('FontString')
+    f.fontSize=template and template:find('Large') and 16 or (template and template:find('Small') and 10 or 12)
+    self.regions=self.regions or {}; self.regions[#self.regions+1]=f
+    return f
+end
 function widget:CreateTexture() return object('Texture') end
 function CreateFrame(kind, name, parent, template)
     local f = object(kind)
+    f.template=template
+    f.parent=parent
     if template == 'PortraitFrameTemplate' then
-        function f:SetTitle(text) self.title = text end
+        function f:SetTitle(text) self.title = text; self.TitleContainer.TitleText:SetText(text) end
+        function f:GetTitleText() return self.TitleContainer.TitleText end
         function f:SetPortraitToAsset(texture) self.portraitAsset = texture end
+        local levels={NineSlice=500,PortraitContainer=400,TitleContainer=510,CloseButton=510}
+        for key,level in pairs(levels) do
+            f[key]=object(key=='CloseButton' and 'Button' or 'Frame')
+            f[key].level=level
+        end
+        f.TitleContainer.TitleText=object('FontString'); f.TitleContainer.TitleText.fontSize=14
+        function f:SetFrameLevelsFromBaseLevel(base)
+            for key,offset in pairs(levels) do self[key]:SetFrameLevel(base+offset) end
+        end
+    elseif template=='LargeSideTabButtonTemplate' then
+        f:SetSize(60,48); f.Icon=object('Texture'); f.SelectedTexture=object('Texture')
+        function f:SetFillToInterior(fill,extent) self.fillToInterior=fill; self.Icon:SetSize(extent,extent) end
+        function f:SetChecked(value) self.checked=value; self.SelectedTexture:SetShown(value) end
+        function f:SetCustomOnMouseUpHandler(callback) self.customMouseUpHandler=callback end
+        f:SetScript('OnMouseUp',function(self,button,inside)
+            if self.customMouseUpHandler then self.customMouseUpHandler(self,button,inside) end
+        end)
     end
     frames[#frames + 1] = f
     return f
+end
+function CreateFont(name) local f=object('Font'); _G[name]=f; return f end
+for _,name in ipairs({'GameFontNormal','GameFontHighlight','GameFontDisable','GameFontHighlightSmall'}) do
+    _G[name]=object('Font'); _G[name].fontSize=name:find('Small') and 10 or 12
+end
+function font:SetFontObject(base)
+    if type(base)=='string' then base=_G[base] end
+    self.fontFile,self.fontSize,self.fontFlags=base:GetFont()
+    self.baseFont=base
+end
+edit.GetFont=font.GetFont; edit.SetFont=font.SetFont; edit.SetFontObject=font.SetFontObject
+for _,state in ipairs({'Normal','Highlight','Disabled'}) do
+    local key=state..'Font'
+    button['Get'..state..'FontObject']=function(self) return self[key] or _G[state=='Disabled' and 'GameFontDisable' or state=='Highlight' and 'GameFontHighlight' or 'GameFontNormal'] end
+    button['Set'..state..'FontObject']=function(self,value) self[key]=value end
+end
+function widget:GetRegions() return unpack(self.regions or {}) end
+function specific.GameTooltip:SetOwner(owner,anchor) self.owner,self.anchor=owner,anchor end
+function specific.GameTooltip:SetText(value)
+    if not self.title then self.title=self:CreateFontString(nil,'OVERLAY','GameFontNormal'); self.title:SetWidth(260) end
+    self.title:SetText(value)
+end
+function specific.GameTooltip:AddLine(value)
+    if not self.line then self.line=self:CreateFontString(nil,'OVERLAY','GameFontHighlight'); self.line:SetWidth(260) end
+    self.line:SetText(value)
 end
 C_ChatInfo = {RegisterAddonMessagePrefix = function() return true end, SendAddonMessage = function() end}
 
@@ -96,7 +157,25 @@ function button:SetChecked(v) self.checked=v end
 function button:GetChecked() return self.checked end
 
 function widget:SetFrameStrata(value) self.strata=value end
+function widget:SetBackdrop(value) self.backdrop=value end
+function widget:SetBackdropColor(...) self.backdropColor={...} end
 function texture:SetColorTexture(...) self.color={...} end
+function texture:SetAtlas(value) self.atlas=value end
+C_Texture={GetAtlasInfo=function(atlas)
+    if atlas:find('Profession%-background%-card%-') or atlas=='Professions-Recipe-Background' then return {width=300,height=280} end
+end}
+ScrollUtil={InitScrollFrameWithScrollBar=function(frame,bar)
+    frame.boundScrollBar=bar
+    function bar:SetScrollPercentage(value)
+        self.percentage=math.max(0,math.min(1,value))
+        frame:SetVerticalScroll(self.percentage*frame:GetVerticalScrollRange())
+    end
+    function bar:ScrollStepInDirection(direction)
+        local range=frame:GetVerticalScrollRange()
+        if range>0 then self:SetScrollPercentage((frame:GetVerticalScroll() or 0)/range+direction*30/range) end
+    end
+    frame:SetScript('OnMouseWheel',function(_,value) bar:ScrollStepInDirection(-value) end)
+end}
 
 function font:SetSpacing(value) self.spacing=value end
 

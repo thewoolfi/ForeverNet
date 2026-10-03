@@ -1,6 +1,9 @@
 -- Machine-assisted translation; core game terms and formatting reviewed.
 local _,F=...
 F.Locales.deDE = {
+    SKILL_RANK = 'Fertigkeit: %d',
+    PROFILE_RECIPE_HINT = 'Klicke auf ein Rezept, um die Materialien anzusehen und eine Herstellungskette zu planen.',
+    PROFILE_EMPTY = 'Dieser Spieler hat noch keine erlernten Rezepte geteilt.',
     ["\nhelp — команды; demo — безопасный пример цепочки; scan — считать открытую профессию"] = "\nHilfe – Befehle; Demo – Beispielkette; scan – offenen Beruf scannen",
     ["\nАвтор: "] = "\nBesitzer: ",
     ["\nЗапросы:"] = "\nAnfragen:",
@@ -202,3 +205,69 @@ F.Locales.deDE = {
     ["включён"] = "aktiviert",
     ["выключен"] = "deaktiviert",
 }
+
+-- Recipe filters and display names; transport codes remain unchanged.
+F.Locales.deDE.CHANNEL_PARTY="Gruppe"
+F.Locales.deDE.CHANNEL_RAID="Schlachtzug"
+F.Locales.deDE.CHANNEL_GUILD="Gilde"
+F.Locales.deDE.FILTER_BUTTON="Filter"
+F.Locales.deDE.FILTER_PROFESSION="Beruf"
+F.Locales.deDE.FILTER_ALL="Alle"
+F.Locales.deDE.FILTER_TYPE="Rezepttyp"
+F.Locales.deDE.FILTER_REGULAR="Normal"
+F.Locales.deDE.FILTER_BLUEPRINT="Baupläne"
+F.Locales.deDE.FILTER_CRAFTERS="Handwerker"
+F.Locales.deDE.FILTER_MINE="Meine"
+F.Locales.deDE.FILTER_NETWORK="Netzwerk"
+F.Locales.deDE.FILTER_RESET="Filter zurücksetzen"
+
+-- Retained peer profiles are not a promise of current availability.
+F.Locales.deDE.PROFILE_CACHED="Gespeicherte Daten"
+F.Locales.deDE.PROFILE_CACHED_AGE="Gespeicherte Daten: vor %d Min."
+F.Locales.deDE.FAVORITES="Favoriten"
+F.Locales.deDE.FAVORITE_LIMIT="Du kannst bis zu 5 Profile und 5 Rezepte als Favoriten speichern."
+F.Locales.deDE.FAVORITE_HINT="Favorit hinzufügen/entfernen (bis zu 5 je Typ)."
+
+-- Intermediate material source selection.
+F.Locales.deDE.SOURCE_TITLE="Materialquellen"
+F.Locales.deDE.SOURCE_CHOOSE="Quelle wählen"
+F.Locales.deDE.SOURCE_BACK="Zur vollständigen Kette"
+F.Locales.deDE.SOURCE_AUTO="Automatische Rezeptwahl"
+F.Locales.deDE.SOURCE_AUTO_HELP="Zuerst Vorräte verwenden, dann das erste bekannte verfügbare Rezept. Du und aktuelle Profile haben Vorrang. Kosten werden nicht verglichen."
+F.Locales.deDE.SOURCE_EXTERNAL="Separat beschaffen"
+F.Locales.deDE.SOURCE_EXTERNAL_HELP="Das fehlende Material beschaffen statt herstellen. Es bleibt fehlend, bis du es tatsächlich besitzt."
+F.Locales.deDE.SOURCE_CRAFT="Herstellen"
+F.Locales.deDE.SOURCE_STOCK="Vorräte verwenden"
+F.Locales.deDE.SOURCE_COUNTS="In diesem Plan benötigt: %d; aus Vorräten verwendet: %d."
+F.Locales.deDE.SOURCE_PER_CRAFT="Erzeugt %d pro Herstellung. Materialien pro Herstellung:"
+F.Locales.deDE.SOURCE_USE="Diese Option wählen"
+F.Locales.deDE.SOURCE_SELECTED="Ausgewählt"
+F.Locales.deDE.SOURCE_REBUILD_HELP="Vorräte werden immer zuerst verwendet. Die Auswahl berechnet den ursprünglichen Gegenstand, die Menge und alle abhängigen Schritte neu. Sie gilt nur für diesen Plan. Bekannte Rezepte werden angezeigt; Preise und Fundorte werden nicht erfasst."
+F.Locales.deDE.MISSING_REASON_external="Dieses Material soll separat beschafft werden. Sammle, kaufe oder erfrage die fehlende Menge und berechne den Plan neu."
+F.Locales.deDE.MISSING_REASON_source="Der gewählte Handwerker oder das Rezept ist nicht mehr bekannt. Wähle eine andere Quelle; es wird nicht automatisch ersetzt."
+
+-- Plain-language, inline crafting plan.
+F.Locales.deDE.CHAIN_GET="1. Was du beschaffen musst"
+F.Locales.deDE.CHAIN_GET_HELP="Beschaffe diese Materialien und folge dann den Schritten unten."
+F.Locales.deDE.CHAIN_MAKE="2. Was du herstellen musst"
+F.Locales.deDE.CHAIN_MAKE_WAIT="Stelle nach der Beschaffung in dieser Reihenfolge her."
+F.Locales.deDE.CHAIN_MAKE_HELP="Stelle mit deinen Materialien in dieser Reihenfolge her."
+F.Locales.deDE.CHAIN_GET_COUNT="Beschaffe noch %d."
+F.Locales.deDE.CHAIN_HAVE="Aus deinen Vorräten: %d."
+F.Locales.deDE.CHAIN_OR_MAKE="Oder stelle dieses Material her:"
+F.Locales.deDE.CHAIN_FROM="Du benötigst:\n%s"
+F.Locales.deDE.CHAIN_SURPLUS="Zusätzlich hergestellt: %d."
+F.Locales.deDE.CHAIN_GET_BUTTON="%d fertig beschaffen"
+F.Locales.deDE.CHAIN_MAKE_BUTTON="%d herstellen"
+F.Locales.deDE.CHAIN_MAKE_ITEM="%s x%d herstellen"
+F.Locales.deDE.CHAIN_OTHER_RECIPES="Andere Rezepte"
+F.Locales.deDE.CHAIN_HIDE_RECIPES="Rezepte ausblenden"
+F.Locales.deDE.CHAIN_RECIPES="Herstellungswege für dieses Material"
+F.Locales.deDE.CHAIN_RECIPES_HELP="Wähle ein Rezept für die benötigte Menge."
+F.Locales.deDE.CHAIN_USE_RECIPE="Dieses Rezept verwenden"
+F.Locales.deDE.CHAIN_STOCK="Verwendete Vorräte"
+F.Locales.deDE.CHAIN_HIDE_STOCK="Vorräte ausblenden"
+F.Locales.deDE.CHAIN_SHOW_STOCK="Vorräte anzeigen"
+F.Locales.deDE.CHAIN_REFRESH="Kette neu berechnen"
+
+F.Locales.deDE.CHAIN_PLAN_ONLY="Dies ist ein Plan. Stelle im Berufsfenster her."

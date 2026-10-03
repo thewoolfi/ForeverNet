@@ -1,6 +1,9 @@
 -- Machine-assisted translation; core game terms and formatting reviewed.
 local _,F=...
 F.Locales.koKR = {
+    SKILL_RANK = '숙련도: %d',
+    PROFILE_RECIPE_HINT = '제작법을 클릭하면 재료를 확인하고 제작 과정을 계획할 수 있습니다.',
+    PROFILE_EMPTY = '이 플레이어는 아직 배운 제작법을 공유하지 않았습니다.',
     ["\nhelp — команды; demo — безопасный пример цепочки; scan — считать открытую профессию"] = "\n도움말 - 명령; 데모 — 예제 체인; 스캔 — 공개 전문 기술 스캔",
     ["\nАвтор: "] = "\n소유자: ",
     ["\nЗапросы:"] = "\n요청:",
@@ -114,7 +117,7 @@ F.Locales.koKR = {
     ["RECIPE_NEXT"] = "다른 플레이어가 제작한 구성 요소를 포함하려면 체인 구축을 클릭하세요.",
     ["RECIPE_OVERVIEW"] = "대상: %d. 재고 있음: %d. 공예별: %d. 필요한 공예품: %d.",
     ["REQUEST_EXPIRES"] = "요청은 %d 분 후에 만료됩니다.",
-    ["REQUEST_HELP"] = "요청 소유자의 애드온은 첫 번째 제안을 자동으로 수락합니다. 게임 내에서 재료와 배송을 ​​준비합니다. 소유자가 수동으로 완료를 표시합니다.",
+    ["REQUEST_HELP"] = "요청 소유자의 애드온은 첫 번째 제안을 자동으로 수락합니다. 게임 내에서 재료와 배송을 준비합니다. 소유자가 수동으로 완료를 표시합니다.",
     ["REQUEST_PUBLISHED"] = "요청이 네트워크에 게시되었습니다.",
     ["SCAN_EMPTY"] = "지원되는 학습 항목 제작법가 없습니다. 자신의 전문 기술을 열고 검색 및 필터를 지운 다음 다시 스캔하세요.",
     ["SCAN_HINT"] = "전문 기술을 열고 배운 요리법을 저장하세요.",
@@ -202,3 +205,69 @@ F.Locales.koKR = {
     ["включён"] = "활성화됨",
     ["выключен"] = "장애인",
 }
+
+-- Recipe filters and display names; transport codes remain unchanged.
+F.Locales.koKR.CHANNEL_PARTY="파티"
+F.Locales.koKR.CHANNEL_RAID="공격대"
+F.Locales.koKR.CHANNEL_GUILD="길드"
+F.Locales.koKR.FILTER_BUTTON="필터"
+F.Locales.koKR.FILTER_PROFESSION="전문 기술"
+F.Locales.koKR.FILTER_ALL="전체"
+F.Locales.koKR.FILTER_TYPE="제조법 유형"
+F.Locales.koKR.FILTER_REGULAR="일반"
+F.Locales.koKR.FILTER_BLUEPRINT="설계도"
+F.Locales.koKR.FILTER_CRAFTERS="제작자"
+F.Locales.koKR.FILTER_MINE="내 제조법"
+F.Locales.koKR.FILTER_NETWORK="네트워크"
+F.Locales.koKR.FILTER_RESET="필터 초기화"
+
+-- Retained peer profiles are not a promise of current availability.
+F.Locales.koKR.PROFILE_CACHED="저장된 정보"
+F.Locales.koKR.PROFILE_CACHED_AGE="저장된 정보: %d분 전"
+F.Locales.koKR.FAVORITES="즐겨찾기"
+F.Locales.koKR.FAVORITE_LIMIT="프로필 5개와 제조법 5개까지 즐겨찾기에 추가할 수 있습니다."
+F.Locales.koKR.FAVORITE_HINT="즐겨찾기 추가/제거 (종류별 최대 5개)."
+
+-- Intermediate material source selection.
+F.Locales.koKR.SOURCE_TITLE="재료 획득 방법"
+F.Locales.koKR.SOURCE_CHOOSE="획득 방법 선택"
+F.Locales.koKR.SOURCE_BACK="전체 제작 과정으로"
+F.Locales.koKR.SOURCE_AUTO="자동 도안 선택"
+F.Locales.koKR.SOURCE_AUTO_HELP="보유 재료를 먼저 사용한 후 알려진 사용 가능한 첫 도안을 선택합니다. 자신과 최신 프로필을 우선하며 비용은 비교하지 않습니다."
+F.Locales.koKR.SOURCE_EXTERNAL="별도로 구하기"
+F.Locales.koKR.SOURCE_EXTERNAL_HELP="부족한 재료를 제작하지 않고 별도로 구합니다. 실제로 보유할 때까지 부족한 상태로 남습니다."
+F.Locales.koKR.SOURCE_CRAFT="제작"
+F.Locales.koKR.SOURCE_STOCK="보유 재료 사용"
+F.Locales.koKR.SOURCE_COUNTS="이 계획에 필요한 수량: %d; 보유 재료 사용량: %d."
+F.Locales.koKR.SOURCE_PER_CRAFT="제작 1회당 생산량: %d. 제작 1회당 재료:"
+F.Locales.koKR.SOURCE_USE="이 방법 선택"
+F.Locales.koKR.SOURCE_SELECTED="선택됨"
+F.Locales.koKR.SOURCE_REBUILD_HELP="모든 방법에서 보유 재료를 먼저 사용합니다. 방법을 선택하면 원래 아이템과 수량에 대한 모든 관련 단계가 다시 계산됩니다. 선택은 이 계획에만 적용됩니다. 알려진 도안만 표시하며 가격이나 채집 장소는 추적하지 않습니다."
+F.Locales.koKR.MISSING_REASON_external="이 재료를 별도로 구하기로 선택했습니다. 부족한 수량을 채집, 구매 또는 요청한 후 계획을 다시 계산하세요."
+F.Locales.koKR.MISSING_REASON_source="선택한 제작자 또는 도안을 더 이상 알 수 없습니다. 다른 방법을 선택하세요. 자동으로 대체하지 않습니다."
+
+-- Plain-language, inline crafting plan.
+F.Locales.koKR.CHAIN_GET="1. 구해야 할 재료"
+F.Locales.koKR.CHAIN_GET_HELP="이 재료들을 구한 후 아래 단계를 진행하세요."
+F.Locales.koKR.CHAIN_MAKE="2. 제작할 아이템"
+F.Locales.koKR.CHAIN_MAKE_WAIT="재료를 구한 후 이 순서대로 제작하세요."
+F.Locales.koKR.CHAIN_MAKE_HELP="보유한 재료로 이 순서대로 제작하세요."
+F.Locales.koKR.CHAIN_GET_COUNT="%d개를 더 구하세요."
+F.Locales.koKR.CHAIN_HAVE="보유 재료 사용: %d개."
+F.Locales.koKR.CHAIN_OR_MAKE="또는 이 재료를 제작하세요:"
+F.Locales.koKR.CHAIN_FROM="필요한 재료:\n%s"
+F.Locales.koKR.CHAIN_SURPLUS="추가 생산량: %d개."
+F.Locales.koKR.CHAIN_GET_BUTTON="완제품 %d개 구하기"
+F.Locales.koKR.CHAIN_MAKE_BUTTON="%d개 제작"
+F.Locales.koKR.CHAIN_MAKE_ITEM="%s %d개 제작"
+F.Locales.koKR.CHAIN_OTHER_RECIPES="다른 도안"
+F.Locales.koKR.CHAIN_HIDE_RECIPES="도안 숨기기"
+F.Locales.koKR.CHAIN_RECIPES="이 재료의 제작 방법"
+F.Locales.koKR.CHAIN_RECIPES_HELP="필요한 수량에 맞는 도안을 선택하세요."
+F.Locales.koKR.CHAIN_USE_RECIPE="이 도안 사용"
+F.Locales.koKR.CHAIN_STOCK="사용하는 보유 재료"
+F.Locales.koKR.CHAIN_HIDE_STOCK="보유 재료 숨기기"
+F.Locales.koKR.CHAIN_SHOW_STOCK="보유 재료 보기"
+F.Locales.koKR.CHAIN_REFRESH="제작 과정 재계산"
+
+F.Locales.koKR.CHAIN_PLAN_ONLY="계획입니다. 전문 기술 창에서 제작하세요."

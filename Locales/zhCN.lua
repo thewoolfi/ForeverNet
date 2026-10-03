@@ -1,6 +1,9 @@
 -- Machine-assisted translation; core game terms and formatting reviewed.
 local _,F=...
 F.Locales.zhCN = {
+    SKILL_RANK = '技能等级：%d',
+    PROFILE_RECIPE_HINT = '点击配方可查看材料并规划制作流程。',
+    PROFILE_EMPTY = '该玩家尚未分享已学会的配方。',
     ["\nhelp — команды; demo — безопасный пример цепочки; scan — считать открытую профессию"] = "\n帮助——命令； demo——示例链；扫描 — 扫描打开专业技能",
     ["\nАвтор: "] = "\n业主： ",
     ["\nЗапросы:"] = "\n要求：",
@@ -202,3 +205,69 @@ F.Locales.zhCN = {
     ["включён"] = "已启用",
     ["выключен"] = "残疾人",
 }
+
+-- Recipe filters and display names; transport codes remain unchanged.
+F.Locales.zhCN.CHANNEL_PARTY="小队"
+F.Locales.zhCN.CHANNEL_RAID="团队"
+F.Locales.zhCN.CHANNEL_GUILD="公会"
+F.Locales.zhCN.FILTER_BUTTON="筛选"
+F.Locales.zhCN.FILTER_PROFESSION="专业"
+F.Locales.zhCN.FILTER_ALL="全部"
+F.Locales.zhCN.FILTER_TYPE="配方类型"
+F.Locales.zhCN.FILTER_REGULAR="普通"
+F.Locales.zhCN.FILTER_BLUEPRINT="蓝图"
+F.Locales.zhCN.FILTER_CRAFTERS="制造者"
+F.Locales.zhCN.FILTER_MINE="我的"
+F.Locales.zhCN.FILTER_NETWORK="网络"
+F.Locales.zhCN.FILTER_RESET="重置筛选"
+
+-- Retained peer profiles are not a promise of current availability.
+F.Locales.zhCN.PROFILE_CACHED="已保存的数据"
+F.Locales.zhCN.PROFILE_CACHED_AGE="已保存的数据：%d分钟前"
+F.Locales.zhCN.FAVORITES="收藏"
+F.Locales.zhCN.FAVORITE_LIMIT="最多可收藏5个档案和5个配方。"
+F.Locales.zhCN.FAVORITE_HINT="添加/取消收藏（每种最多5个）。"
+
+-- Intermediate material source selection.
+F.Locales.zhCN.SOURCE_TITLE="材料来源"
+F.Locales.zhCN.SOURCE_CHOOSE="选择来源"
+F.Locales.zhCN.SOURCE_BACK="返回完整制作链"
+F.Locales.zhCN.SOURCE_AUTO="自动选择配方"
+F.Locales.zhCN.SOURCE_AUTO_HELP="先使用库存，再选择第一个已知可用的配方。优先选择自己和最新资料，不比较成本。"
+F.Locales.zhCN.SOURCE_EXTERNAL="单独获取"
+F.Locales.zhCN.SOURCE_EXTERNAL_HELP="单独获取缺少的材料，而不制作它。实际获得之前仍显示为缺少。"
+F.Locales.zhCN.SOURCE_CRAFT="制作"
+F.Locales.zhCN.SOURCE_STOCK="使用库存"
+F.Locales.zhCN.SOURCE_COUNTS="本计划所需：%d；已使用库存：%d。"
+F.Locales.zhCN.SOURCE_PER_CRAFT="每次制作产出：%d。每次制作所需材料："
+F.Locales.zhCN.SOURCE_USE="选择此方案"
+F.Locales.zhCN.SOURCE_SELECTED="已选择"
+F.Locales.zhCN.SOURCE_REBUILD_HELP="所有方案均先使用库存。选择来源将重新计算原物品、数量及所有依赖步骤。选择仅适用于本计划。只显示已知配方，不跟踪价格或采集地点。"
+F.Locales.zhCN.MISSING_REASON_external="你选择了单独获取此材料。请采集、购买或请求缺少的数量，然后重新计算计划。"
+F.Locales.zhCN.MISSING_REASON_source="已无法找到所选工匠或配方。请选择其他来源，不会自动替换。"
+
+-- Plain-language, inline crafting plan.
+F.Locales.zhCN.CHAIN_GET="1. 需要获取什么"
+F.Locales.zhCN.CHAIN_GET_HELP="获取这些材料，然后按下方步骤制作。"
+F.Locales.zhCN.CHAIN_MAKE="2. 接下来制作什么"
+F.Locales.zhCN.CHAIN_MAKE_WAIT="获取材料后，按此顺序制作。"
+F.Locales.zhCN.CHAIN_MAKE_HELP="使用现有材料，按此顺序制作。"
+F.Locales.zhCN.CHAIN_GET_COUNT="还需获取%d个。"
+F.Locales.zhCN.CHAIN_HAVE="使用库存：%d个。"
+F.Locales.zhCN.CHAIN_OR_MAKE="也可以制作此材料："
+F.Locales.zhCN.CHAIN_FROM="需要：\n%s"
+F.Locales.zhCN.CHAIN_SURPLUS="多产出：%d个。"
+F.Locales.zhCN.CHAIN_GET_BUTTON="获取%d个成品"
+F.Locales.zhCN.CHAIN_MAKE_BUTTON="制作%d个"
+F.Locales.zhCN.CHAIN_MAKE_ITEM="制作%s x%d"
+F.Locales.zhCN.CHAIN_OTHER_RECIPES="其他配方"
+F.Locales.zhCN.CHAIN_HIDE_RECIPES="隐藏配方"
+F.Locales.zhCN.CHAIN_RECIPES="此材料的制作方法"
+F.Locales.zhCN.CHAIN_RECIPES_HELP="为所需数量选择配方。"
+F.Locales.zhCN.CHAIN_USE_RECIPE="使用此配方"
+F.Locales.zhCN.CHAIN_STOCK="本计划使用的库存"
+F.Locales.zhCN.CHAIN_HIDE_STOCK="隐藏库存"
+F.Locales.zhCN.CHAIN_SHOW_STOCK="显示库存"
+F.Locales.zhCN.CHAIN_REFRESH="重新计算制作链"
+
+F.Locales.zhCN.CHAIN_PLAN_ONLY="这是制作计划。请在专业窗口中制作。"

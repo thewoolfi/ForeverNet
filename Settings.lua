@@ -5,10 +5,11 @@ S.githubURL='https://github.com/thewoolfi/ForeverNet'
 S.supportURL='https://boosty.to/andrewwoolfi'
 local function label(parent,y,text)
     local l=parent:CreateFontString(nil,'OVERLAY','GameFontHighlight')
-    l:SetPoint('TOPLEFT',28,y); l:SetWidth(470); l:SetJustifyH('LEFT'); l:SetText(text); return l
+    l:SetPoint('TOPLEFT',28,y); l:SetWidth(470); l:SetJustifyH('LEFT'); l:SetText(text); F.Theme.Text(l,false,14); return l
 end
 function S.Refresh()
     if not S.frame then return end
+    F.Theme.RefreshFonts()
     S.frame:SetTitle('ForeverNet - '..F.L('SETTINGS'))
     for _,check in ipairs(S.checks) do
         check:SetChecked(F.db.settings[check.key]~=false)
@@ -34,15 +35,13 @@ function S.Open()
     if not S.frame then
         local frame=CreateFrame('Frame','ForeverNetSettings',UIParent,'PortraitFrameTemplate')
         frame:SetSize(530,730); frame:SetPoint('CENTER'); frame:SetFrameStrata('FULLSCREEN_DIALOG')
-        frame:SetPortraitToAsset('Interface\\Icons\\Trade_Engineering')
+        frame:SetPortraitToAsset(F.icon)
+        F.Theme.Title(frame)
         frame:SetMovable(true); frame:EnableMouse(true); frame:RegisterForDrag('LeftButton')
         frame:SetScript('OnDragStart',frame.StartMoving); frame:SetScript('OnDragStop',frame.StopMovingOrSizing)
         -- Keep the entire settings window above every child of the main window.
         -- The native portrait template supplies borders, but not an opaque body.
-        local background=frame:CreateTexture(nil,'BACKGROUND',nil,1)
-        background:SetPoint('TOPLEFT',6,-30); background:SetPoint('BOTTOMRIGHT',-6,6)
-        background:SetColorTexture(.075,.055,.035,1)
-        S.background=background
+        S.background,S.backgroundBase=F.Theme.Background(frame)
         S.frame=frame; S.checks={}
         local choices={{'sharing','SETTING_SHARE'},{'autoBank','SETTING_AUTOBANK'},{'useBank','SETTING_USEBANK'},{'showMinimap','SETTING_MINIMAP'},{'autoSync','SETTING_AUTOSYNC'}}
         for i,choice in ipairs(choices) do
@@ -51,6 +50,7 @@ function S.Open()
             check.key,check.locale=choice[1],choice[2]
             check.label=check:CreateFontString(nil,'OVERLAY','GameFontHighlight'); check.label:SetPoint('LEFT',check,'RIGHT',4,0)
             check.label:SetWidth(435); check.label:SetJustifyH('LEFT')
+            F.Theme.Text(check.label,false,14)
             check:SetScript('OnClick',function(self)
                 F.db.settings[self.key]=not not self:GetChecked()
                 if self.key=='sharing' and not self:GetChecked() then F.Net.queue,F.Net.buffers={},{} end
@@ -69,17 +69,18 @@ function S.Open()
         for i,seconds in ipairs({60,120,300}) do
             local b=CreateFrame('Button',nil,frame,'UIPanelButtonTemplate')
             b:SetSize(85,24); b:SetPoint('TOPLEFT',221+(i-1)*94,-235)
+            F.Theme.Button(b)
             b:SetScript('OnClick',function() F.db.settings.syncInterval=seconds; F.Net.autoElapsed=0; S.Refresh() end)
             S.intervals[seconds]=b
         end
         S.languageLabel=label(frame,-278,'')
         S.languageButton=CreateFrame('Button',nil,frame,'UIPanelButtonTemplate')
         S.languageButton:SetSize(470,24); S.languageButton:SetPoint('TOPLEFT',28,-303)
+        F.Theme.Button(S.languageButton)
         S.languageMenu=CreateFrame('Frame',nil,frame,'BackdropTemplate')
         S.languageMenu:SetPoint('TOPLEFT',28,-331); S.languageMenu:SetSize(470,154)
         S.languageMenu:SetFrameLevel(frame:GetFrameLevel()+20)
-        S.languageMenu:SetBackdrop({bgFile='Interface\\ChatFrame\\ChatFrameBackground',edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',edgeSize=16,insets={left=4,right=4,top=4,bottom=4}})
-        S.languageMenu:SetBackdropColor(.075,.055,.035,1); S.languageMenu:SetBackdropBorderColor(.6,.45,.22,1)
+        F.Theme.Skin(S.languageMenu)
         S.languageMenu:Hide()
         S.languageButton:SetScript('OnClick',function() S.languageMenu:SetShown(not S.languageMenu:IsShown()) end)
         S.languages={}; local locales={'auto'}
@@ -89,15 +90,18 @@ function S.Open()
             S.languages[locale]=b
             b:SetSize(145,24); b:SetPoint('TOPLEFT',9+((i-1)%3)*153,-9-math.floor((i-1)/3)*28)
             b:SetText(locale=='auto' and 'Auto' or F.LocaleNames[locale])
+            F.Theme.Button(b,F.Theme.fontFiles[locale] and locale or nil)
             b:SetScript('OnClick',function()
                 F.db.settings.locale=locale~='auto' and locale or nil
-                S.languageMenu:Hide(); S.Refresh(); F.Updates.Refresh(); F.UI.DataChanged()
+                S.languageMenu:Hide(); S.Refresh(); F.Updates.Refresh()
+                if F.UI.frame and F.UI.frame:IsShown() then F.UI.Status() else F.UI.DataChanged() end
             end)
         end
         S.bank=label(frame,-348,''); S.bank:SetHeight(36)
         S.about=label(frame,-396,''); S.about:SetHeight(140)
         S.updates=CreateFrame('Button',nil,frame,'UIPanelButtonTemplate')
         S.updates:SetSize(195,26); S.updates:SetPoint('TOPLEFT',307,-395)
+        F.Theme.Button(S.updates)
         S.updates:SetScript('OnClick',function() F.Updates.Open() end)
         S.githubLabel=label(frame,-552,'')
         S.supportLabel=label(frame,-612,'')
@@ -105,6 +109,7 @@ function S.Open()
             local field=CreateFrame('EditBox',nil,frame,'InputBoxTemplate')
             field:SetSize(464,24); field:SetPoint('TOPLEFT',33,y)
             field:SetAutoFocus(false); field:SetFontObject('GameFontHighlightSmall'); field:SetText(url)
+            F.Theme.Font(field,12)
             field:SetScript('OnEditFocusGained',function(self) self:HighlightText() end)
             field:SetScript('OnMouseUp',function(self) self:SetFocus(); self:HighlightText() end)
             field:SetScript('OnEscapePressed',function(self) self:ClearFocus() end)

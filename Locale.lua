@@ -364,6 +364,12 @@ en.HELP=en.HELP:gsub('language auto|enUS|ruRU', 'language LOCALE'):gsub('scan th
 helpRU=helpRU:gsub('language auto|enUS|ruRU', 'language LOCALE'):gsub('Classic%-профессию','профессию')..'\nsettings — настройки\nupdates — версии аддона и скачивание'
 ru.HELP=helpRU
 F.Locales={enUS=en,enGB=en,ruRU=ru}
+en.SKILL_RANK='Skill: %d'
+ru.SKILL_RANK='Навык: %d'
+en.PROFILE_RECIPE_HINT='Click a recipe to view its materials and build a production chain.'
+ru.PROFILE_RECIPE_HINT='Нажмите на рецепт, чтобы посмотреть материалы и собрать цепочку.'
+en.PROFILE_EMPTY='This player has not shared any learned recipes yet.'
+ru.PROFILE_EMPTY='Игрок ещё не передал изученные рецепты.'
 F.LocaleOrder={'enUS','enGB','ruRU','deDE','frFR','esES','esMX','itIT','ptBR','koKR','zhCN','zhTW'}
 F.LocaleNames={enUS='English (US)',enGB='English (UK)',ruRU='Русский',deDE='Deutsch',frFR='Français',
     esES='Español (ES)',esMX='Español (AL)',itIT='Italiano',ptBR='Português (BR)',koKR='한국어',zhCN='简体中文',zhTW='繁體中文'}
@@ -374,3 +380,132 @@ function F.L(key)
     return dictionary[key] or en[key] or key
 end
 F.LocaleEnglish = en
+
+-- Recipe filters and display names; transport codes remain unchanged.
+en.CHANNEL_PARTY="Party"
+en.CHANNEL_RAID="Raid"
+en.CHANNEL_GUILD="Guild"
+en.FILTER_BUTTON="Filter"
+en.FILTER_PROFESSION="Profession"
+en.FILTER_ALL="All"
+en.FILTER_TYPE="Recipe type"
+en.FILTER_REGULAR="Regular"
+en.FILTER_BLUEPRINT="Blueprints"
+en.FILTER_CRAFTERS="Crafters"
+en.FILTER_MINE="Mine"
+en.FILTER_NETWORK="Network"
+en.FILTER_RESET="Reset filters"
+
+-- Recipe filters and display names; transport codes remain unchanged.
+ru.CHANNEL_PARTY="Группа"
+ru.CHANNEL_RAID="Рейд"
+ru.CHANNEL_GUILD="Гильдия"
+ru.FILTER_BUTTON="Фильтр"
+ru.FILTER_PROFESSION="Профессия"
+ru.FILTER_ALL="Все"
+ru.FILTER_TYPE="Тип рецепта"
+ru.FILTER_REGULAR="Обычные"
+ru.FILTER_BLUEPRINT="Чертежи"
+ru.FILTER_CRAFTERS="Мастера"
+ru.FILTER_MINE="Мои"
+ru.FILTER_NETWORK="Сети"
+ru.FILTER_RESET="Сбросить фильтры"
+
+-- Retained peer profiles are not a promise of current availability.
+en.PROFILE_CACHED="Saved data"
+en.PROFILE_CACHED_AGE="Saved data: %d min ago"
+
+-- Retained peer profiles are not a promise of current availability.
+ru.PROFILE_CACHED="Сохранённые данные"
+ru.PROFILE_CACHED_AGE="Сохранённые данные: %d мин. назад"
+en.FAVORITES="Favorites"
+en.FAVORITE_LIMIT="You can favorite up to 5 profiles and 5 recipes."
+en.FAVORITE_HINT="Add/remove favorite (up to 5 of each)."
+ru.FAVORITES="Избранное"
+ru.FAVORITE_LIMIT="Можно добавить не более 5 профилей и 5 рецептов в избранное."
+ru.FAVORITE_HINT="Добавить/убрать из избранного (до 5 каждого типа)."
+
+en.SOURCE_TITLE="Material sources"
+en.SOURCE_CHOOSE="Choose source"
+en.SOURCE_BACK="Back to full chain"
+en.SOURCE_AUTO="Automatic recipe choice"
+en.SOURCE_AUTO_HELP="Use stock first, then the first known available recipe, preferring you and fresh profiles. This does not compare costs."
+en.SOURCE_EXTERNAL="Obtain separately"
+en.SOURCE_EXTERNAL_HELP="Keep the missing reagent on the shopping/gathering list instead of crafting it. It remains missing until you actually have it."
+en.SOURCE_CRAFT="Craft"
+en.SOURCE_STOCK="Use existing stock"
+en.SOURCE_COUNTS="Required in this plan: %d; used from stock: %d."
+en.SOURCE_PER_CRAFT="Produces %d per craft. Ingredients per craft:"
+en.SOURCE_USE="Use this option"
+en.SOURCE_SELECTED="Selected"
+en.SOURCE_REBUILD_HELP="Stock is used first with every option. A source choice rebuilds the original item and quantity, including all dependent steps. Choices apply to this plan only. Known recipes are shown; shop prices and gathering locations are not tracked."
+en.MISSING_REASON_external="You chose to obtain this reagent separately. Gather, buy or request the missing quantity, then rebuild the plan."
+en.MISSING_REASON_source="The selected crafter or recipe is no longer known. Choose another source; the plan will not silently substitute it."
+ru.SOURCE_TITLE="Источники реагентов"
+ru.SOURCE_CHOOSE="Выбрать источник"
+ru.SOURCE_BACK="К полной цепочке"
+ru.SOURCE_AUTO="Автоматический выбор рецепта"
+ru.SOURCE_AUTO_HELP="Сначала используются запасы, затем первый известный доступный рецепт. Приоритет — вы и свежие профили. Стоимость вариантов не сравнивается."
+ru.SOURCE_EXTERNAL="Получить отдельно"
+ru.SOURCE_EXTERNAL_HELP="Оставить недостающий реагент в списке для получения, не изготавливая его. Он останется недостающим, пока вы его не получите."
+ru.SOURCE_CRAFT="Изготовить"
+ru.SOURCE_STOCK="Использовать запасы"
+ru.SOURCE_COUNTS="Нужно в этой цепочке: %d; взято из запасов: %d."
+ru.SOURCE_PER_CRAFT="Выход за изготовление: %d. Реагенты на одно изготовление:"
+ru.SOURCE_USE="Выбрать этот вариант"
+ru.SOURCE_SELECTED="Выбрано"
+ru.SOURCE_REBUILD_HELP="При любом выборе сначала используются запасы. Выбор источника пересчитывает исходный предмет и количество со всеми зависимыми шагами. Выбор действует только в этой цепочке. Показаны известные рецепты; цены и места добычи не отслеживаются."
+ru.MISSING_REASON_external="Вы выбрали получение этого реагента отдельно. Добудьте, купите или запросите недостающее количество и пересчитайте цепочку."
+ru.MISSING_REASON_source="Выбранный мастер или рецепт больше не известен. Выберите другой источник; автоматической подмены не будет."
+
+-- Plain-language, inline crafting plan.
+en.CHAIN_GET="1. What to get"
+en.CHAIN_GET_HELP="Get these materials, then follow the steps below."
+en.CHAIN_MAKE="2. What to craft"
+en.CHAIN_MAKE_WAIT="After getting the materials, craft in this order."
+en.CHAIN_MAKE_HELP="Craft in this order using your materials."
+en.CHAIN_GET_COUNT="Get %d more."
+en.CHAIN_HAVE="From your stock: %d."
+en.CHAIN_OR_MAKE="Or craft this material instead:"
+en.CHAIN_FROM="You will need:\n%s"
+en.CHAIN_SURPLUS="Extra produced: %d."
+en.CHAIN_GET_BUTTON="Get %d ready-made"
+en.CHAIN_MAKE_BUTTON="Craft %d"
+en.CHAIN_MAKE_ITEM="Craft %s x%d"
+en.CHAIN_OTHER_RECIPES="Other recipes"
+en.CHAIN_HIDE_RECIPES="Hide recipes"
+en.CHAIN_RECIPES="Ways to craft this material"
+en.CHAIN_RECIPES_HELP="Choose a recipe for the quantity you need."
+en.CHAIN_USE_RECIPE="Use this recipe"
+en.CHAIN_STOCK="Stock used in this plan"
+en.CHAIN_HIDE_STOCK="Hide stock"
+en.CHAIN_SHOW_STOCK="Show stock"
+en.CHAIN_REFRESH="Recalculate chain"
+
+-- Plain-language, inline crafting plan.
+ru.CHAIN_GET="1. Что нужно получить"
+ru.CHAIN_GET_HELP="Получите эти материалы, затем переходите к изготовлению ниже."
+ru.CHAIN_MAKE="2. Что потом изготовить"
+ru.CHAIN_MAKE_WAIT="После получения материалов изготовьте по порядку."
+ru.CHAIN_MAKE_HELP="Изготовьте по порядку из имеющихся материалов."
+ru.CHAIN_GET_COUNT="Получите ещё %d шт."
+ru.CHAIN_HAVE="Из ваших запасов: %d шт."
+ru.CHAIN_OR_MAKE="Можно изготовить этот материал:"
+ru.CHAIN_FROM="Понадобится:\n%s"
+ru.CHAIN_SURPLUS="Получится лишних: %d шт."
+ru.CHAIN_GET_BUTTON="Получить %d шт."
+ru.CHAIN_MAKE_BUTTON="Изготовить %d шт."
+ru.CHAIN_MAKE_ITEM="Изготовить %s x%d"
+ru.CHAIN_OTHER_RECIPES="Другие рецепты"
+ru.CHAIN_HIDE_RECIPES="Скрыть рецепты"
+ru.CHAIN_RECIPES="Как изготовить этот материал"
+ru.CHAIN_RECIPES_HELP="Выберите рецепт для нужного количества."
+ru.CHAIN_USE_RECIPE="Использовать рецепт"
+ru.CHAIN_STOCK="Используемые запасы"
+ru.CHAIN_HIDE_STOCK="Скрыть запасы"
+ru.CHAIN_SHOW_STOCK="Показать запасы"
+ru.CHAIN_REFRESH="Пересчитать цепочку"
+
+en.CHAIN_PLAN_ONLY="This is a plan. Craft in your profession window."
+
+ru.CHAIN_PLAN_ONLY="Это план. Изготовление — в окне профессии."

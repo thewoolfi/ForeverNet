@@ -108,7 +108,7 @@ drain(a,b,'Alice')
 assert b.globals().ForeverNet.db.requests[request_id].status=='done'
 print('PASS request lifecycle and first-offer arbitration')
 b.execute("clock=clock+1801; ForeverNet.Prune(); assert(next(ForeverNet.db.requests)==nil); assert(ForeverNet.db.profiles['Alice-Realm']==nil)")
-print('PASS expiry and stale peer cleanup')
+print('PASS request expiry and stale peer cleanup')
 a.execute("ForeverNet.Command('share off'); assert(#ForeverNet.Net.queue==0); assert(not ForeverNet.Net.Publish())")
 print('PASS sharing off clears queue')
 a.execute(r'''
@@ -161,7 +161,7 @@ F.UI.Status() -- Direct call: no command pcall can conceal this regression.
 assert(F.UI.body:GetObjectType()=='Frame')
 assert(F.UI.bodyText:GetObjectType()=='FontString')
 for _, page in ipairs({'network','recipes','requests','chain'}) do
-    F.UI.navigation[page].scripts.OnClick()
+    local nav=F.UI.navigation[page]; nav.scripts.OnMouseUp(nav,'LeftButton',true)
     assert(F.UI.page==page)
 end
 F.UI.Show(string.rep('Long line for testing text wrapping. ',100))
@@ -195,4 +195,55 @@ print('PASS Forever name/surname identity: self aliases, saved profile/bank migr
 from forever_transport import run_forever_transport_tests
 run_forever_transport_tests(client)
 run_forever_transport_tests(client,guild=True)
+profile=client('ProfileTest')
+profile.execute((ROOT/'tests/network_profile.lua').read_text(encoding='utf-8'))
+print('PASS network profiles: profession groups, collapsible headers, measured cards, Blueprint styling, pinned crafter, empty profiles and all locales')
+appearance=client('AppearanceTest')
+appearance.execute((ROOT/'tests/appearance.lua').read_text(encoding='utf-8'))
+print('PASS profession appearance: opaque dark panels, text contrast, readable fonts, native side tabs, click boundaries, selected state and distinct section strips')
+filters=client('FiltersTest')
+filters.execute((ROOT/'tests/recipe_filters.lua').read_text(encoding='utf-8'))
+print('PASS recipe filters: provider deduplication, UI combinations/reset, all locales, channel names, native scrollbar wheel/thumb binding')
+favorites=client('FavoriteTest')
+favorites.execute((ROOT/'tests/favorites.lua').read_text(encoding='utf-8'))
+import json
+def saved_literal(value):
+    if hasattr(value, 'items'):
+        return '{'+','.join('['+saved_literal(k)+']='+saved_literal(v) for k,v in value.items())+'}'
+    if isinstance(value,str): return json.dumps(value,ensure_ascii=False)
+    if isinstance(value,bool): return 'true' if value else 'false'
+    if value is None: return 'nil'
+    return str(value)
+saved=saved_literal(favorites.globals().ForeverNetDB)
+reloaded=client('FavoriteTest',setup='clock=1800259200; ForeverNetDB='+saved)
+reloaded.execute("""
+local F=ForeverNet
+F.Prune()
+assert(#F.Keys(F.db.favorites.profiles)==4 and #F.Keys(F.db.favorites.recipes)==5)
+assert(F.localProfile.recipes.r6 and F.Bank.Count('item:999')==17)
+assert(not F.db.profiles['Crafter6-Realm'])
+for owner in pairs(F.db.favorites.profiles) do assert(F.db.profiles[owner]) end
+F.UI.Navigate('recipes'); assert(F.UI.recipeGroups[1].id=='favorite-recipes')
+""")
+print('PASS favorites: independent limits, star buttons, pinned ordering, expired ordinary peers, retained favorites, recipe/bank reload and all locales')
+sources=client('SourcesTest')
+sources.execute((ROOT/'tests/material_sources.lua').read_text(encoding='utf-8'))
+print('PASS material sources: actual leather conversion, partial stock, alternate recipes/crafters, surplus, shared deficits, cycles, unavailable choices and full-chain UI rebuild')
+cjk=client('FontsTest')
+cjk.execute((ROOT/'tests/cjk_fonts.lua').read_text(encoding='utf-8'))
+from fontTools.ttLib import TTFont
+import hashlib
+manifest=json.loads((ROOT/'Fonts/manifest.json').read_text(encoding='utf-8'))
+for locale,file in [('koKR','ForeverNetCJKKR.ttf'),('zhCN','ForeverNetCJKSC.ttf'),('zhTW','ForeverNetCJKTC.ttf')]:
+    font=TTFont(ROOT/'Fonts'/file)
+    assert font.sfntVersion=='\x00\x01\x00\x00' and 'glyf' in font and 'fvar' not in font and 'gvar' not in font
+    cmap=font.getBestCmap()
+    text=(ROOT/'Locales'/f'{locale}.lua').read_text(encoding='utf-8')+'ForeverNet 简体中文 繁體中文 한국어 АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ абвгдеёжзийклмнопрстуфхцчшщъыьэюя éàößŒñçã'
+    missing={c for c in text if ord(c)>127 and ord(c) not in cmap}
+    assert not missing,(locale,sorted(missing))
+    assert manifest['fonts'][file]['sha256']==hashlib.sha256((ROOT/'Fonts'/file).read_bytes()).hexdigest()
+    assert font['name'].getDebugName(1).startswith('ForeverNet CJK')
+    font.close()
+assert 'SIL OPEN FONT LICENSE Version 1.1' in (ROOT/'Fonts/OFL.txt').read_text(encoding='utf-8')
+print('PASS bundled CJK fonts: static TTF/glyph coverage/hashes/license, Russian-client language menu, all button states, titles, inputs, tooltips, live switch and native font isolation')
 print('All Lua 5.1 checks passed. Client rendering still requires an in-game check.')

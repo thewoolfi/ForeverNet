@@ -1,6 +1,9 @@
 -- Machine-assisted translation; core game terms and formatting reviewed.
 local _,F=...
 F.Locales.ptBR = {
+    SKILL_RANK = 'Habilidade: %d',
+    PROFILE_RECIPE_HINT = 'Clique em uma receita para ver os materiais e planejar uma cadeia de fabricação.',
+    PROFILE_EMPTY = 'Este jogador ainda não compartilhou receitas aprendidas.',
     ["\nhelp — команды; demo — безопасный пример цепочки; scan — считать открытую профессию"] = "\najuda — comandos; demo — exemplo de cadeia; scan – digitalizar profissão aberta",
     ["\nАвтор: "] = "\nProprietário: ",
     ["\nЗапросы:"] = "\nSolicitações:",
@@ -202,3 +205,69 @@ F.Locales.ptBR = {
     ["включён"] = "habilitado",
     ["выключен"] = "desativado",
 }
+
+-- Recipe filters and display names; transport codes remain unchanged.
+F.Locales.ptBR.CHANNEL_PARTY="Grupo"
+F.Locales.ptBR.CHANNEL_RAID="Raide"
+F.Locales.ptBR.CHANNEL_GUILD="Guilda"
+F.Locales.ptBR.FILTER_BUTTON="Filtro"
+F.Locales.ptBR.FILTER_PROFESSION="Profissão"
+F.Locales.ptBR.FILTER_ALL="Todas"
+F.Locales.ptBR.FILTER_TYPE="Tipo de receita"
+F.Locales.ptBR.FILTER_REGULAR="Normais"
+F.Locales.ptBR.FILTER_BLUEPRINT="Projetos"
+F.Locales.ptBR.FILTER_CRAFTERS="Artesãos"
+F.Locales.ptBR.FILTER_MINE="Minhas"
+F.Locales.ptBR.FILTER_NETWORK="Rede"
+F.Locales.ptBR.FILTER_RESET="Redefinir filtros"
+
+-- Retained peer profiles are not a promise of current availability.
+F.Locales.ptBR.PROFILE_CACHED="Dados salvos"
+F.Locales.ptBR.PROFILE_CACHED_AGE="Dados salvos: há %d min"
+F.Locales.ptBR.FAVORITES="Favoritos"
+F.Locales.ptBR.FAVORITE_LIMIT="Você pode salvar até 5 perfis e 5 receitas como favoritos."
+F.Locales.ptBR.FAVORITE_HINT="Adicionar/remover favorito (até 5 de cada tipo)."
+
+-- Intermediate material source selection.
+F.Locales.ptBR.SOURCE_TITLE="Fontes dos materiais"
+F.Locales.ptBR.SOURCE_CHOOSE="Escolher fonte"
+F.Locales.ptBR.SOURCE_BACK="Voltar à cadeia completa"
+F.Locales.ptBR.SOURCE_AUTO="Escolha automática de receita"
+F.Locales.ptBR.SOURCE_AUTO_HELP="Usar primeiro os estoques, depois a primeira receita conhecida disponível. Prioridade para você e perfis recentes. Não compara custos."
+F.Locales.ptBR.SOURCE_EXTERNAL="Obter separadamente"
+F.Locales.ptBR.SOURCE_EXTERNAL_HELP="Obtenha o material que falta em vez de fabricá-lo. Ele continuará faltando até você tê-lo."
+F.Locales.ptBR.SOURCE_CRAFT="Fabricar"
+F.Locales.ptBR.SOURCE_STOCK="Usar estoques"
+F.Locales.ptBR.SOURCE_COUNTS="Necessário neste plano: %d; usado dos estoques: %d."
+F.Locales.ptBR.SOURCE_PER_CRAFT="Produz %d por fabricação. Materiais por fabricação:"
+F.Locales.ptBR.SOURCE_USE="Escolher esta opção"
+F.Locales.ptBR.SOURCE_SELECTED="Selecionado"
+F.Locales.ptBR.SOURCE_REBUILD_HELP="Os estoques são sempre usados primeiro. Escolher uma fonte recalcula o item original, a quantidade e todas as etapas dependentes. Só vale para este plano. Receitas conhecidas são exibidas; preços e locais de coleta não são registrados."
+F.Locales.ptBR.MISSING_REASON_external="Você escolheu obter este material separadamente. Colete, compre ou solicite a quantidade que falta e recalcule o plano."
+F.Locales.ptBR.MISSING_REASON_source="O artesão ou a receita selecionada não é mais conhecido. Escolha outra fonte; não haverá substituição automática."
+
+-- Plain-language, inline crafting plan.
+F.Locales.ptBR.CHAIN_GET="1. O que obter"
+F.Locales.ptBR.CHAIN_GET_HELP="Obtenha estes materiais e siga as etapas abaixo."
+F.Locales.ptBR.CHAIN_MAKE="2. O que fabricar"
+F.Locales.ptBR.CHAIN_MAKE_WAIT="Após obter os materiais, fabrique nesta ordem."
+F.Locales.ptBR.CHAIN_MAKE_HELP="Fabrique nesta ordem com seus materiais."
+F.Locales.ptBR.CHAIN_GET_COUNT="Obtenha mais %d."
+F.Locales.ptBR.CHAIN_HAVE="Dos seus estoques: %d."
+F.Locales.ptBR.CHAIN_OR_MAKE="Ou fabrique este material:"
+F.Locales.ptBR.CHAIN_FROM="Você precisará de:\n%s"
+F.Locales.ptBR.CHAIN_SURPLUS="Excedente produzido: %d."
+F.Locales.ptBR.CHAIN_GET_BUTTON="Obter %d prontos"
+F.Locales.ptBR.CHAIN_MAKE_BUTTON="Fabricar %d"
+F.Locales.ptBR.CHAIN_MAKE_ITEM="Fabricar %s x%d"
+F.Locales.ptBR.CHAIN_OTHER_RECIPES="Outras receitas"
+F.Locales.ptBR.CHAIN_HIDE_RECIPES="Ocultar receitas"
+F.Locales.ptBR.CHAIN_RECIPES="Como fabricar este material"
+F.Locales.ptBR.CHAIN_RECIPES_HELP="Escolha uma receita para a quantidade necessária."
+F.Locales.ptBR.CHAIN_USE_RECIPE="Usar esta receita"
+F.Locales.ptBR.CHAIN_STOCK="Estoques utilizados"
+F.Locales.ptBR.CHAIN_HIDE_STOCK="Ocultar estoques"
+F.Locales.ptBR.CHAIN_SHOW_STOCK="Mostrar estoques"
+F.Locales.ptBR.CHAIN_REFRESH="Recalcular cadeia"
+
+F.Locales.ptBR.CHAIN_PLAN_ONLY="É um plano. Fabrique na janela de profissão."

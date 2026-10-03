@@ -24,7 +24,7 @@ function M.Init()
     local background=b:CreateTexture(nil,'BACKGROUND')
     background:SetTexture('Interface\\Minimap\\UI-Minimap-Background'); background:SetSize(24,24); background:SetPoint('TOPLEFT',2,-2)
     local icon=b:CreateTexture(nil,'ARTWORK')
-    icon:SetTexture('Interface\\Icons\\Trade_Engineering'); icon:SetSize(20,20); icon:SetPoint('TOPLEFT',7,-5)
+    icon:SetTexture(F.icon); icon:SetSize(20,20); icon:SetPoint('TOPLEFT',7,-5)
     icon:SetTexCoord(.08,.92,.08,.92)
     local border=b:CreateTexture(nil,'OVERLAY')
     border:SetTexture('Interface\\Minimap\\MiniMap-TrackingBorder'); border:SetSize(53,53); border:SetPoint('TOPLEFT')
@@ -34,7 +34,7 @@ function M.Init()
         if mouse == 'RightButton' then F.UI.Help() else F.UI.Toggle() end
     end)
     b:SetScript('OnDragStart',function(self)
-        if GameTooltip then GameTooltip:Hide() end
+        F.Theme.HideTooltip()
         self:SetScript('OnUpdate',function() M.Drag() end)
     end)
     b:SetScript('OnDragStop',function(self)
@@ -43,12 +43,9 @@ function M.Init()
     b:SetScript('OnHide',function(self) self:SetScript('OnUpdate',nil) end)
     b:SetScript('OnEnter',function(self)
         M.Position()
-        if GameTooltip then
-            GameTooltip:SetOwner(self,'ANCHOR_LEFT'); GameTooltip:SetText('ForeverNet')
-            GameTooltip:AddLine(F.L('MINIMAP_HINT'),1,1,1,true); GameTooltip:Show()
-        end
+        F.Theme.ShowTooltip(self,'ForeverNet',F.L('MINIMAP_HINT'),'ANCHOR_LEFT')
     end)
-    b:SetScript('OnLeave',function() if GameTooltip then GameTooltip:Hide() end end)
+    b:SetScript('OnLeave',F.Theme.HideTooltip)
     M.button=b; M.Position(); M.ApplyVisibility()
 end
 

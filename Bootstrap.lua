@@ -17,7 +17,7 @@ function F.Command(input)
         elseif cmd == 'show' then F.UI.Status()
         elseif cmd == 'language' then
             assert(a == 'auto' or F.Locales[a], 'language auto|enUS|enGB|ruRU|deDE|frFR|esES|esMX|itIT|ptBR|koKR|zhCN|zhTW')
-            F.db.settings.locale = a ~= 'auto' and a or nil; F.UI.Status()
+            F.db.settings.locale = a ~= 'auto' and a or nil; F.UI.Status(); F.Settings.Refresh(); F.Updates.Refresh()
         elseif cmd == 'share' then
             assert(a == 'on' or a == 'off', 'share on|off')
             F.db.settings.sharing = a == 'on'

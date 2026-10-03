@@ -40,12 +40,12 @@ F.db.settings.locale='enUS'; F.Settings.Refresh(); assert(F.Settings.languageLab
 -- Settings must stay above the main window, including after live refresh.
 F.UI.Status(); F.Settings.Open()
 assert(F.Settings.frame.strata=='FULLSCREEN_DIALOG')
-assert(F.Settings.background.color[4]==1)
+assert(F.Settings.background.texture==F.Theme.background and F.Settings.backgroundBase.color[4]==1)
 F.UI.DataChanged(); F.UI.Tick(1)
 assert(F.Settings.frame:IsShown() and F.Settings.frame.strata=='FULLSCREEN_DIALOG')
 
 -- External links are copyable and remain correct in both languages.
-assert(F.version=='0.3.3')
+assert(F.version=='0.4.0')
 for _,field in ipairs({F.Settings.githubLink,F.Settings.supportLink}) do
     field.scripts.OnMouseUp(field); assert(field.highlighted and field.focused)
     local url=field:GetText(); field:SetText('modified'); assert(field:GetText()==url)

@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: ForeverNet
-## IconTexture: Interface\Icons\Trade_Engineering
+## IconTexture: Interface\Icons\INV_Scroll_03
 ## Notes: Peer profession network and production planner (experimental)
 ## Notes-ruRU: Сеть профессий и планирование изготовления (экспериментальный аддон)
 ## Notes-deDE: Berufsnetzwerk und Herstellungsplanung (experimentell)
@@ -14,7 +14,8 @@
 ## Notes-zhTW: 專業技能共享網路與製作規劃（實驗版）
 ## Author: Andrew Woolfi
 ## X-License: MIT
-## Version: 0.3.3
+## Version: 0.4.0
+## X-ReleaseType: Beta
 ## X-Compatibility: Forever 1.60.1 (70124); in-game validation in progress
 ## SavedVariables: ForeverNetDB
 
@@ -30,6 +31,7 @@ Locales/zhCN.lua
 Locales/zhTW.lua
 Core.lua
 Model.lua
+Theme.lua
 Updates.lua
 Catalog.lua
 Codec.lua

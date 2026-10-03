@@ -1,0 +1,29 @@
+{
+  "upstream": "notofonts/noto-cjk",
+  "revision": "f8d157532fbfaeda587e826d4cd5b21a49186f7c",
+  "weight": 400,
+  "license": "OFL-1.1",
+  "fonts": {
+    "ForeverNetCJKSC.ttf": {
+      "source": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/Variable/TTF/NotoSansCJKsc-VF.ttf",
+      "source_sha256": "990c807e79c25662a5a9ecf7f971baeb2bf2eab9a559e5ecf15cdfdb8561d21f",
+      "sha256": "cbbccbd79b7289bb26d667204d9063196fc65d21fb72c6e7a967072f7558eb13",
+      "bytes": 21659444,
+      "codepoints": 44810
+    },
+    "ForeverNetCJKTC.ttf": {
+      "source": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/Variable/TTF/NotoSansCJKtc-VF.ttf",
+      "source_sha256": "6b40dd16cf1b73b5a7a0ed2472d641b60e3e85e87211abd20009f67d841425da",
+      "sha256": "a8d71c8efbfca64f327e7f40edb63c889c0e382ca54288fbc5bd2f3880700056",
+      "bytes": 21657984,
+      "codepoints": 44810
+    },
+    "ForeverNetCJKKR.ttf": {
+      "source": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/Variable/TTF/NotoSansCJKkr-VF.ttf",
+      "source_sha256": "7715af52f5fe77153ce5678546258993982d2da61abea8d25fb89eb5aaec5ca6",
+      "sha256": "c36d3cbfe64becdb756a64bde587c56673a49152f36618e92792511e04fb735d",
+      "bytes": 21655184,
+      "codepoints": 44810
+    }
+  }
+}

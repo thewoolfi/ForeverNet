@@ -1,6 +1,9 @@
 -- Machine-assisted translation; core game terms and formatting reviewed.
 local _,F=...
 F.Locales.itIT = {
+    SKILL_RANK = 'Abilità: %d',
+    PROFILE_RECIPE_HINT = 'Clicca su una ricetta per vedere i materiali e pianificare una catena di produzione.',
+    PROFILE_EMPTY = 'Questo giocatore non ha ancora condiviso ricette apprese.',
     ["\nhelp — команды; demo — безопасный пример цепочки; scan — считать открытую профессию"] = "\naiuto: comandi; demo: catena di esempio; scan: scansiona la professione aperta",
     ["\nАвтор: "] = "\nProprietario: ",
     ["\nЗапросы:"] = "\nRichieste:",
@@ -202,3 +205,69 @@ F.Locales.itIT = {
     ["включён"] = "abilitato",
     ["выключен"] = "disabilitato",
 }
+
+-- Recipe filters and display names; transport codes remain unchanged.
+F.Locales.itIT.CHANNEL_PARTY="Gruppo"
+F.Locales.itIT.CHANNEL_RAID="Incursione"
+F.Locales.itIT.CHANNEL_GUILD="Gilda"
+F.Locales.itIT.FILTER_BUTTON="Filtro"
+F.Locales.itIT.FILTER_PROFESSION="Professione"
+F.Locales.itIT.FILTER_ALL="Tutte"
+F.Locales.itIT.FILTER_TYPE="Tipo di ricetta"
+F.Locales.itIT.FILTER_REGULAR="Normali"
+F.Locales.itIT.FILTER_BLUEPRINT="Progetti"
+F.Locales.itIT.FILTER_CRAFTERS="Artigiani"
+F.Locales.itIT.FILTER_MINE="Mie"
+F.Locales.itIT.FILTER_NETWORK="Rete"
+F.Locales.itIT.FILTER_RESET="Reimposta filtri"
+
+-- Retained peer profiles are not a promise of current availability.
+F.Locales.itIT.PROFILE_CACHED="Dati salvati"
+F.Locales.itIT.PROFILE_CACHED_AGE="Dati salvati: %d min fa"
+F.Locales.itIT.FAVORITES="Preferiti"
+F.Locales.itIT.FAVORITE_LIMIT="Puoi salvare fino a 5 profili e 5 ricette come preferiti."
+F.Locales.itIT.FAVORITE_HINT="Aggiungi/rimuovi preferito (fino a 5 per tipo)."
+
+-- Intermediate material source selection.
+F.Locales.itIT.SOURCE_TITLE="Fonti dei materiali"
+F.Locales.itIT.SOURCE_CHOOSE="Scegli fonte"
+F.Locales.itIT.SOURCE_BACK="Torna alla catena completa"
+F.Locales.itIT.SOURCE_AUTO="Scelta automatica della ricetta"
+F.Locales.itIT.SOURCE_AUTO_HELP="Usa prima le scorte, poi la prima ricetta conosciuta disponibile. Priorità a te e ai profili recenti. Non confronta i costi."
+F.Locales.itIT.SOURCE_EXTERNAL="Procurare separatamente"
+F.Locales.itIT.SOURCE_EXTERNAL_HELP="Procura il materiale mancante invece di crearlo. Resta mancante finché non lo possiedi."
+F.Locales.itIT.SOURCE_CRAFT="Crea"
+F.Locales.itIT.SOURCE_STOCK="Usa le scorte"
+F.Locales.itIT.SOURCE_COUNTS="Necessario in questo piano: %d; usato dalle scorte: %d."
+F.Locales.itIT.SOURCE_PER_CRAFT="Produce %d per creazione. Materiali per creazione:"
+F.Locales.itIT.SOURCE_USE="Scegli questa opzione"
+F.Locales.itIT.SOURCE_SELECTED="Selezionato"
+F.Locales.itIT.SOURCE_REBUILD_HELP="Le scorte vengono sempre usate prima. La scelta ricalcola l’oggetto originale, la quantità e tutti i passaggi dipendenti. Vale solo per questo piano. Vengono mostrate le ricette conosciute; prezzi e luoghi di raccolta non sono registrati."
+F.Locales.itIT.MISSING_REASON_external="Hai scelto di procurare questo materiale separatamente. Raccogli, compra o richiedi la quantità mancante, poi ricalcola il piano."
+F.Locales.itIT.MISSING_REASON_source="L’artigiano o la ricetta selezionata non è più conosciuto. Scegli un’altra fonte; non verrà sostituito automaticamente."
+
+-- Plain-language, inline crafting plan.
+F.Locales.itIT.CHAIN_GET="1. Cosa procurare"
+F.Locales.itIT.CHAIN_GET_HELP="Procura questi materiali, poi segui i passaggi qui sotto."
+F.Locales.itIT.CHAIN_MAKE="2. Cosa creare"
+F.Locales.itIT.CHAIN_MAKE_WAIT="Dopo aver procurato i materiali, crea in questo ordine."
+F.Locales.itIT.CHAIN_MAKE_HELP="Crea in questo ordine usando i tuoi materiali."
+F.Locales.itIT.CHAIN_GET_COUNT="Procurane altri %d."
+F.Locales.itIT.CHAIN_HAVE="Dalle tue scorte: %d."
+F.Locales.itIT.CHAIN_OR_MAKE="Oppure crea questo materiale:"
+F.Locales.itIT.CHAIN_FROM="Serviranno:\n%s"
+F.Locales.itIT.CHAIN_SURPLUS="Eccedenza prodotta: %d."
+F.Locales.itIT.CHAIN_GET_BUTTON="Procura %d pronti"
+F.Locales.itIT.CHAIN_MAKE_BUTTON="Crea %d"
+F.Locales.itIT.CHAIN_MAKE_ITEM="Crea %s x%d"
+F.Locales.itIT.CHAIN_OTHER_RECIPES="Altre ricette"
+F.Locales.itIT.CHAIN_HIDE_RECIPES="Nascondi ricette"
+F.Locales.itIT.CHAIN_RECIPES="Come creare questo materiale"
+F.Locales.itIT.CHAIN_RECIPES_HELP="Scegli una ricetta per la quantità necessaria."
+F.Locales.itIT.CHAIN_USE_RECIPE="Usa questa ricetta"
+F.Locales.itIT.CHAIN_STOCK="Scorte utilizzate"
+F.Locales.itIT.CHAIN_HIDE_STOCK="Nascondi scorte"
+F.Locales.itIT.CHAIN_SHOW_STOCK="Mostra scorte"
+F.Locales.itIT.CHAIN_REFRESH="Ricalcola catena"
+
+F.Locales.itIT.CHAIN_PLAN_ONLY="È un piano. Crea nella finestra della professione."

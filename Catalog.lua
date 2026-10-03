@@ -32,23 +32,30 @@ function C.Icon(id)
     return (numeric and C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(numeric)) or
         (numeric and GetItemIcon and GetItemIcon(numeric)) or 'Interface\\Icons\\INV_Misc_Gear_01'
 end
-function C.Recipes(profiles, query, choices)
+function C.Recipes(profiles, query, choices, options)
     local entries, groups, filter = {}, {}, C.Fold(query)
     for _, owner in ipairs(F.Keys(profiles)) do
         for _, recipeID in ipairs(F.Keys(profiles[owner].recipes)) do
             local r = profiles[owner].recipes[recipeID]
-            local name = C.ItemName(r.output, r.name)
-            local searchable = C.Fold(name .. ' ' .. r.name .. ' ' .. owner .. ' ' .. r.output)
-            local group=groups[r.output]
-            if not group then group={providers={},matches=false}; groups[r.output]=group end
-            group.providers[#group.providers+1]={key=owner..'/'..recipeID,owner=owner,recipeID=recipeID,recipe=r}
-            group.matches=group.matches or filter=='' or searchable:find(filter,1,true)~=nil
+            local allowed=not options or ((not options.profession or r.profession==options.profession)
+                and (not options.kind or (options.kind=='blueprint')==not not r.blueprint)
+                and (not options.scope or (options.scope=='mine')==(owner==F.me)))
+            if allowed then
+                local name = C.ItemName(r.output, r.name)
+                local searchable = C.Fold(name .. ' ' .. r.name .. ' ' .. owner .. ' ' .. r.output .. ' ' .. C.ProfessionName(r.profession))
+                local group=groups[r.output]
+                if not group then group={providers={},matches=false}; groups[r.output]=group end
+                group.providers[#group.providers+1]={key=owner..'/'..recipeID,owner=owner,recipeID=recipeID,recipe=r}
+                group.matches=group.matches or filter=='' or searchable:find(filter,1,true)~=nil
+            end
         end
     end
     for item,group in pairs(groups) do
         if group.matches then
             table.sort(group.providers,function(a,b)
                 if (a.owner==F.me)~=(b.owner==F.me) then return a.owner==F.me end
+                local staleA,staleB=F.ProfileStale(profiles[a.owner]),F.ProfileStale(profiles[b.owner])
+                if staleA~=staleB then return not staleA end
                 return a.key<b.key
             end)
             local selected=group.providers[1]
@@ -66,6 +73,8 @@ function C.Recipes(profiles, query, choices)
         end
     end
     table.sort(entries, function(a,b)
+        local favoriteA,favoriteB=F.IsFavorite('recipes',a.item),F.IsFavorite('recipes',b.item)
+        if favoriteA~=favoriteB then return favoriteA end
         if (a.owner == F.me) ~= (b.owner == F.me) then return a.owner == F.me end
         local an,bn=C.Fold(a.title),C.Fold(b.title)
         if an ~= bn then return an < bn end
@@ -74,8 +83,14 @@ function C.Recipes(profiles, query, choices)
     return entries
 end
 
+local professionIDs={alchemy=171,blacksmithing=164,engineering=202,leatherworking=165,tailoring=197,
+    enchanting=333,herbalism=182,mining=186,skinning=393,cooking=185,fishing=356,firstaid=129}
+local professionIcons={[171]='Trade_Alchemy',[164]='Trade_BlackSmithing',[202]='Trade_Engineering',
+    [165]='Trade_LeatherWorking',[197]='Trade_Tailoring',[333]='Trade_Engraving',[182]='Trade_Herbalism',
+    [186]='Trade_Mining',[393]='INV_Misc_Pelt_Wolf_01',[185]='INV_Misc_Food_15',[356]='Trade_Fishing',
+    [129]='Spell_Holy_SealOfSacrifice'}
 function C.ProfessionName(id)
-    local numeric=tonumber(id:match('^skill:(%d+)$'))
+    local numeric=tonumber(id:match('^skill:(%d+)$')) or professionIDs[id]
     if numeric and C_TradeSkillUI and C_TradeSkillUI.GetTradeSkillDisplayName then
         local ok,name=pcall(C_TradeSkillUI.GetTradeSkillDisplayName,numeric)
         if ok and name and name~='' then return name end
@@ -83,4 +98,53 @@ function C.ProfessionName(id)
     local hex=id:match('^legacy:[^:]+:([%da-f]+)$')
     if hex and #hex%2==0 then return (hex:gsub('..',function(pair) return string.char(tonumber(pair,16)) end)) end
     return id
+end
+function C.ProfessionIcon(id)
+    local numeric=tonumber(id:match('^skill:(%d+)$')) or professionIDs[id]
+    return 'Interface\\Icons\\'..(professionIcons[numeric] or 'INV_Scroll_03')
+end
+function C.ProfileProfessions(profile)
+    local groups,entries={},{}
+    local function group(id)
+        if not groups[id] then
+            groups[id]={id=id,title=C.ProfessionName(id),rank=profile.professions[id],recipes={}}
+            entries[#entries+1]=groups[id]
+        end
+        return groups[id]
+    end
+    for id in pairs(profile.professions) do group(id) end
+    for id,r in pairs(profile.recipes) do
+        local g=group(r.profession)
+        g.recipes[#g.recipes+1]={recipeID=id,recipe=r,title=C.ItemName(r.output,r.name),item=r.output}
+    end
+    for _,g in ipairs(entries) do
+        table.sort(g.recipes,function(a,b)
+            local an,bn=C.Fold(a.title),C.Fold(b.title)
+            if an~=bn then return an<bn end
+            return a.recipeID<b.recipeID
+        end)
+    end
+    table.sort(entries,function(a,b)
+        local an,bn=C.Fold(a.title),C.Fold(b.title)
+        if an~=bn then return an<bn end
+        return a.id<b.id
+    end)
+    return entries
+end
+function C.GroupRecipes(entries)
+    local groups,result={},{}
+    for _,entry in ipairs(entries) do
+        local id=entry.recipe.profession
+        if not groups[id] then
+            groups[id]={id=id,title=C.ProfessionName(id),recipes={}}
+            result[#result+1]=groups[id]
+        end
+        groups[id].recipes[#groups[id].recipes+1]=entry
+    end
+    table.sort(result,function(a,b)
+        local an,bn=C.Fold(a.title),C.Fold(b.title)
+        if an~=bn then return an<bn end
+        return a.id<b.id
+    end)
+    return result
 end
