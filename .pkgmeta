@@ -1,0 +1,14 @@
+package-as: ForeverNet
+enable-nolib-creation: no
+
+# Keep all runtime Lua, locale files, fonts and their licenses.
+ignore:
+  - docs
+  - tests
+  - work
+  - outputs
+  - ForeverLink
+  - README.md
+  - PROJECT.md
+  - CHANGELOG.md
+  - requirements-dev.txt
