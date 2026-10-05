@@ -17,6 +17,26 @@ for _,entry in ipairs(entries) do assert(entry.owner==F.me and #entry.providers=
 entries=C.Recipes(F.Profiles(),'',nil,{profession='skill:202'})
 assert(#entries==1 and entries[1].recipeID=='shared') -- Filter precedes item deduplication.
 assert(#C.Recipes(F.Profiles(),'',nil,{profession='skill:185',scope='network'})==0)
+-- A profession card applies a filter before the lazy menu was ever opened.
+assert(not U.frame and not U.filterMenu)
+U.SetRecipeFilter('profession','skill:185')
+assert(U.frame and not U.filterMenu and U.recipeFilters.profession=='skill:185')
+U.Navigate('recipes'); assert(#U.entries==1 and U.entries[1].recipeID=='food')
+U.Navigate('home')
+local professionRow
+for _,row in ipairs(U.rows) do
+    if row:IsShown() and row.entry.kind=='profession' and row.entry.profession=='skill:171' then professionRow=row end
+end
+assert(professionRow and not professionRow.entry.subtitle:find('·',1,true))
+professionRow.scripts.OnClick(professionRow)
+assert(U.page=='recipes' and U.recipeFilters.profession=='skill:171' and not U.filterMenu)
+assert(#U.entries==2)
+U.SetRecipeFilter(); assert(#U.entries==3 and next(U.recipeFilters)==nil)
+for _,locale in ipairs(F.LocaleOrder) do
+    F.db.settings.locale=locale
+    assert(not F.L('HOME_INFO'):find('·',1,true) and not F.L('MARKET_BUDGET'):find('≈',1,true))
+end
+F.db.settings.locale='enUS'
 U.Navigate('recipes'); U.Select(U.entries[1]); U.filterButton.scripts.OnClick()
 assert(U.filterMenu:IsShown() and U.search:GetWidth()<150)
 local function click(text)

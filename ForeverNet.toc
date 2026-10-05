@@ -1,21 +1,21 @@
 ## Interface: 16001
 ## Title: ForeverNet
 ## IconTexture: Interface\Icons\INV_Scroll_03
-## Notes: Peer profession network and production planner (experimental)
-## Notes-ruRU: Сеть профессий и планирование изготовления (экспериментальный аддон)
-## Notes-deDE: Berufsnetzwerk und Herstellungsplanung (experimentell)
-## Notes-frFR: Réseau de métiers et planification de fabrication (expérimental)
-## Notes-esES: Red de profesiones y planificación de fabricación (experimental)
-## Notes-esMX: Red de profesiones y planificación de fabricación (experimental)
-## Notes-itIT: Rete di professioni e pianificazione della creazione (sperimentale)
-## Notes-ptBR: Rede de profissões e planejamento de fabricação (experimental)
-## Notes-koKR: 전문 기술 공유 및 제작 계획 (실험적)
-## Notes-zhCN: 专业技能共享网络与制作规划（实验版）
-## Notes-zhTW: 專業技能共享網路與製作規劃（實驗版）
+## Notes: Peer profession network and production planner
+## Notes-ruRU: Сеть профессий и планирование изготовления
+## Notes-deDE: Berufsnetzwerk und Herstellungsplanung
+## Notes-frFR: Réseau de métiers et planification de fabrication
+## Notes-esES: Red de profesiones y planificación de fabricación
+## Notes-esMX: Red de profesiones y planificación de fabricación
+## Notes-itIT: Rete di professioni e pianificazione della creazione
+## Notes-ptBR: Rede de profissões e planejamento de fabricação
+## Notes-koKR: 전문 기술 공유 및 제작 계획
+## Notes-zhCN: 专业技能共享网络与制作规划
+## Notes-zhTW: 專業技能共享網路與製作規劃
 ## Author: Andrew Woolfi
 ## X-License: MIT
-## Version: 0.4.0
-## X-ReleaseType: Beta
+## Version: 1.0.0
+## X-ReleaseType: Release
 ## X-Compatibility: Forever 1.60.1 (70124); in-game validation in progress
 ## SavedVariables: ForeverNetDB
 
@@ -29,6 +29,7 @@ Locales/ptBR.lua
 Locales/koKR.lua
 Locales/zhCN.lua
 Locales/zhTW.lua
+FeatureLocales.lua
 Core.lua
 Model.lua
 Theme.lua
@@ -40,7 +41,13 @@ Adapters.lua
 Bank.lua
 Network.lua
 Requests.lua
+Queue.lua
+Market.lua
+SourceCosts.lua
 UI.lua
 Minimap.lua
 Settings.lua
+ProfessionActions.lua
+Auction.lua
+Tracker.lua
 Bootstrap.lua

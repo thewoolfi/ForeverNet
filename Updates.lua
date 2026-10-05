@@ -67,11 +67,25 @@ function V.Refresh()
     V.downloadLabel:SetText(F.L('UPDATE_DOWNLOAD'))
     V.copyHint:SetText(F.L('COPY_LINK_HINT'))
     V.instructions:SetText(F.L('UPDATE_INSTRUCTIONS'))
+    local y=54
+    local function place(region,gap)
+        region:ClearAllPoints(); region:SetPoint('TOPLEFT',28,-y); region:SetHeight(0)
+        y=y+region:GetStringHeight()+(gap or 12)
+    end
+    place(V.installed); place(V.status)
+    V.notify:ClearAllPoints(); V.notify:SetPoint('TOPLEFT',24,-y)
+    V.notify.label:SetHeight(0); y=y+math.max(28,V.notify.label:GetStringHeight()+5)+8
+    V.check:ClearAllPoints(); V.check:SetPoint('TOPLEFT',28,-y)
+    y=y+F.Theme.FitButton(V.check,500)+16
+    place(V.downloadLabel,6)
+    V.link:ClearAllPoints(); V.link:SetPoint('TOPLEFT',33,-y); y=y+32
+    place(V.copyHint); place(V.instructions,18)
+    V.frame:SetHeight(math.max(360,y))
 end
 function V.Open()
     if not V.frame then
         local frame=CreateFrame('Frame','ForeverNetUpdates',UIParent,'PortraitFrameTemplate')
-        frame:SetSize(560,550); frame:SetPoint('CENTER'); frame:SetFrameStrata('FULLSCREEN_DIALOG')
+        frame:SetSize(560,550); frame:SetPoint('CENTER'); frame:SetFrameStrata('FULLSCREEN_DIALOG'); frame:SetClampedToScreen(true)
         frame:SetTitle('ForeverNet'); frame:SetPortraitToAsset(F.icon)
         F.Theme.Title(frame)
         frame:SetMovable(true); frame:EnableMouse(true); frame:RegisterForDrag('LeftButton')
@@ -88,7 +102,7 @@ function V.Open()
         V.notify=CreateFrame('CheckButton',nil,frame,'UICheckButtonTemplate')
         V.notify:SetSize(28,28); V.notify:SetPoint('TOPLEFT',24,-184)
         V.notify.label=V.notify:CreateFontString(nil,'OVERLAY','GameFontHighlight')
-        V.notify.label:SetPoint('LEFT',V.notify,'RIGHT',4,0); V.notify.label:SetWidth(467); V.notify.label:SetJustifyH('LEFT')
+        V.notify.label:SetPoint('TOPLEFT',V.notify,'TOPRIGHT',4,-5); V.notify.label:SetWidth(467); V.notify.label:SetJustifyH('LEFT'); V.notify.label:SetWordWrap(true)
         F.Theme.Text(V.notify.label)
         V.notify:SetScript('OnClick',function(self) F.db.settings.updateNotifications=not not self:GetChecked() end)
         V.check=CreateFrame('Button',nil,frame,'UIPanelButtonTemplate')

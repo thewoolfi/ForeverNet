@@ -1,6 +1,6 @@
 local addonName, F = ...
 _G.ForeverNet = F
-F.name, F.version = addonName, '0.4.0'
+F.name, F.version = addonName, '1.0.0'
 F.icon = 'Interface\\Icons\\INV_Scroll_03'
 F.MAX_RECIPES, F.PEER_TTL = 1000, 1800
 F.MAX_FAVORITES=5
@@ -138,6 +138,8 @@ function F.Init()
     F.localProfile = F.db.profiles[F.me]
     F.CleanSelfAliases()
     F.localProfile.seen = F.Now()
+    F.Queue.Init()
+    F.Market.Init()
     return true
 end
 function F.CleanSelfAliases()

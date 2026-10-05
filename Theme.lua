@@ -47,6 +47,27 @@ function T.Button(button,locale)
     end
 end
 function T.Title(frame) T.Font(frame:GetTitleText(),12) end
+local function measureButton(button)
+    -- Measure the private normal-state font; never shrink translated labels.
+    if not button.measure then
+        button.measure=button:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')
+        button.measure:Hide(); button.measure:SetWordWrap(true)
+    end
+    button.measure:SetFontObject(button:GetNormalFontObject())
+    button.measure:SetText(button:GetText() or '')
+    return button.measure
+end
+function T.ButtonWidth(button)
+    return math.ceil(measureButton(button):GetUnboundedStringWidth()+20)
+end
+function T.FitButton(button,width)
+    measureButton(button):SetWidth(math.max(1,width-20))
+    local height=math.max(24,button.measure:GetStringHeight()+8)
+    button:SetSize(width,height)
+    local text=button.GetFontString and button:GetFontString()
+    if text then text:SetWordWrap(true); text:SetWidth(math.max(1,width-20)) end
+    return height
+end
 function T.ShowTooltip(owner,title,line,anchor)
     if not T.tooltip then T.tooltip=CreateFrame('GameTooltip','ForeverNetTooltip',UIParent,'GameTooltipTemplate') end
     local tip=T.tooltip

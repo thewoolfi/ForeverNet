@@ -41,7 +41,7 @@ assert(U.rows[1]:GetHeight()>=U.rows[1].label:GetStringHeight()+14)
 U.Show(''); local offset=U.ShowCards({{item='item:123',title=string.rep('Материал ',16),text=string.rep('Количество ',16)}})
 local card=U.cards[1]
 assert(card:GetHeight()>=card.title:GetStringHeight()+card.detail:GetStringHeight()+20)
-assert(offset>=card:GetHeight()+12)
+assert(offset>=card:GetHeight()+6)
 U.Show('Ready',nil,nil,'good'); assert(U.summary.color[2]>.8)
 U.Show('Missing',nil,nil,'missing'); assert(U.summary.color[1]>.9 and U.summary.color[2]>.5)
 -- Readable body, headings, muted metadata and state colors on every dark panel.

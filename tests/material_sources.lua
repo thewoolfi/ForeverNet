@@ -151,7 +151,8 @@ for locale in pairs(F.Locales) do
             local titleBottom=10+row.title:GetStringHeight()
             local textBottom=row.detail:IsShown() and -row.detail.point[3]+row.detail:GetStringHeight() or titleBottom
             for _,b in ipairs(row.buttons) do if b:IsShown() then
-                assert(-b.point[3]>=textBottom and row:GetHeight()>=-b.point[3]+24)
+                assert(-b.point[3]>=textBottom or b.point[2]>=row.title.point[2]+row.title:GetWidth()+12)
+                assert(row:GetHeight()>=-b.point[3]+b:GetHeight())
             end end
         end
     end

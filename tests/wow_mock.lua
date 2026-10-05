@@ -14,7 +14,12 @@ function IsInGroup() return false end
 function IsInRaid() return false end
 frames = {}
 local region = {}
-function region:SetPoint(...) self.point = {...} end
+function region:SetPoint(...)
+    assert(select(2,...)~=self,'Cannot anchor to itself')
+    self.point = {...}
+    self.points=self.points or {}; self.points[select(1,...)]=self.point
+end
+function region:SetAllPoints(...) self.allPoints={...} end
 function region:SetSize(w, h) self.width, self.height = w, h end
 function region:SetWidth(w) self.width = w end
 function region:SetHeight(h) self.height = h end
@@ -24,6 +29,7 @@ function region:GetObjectType() return self.kind end
 function region:Show() self.shown = true end
 function region:Hide() self.shown = false end
 function region:IsShown() return self.shown end
+function region:IsVisible() return self.shown and (not self.parent or not self.parent.IsVisible or self.parent:IsVisible()) end
 function region:SetShown(shown) self.shown = shown end
 function region:SetAlpha(alpha) self.alpha=alpha end
 function region:SetParent(parent) self.parent=parent end
@@ -31,6 +37,13 @@ function region:SetParent(parent) self.parent=parent end
 local font = {}
 function font:SetText(text) self.text = text end
 function font:GetText() return self.text end
+function font:GetUnboundedStringWidth()
+    local width=0
+    for line in ((self.text or '')..'\n'):gmatch('(.-)\n') do
+        width=math.max(width,#line:gsub('[\128-\191]','')*(self.fontSize or 12)*.55)
+    end
+    return width
+end
 function font:GetStringHeight()
     local size=self.fontSize or 12
     local height, lines, columns = 0, 0, math.max(1, math.floor(self.width / (size*.55)))
@@ -49,6 +62,10 @@ for _, method in ipairs({'SetJustifyH', 'SetJustifyV', 'SetWordWrap', 'SetFontOb
 
 local widget = {}
 function widget:SetScript(event, callback) self.scripts[event] = callback end
+function widget:HookScript(event,callback)
+    local prior=self.scripts[event]
+    self.scripts[event]=function(...) if prior then prior(...) end; callback(...) end
+end
 function widget:RegisterEvent(event) self.events[event] = true end
 for _, method in ipairs({'SetFrameStrata', 'SetBackdrop', 'SetBackdropColor', 'SetBackdropBorderColor',
     'SetMovable', 'EnableMouse', 'RegisterForDrag', 'StartMoving', 'StopMovingOrSizing'}) do widget[method] = function() end end
@@ -67,7 +84,12 @@ function scroll:GetVerticalScroll() return self.verticalScroll end
 function scroll:GetVerticalScrollRange() return math.max(0,(self.child and self.child:GetHeight() or 0)-self:GetHeight()) end
 function scroll:EnableMouseWheel(value) self.mouseWheelEnabled=value end
 local texture = {SetTexture = function(self, value) self.texture = value end}
-local specific = {Frame = {}, GameTooltip={}, EventFrame={}, Button = button, CheckButton = button, EditBox = edit, ScrollFrame = scroll, FontString = font, Font=font, Texture = texture}
+local line = {}
+function line:SetThickness(value) self.thickness=value end
+function line:SetStartPoint(...) self.start={...} end
+function line:SetEndPoint(...) self.finish={...} end
+function line:SetColorTexture(...) self.color={...} end
+local specific = {Frame = {}, GameTooltip={}, EventFrame={}, Button = button, CheckButton = button, EditBox = edit, ScrollFrame = scroll, FontString = font, Font=font, Texture = texture, Line=line}
 local function object(kind)
     assert(specific[kind], 'Unknown widget type: ' .. tostring(kind))
     return setmetatable({kind = kind, scripts = {}, events = {}, text = '', width = 0, height = 0, shown = true}, {
@@ -83,11 +105,23 @@ function widget:CreateFontString(_,_,template)
     self.regions=self.regions or {}; self.regions[#self.regions+1]=f
     return f
 end
+function button:GetFontString()
+    if not self.buttonText then self.buttonText=self:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall') end
+    self.buttonText:SetFontObject(self:GetNormalFontObject()); self.buttonText:SetText(self:GetText())
+    return self.buttonText
+end
 function widget:CreateTexture() return object('Texture') end
+function widget:CreateLine() return object('Line') end
+function widget:SetID(id) self.id=id end
+function widget:GetID() return self.id end
 function CreateFrame(kind, name, parent, template)
     local f = object(kind)
     f.template=template
     f.parent=parent
+    if template=='AuctionHouseFrameDisplayModeTabTemplate' then
+        -- Inherited PanelTabButtonTemplate declares parentArray="Tabs".
+        parent.Tabs=parent.Tabs or {}; parent.Tabs[#parent.Tabs+1]=f
+    end
     if template == 'PortraitFrameTemplate' then
         function f:SetTitle(text) self.title = text; self.TitleContainer.TitleText:SetText(text) end
         function f:GetTitleText() return self.TitleContainer.TitleText end
@@ -145,7 +179,7 @@ function button:IsEnabled() return self.enabled~=false end
 function button:RegisterForClicks(...) self.clicks={...} end
 function button:SetHighlightTexture(value) self.highlight=value end
 function texture:SetTexCoord(...) self.texCoord={...} end
-function region:ClearAllPoints() self.point=nil end
+function region:ClearAllPoints() self.point=nil; self.points={} end
 function widget:GetFrameLevel() return self.level or 1 end
 function widget:SetFrameLevel(value) self.level=value end
 function widget:GetEffectiveScale() return 1 end
@@ -157,6 +191,7 @@ function button:SetChecked(v) self.checked=v end
 function button:GetChecked() return self.checked end
 
 function widget:SetFrameStrata(value) self.strata=value end
+function widget:SetClampedToScreen(value) self.clamped=value end
 function widget:SetBackdrop(value) self.backdrop=value end
 function widget:SetBackdropColor(...) self.backdropColor={...} end
 function texture:SetColorTexture(...) self.color={...} end

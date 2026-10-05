@@ -30,6 +30,54 @@ end
 function N.Error(reason)
     N.lastError=reason; F.UI.DataChanged(); F.Print(reason)
 end
+function N.Diagnostics()
+    local lines={F.L('NETWORK_CHANNEL')..(N.Channel() and F.L('CHANNEL_'..N.Channel()) or F.L('NETWORK_NO_CHANNEL'))}
+    lines[#lines+1]='Paused = '..tostring(N.paused==true)..' / Retry wait = '..math.ceil(math.max(0,(N.sendInterval or .25)-N.elapsed))..'s'
+    lines[#lines+1]='Throttled = '..tostring(N.throttled==true)..' / Send interval = '..(N.sendInterval or .25)..'s / Throttle results = '..(N.stats.throttles or 0)
+    lines[#lines+1]='Lockdown results = '..(N.stats.lockdowns or 0)..' / Transfer restarts = '..(N.stats.restarts or 0)
+    lines[#lines+1]='Last accepted message = '..(N.lastSuccessAt and math.max(0,F.Now()-N.lastSuccessAt)..'s ago' or 'none')
+    for _,key in ipairs({'AreOutgoingAddonChatMessagesRestricted','InChatMessagingLockdown'}) do
+        local fn=C_ChatInfo and C_ChatInfo[key]
+        local ok,value=false,nil
+        if fn then ok,value=pcall(fn) end
+        lines[#lines+1]='C_ChatInfo.'..key..' = '..(ok and tostring(value) or 'unavailable')
+    end
+    lines[#lines+1]='InCombatLockdown = '..tostring(InCombatLockdown and InCombatLockdown() or false)
+    lines[#lines+1]='SendAddonMessage result = '..tostring(N.lastSendResult or 'none')
+    lines[#lines+1]='Queued fragments = '..#N.queue
+    for _,line in ipairs(lines) do F.Print(line) end
+end
+local function pause()
+    local now=F.Now()
+    N.throttled=nil; N.throttleDelay=nil
+    N.stats.lockdowns=(N.stats.lockdowns or 0)+1; N.lastLockdownAt=now
+    if not N.paused then N.paused=true; N.lastError=F.L('NET_LOCKDOWN'); F.UI.DataChanged() end
+    if not N.lockdownEpisode then
+        N.lockdownEpisode=true
+        if not N.lastLockdownNotice or now-N.lastLockdownNotice>=120 then
+            N.lastLockdownNotice=now; F.Print(F.L('NET_LOCKDOWN'))
+        end
+    end
+    N.lockdownDelay=math.min(30,(N.lockdownDelay or 1)*2)
+    N.elapsed=(N.sendInterval or .25)-N.lockdownDelay
+end
+local function refreshTransfer(msg,now)
+    local transfer=msg.transfer
+    -- Brief interruptions keep their token and progress. Only an expired
+    -- partial message needs a full restart before the next send attempt.
+    if not transfer or not transfer.started or
+        (now-(transfer.lastSent or transfer.started)<120 and now-transfer.started<840) then return msg end
+    N.serial=N.serial+1
+    local token,queue=now..'.'..N.serial,{}
+    for i,part in ipairs(transfer.parts) do
+        queue[#queue+1]={channel=msg.channel,urgent=msg.urgent,kind=msg.kind,profileRev=msg.profileRev,
+            transfer=transfer,text='1|'..token..'|'..i..'|'..#transfer.parts..'|'..part}
+    end
+    for _,pending in ipairs(N.queue) do if pending.transfer~=transfer then queue[#queue+1]=pending end end
+    transfer.started=nil; transfer.lastSent=nil
+    N.queue=queue; N.stats.restarts=(N.stats.restarts or 0)+1
+    return queue[1]
+end
 function N.Send(kind,value,channel)
     if not F.db.settings.sharing then return false,F.L('Обмен выключен: /fn share on') end
     if not N.available then return false,F.L('API обмена недоступен.') end
@@ -37,6 +85,11 @@ function N.Send(kind,value,channel)
     if not channel then return false,F.L('Для обмена нужна гильдия или обычная группа.') end
     local ok,payload=pcall(F.Codec.Encode,{kind=kind,data=value})
     if not ok then return false,F.L('Сообщение превышает ограничения.') end
+    if kind=='HELLO' or kind=='REQUEST' then
+        for _,msg in ipairs(N.queue) do
+            if msg.kind==kind and msg.channel==channel and msg.transfer and msg.transfer.payload==payload then return true end
+        end
+    end
     local total=math.ceil(#payload/200)
     if #N.queue+total>1000 then return false,F.L('Очередь заполнена; повторите позже.') end
     N.serial=N.serial+1
@@ -46,9 +99,11 @@ function N.Send(kind,value,channel)
     if urgent then
         while N.queue[position] and N.queue[position].urgent do position=position+1 end
     end
+    local transfer={parts={},payload=(kind=='HELLO' or kind=='REQUEST') and payload or nil}
+    for i=1,total do transfer.parts[i]=payload:sub((i-1)*200+1,i*200) end
     for i=1,total do
         local msg={channel=channel,urgent=urgent,kind=kind,profileRev=kind=='PROFILE' and value.rev or nil,
-            text='1|'..token..'|'..i..'|'..total..'|'..payload:sub((i-1)*200+1,i*200)}
+            transfer=transfer,text='1|'..token..'|'..i..'|'..total..'|'..transfer.parts[i]}
         if urgent then table.insert(N.queue,position,msg); position=position+1 else N.queue[#N.queue+1]=msg end
     end
     return true
@@ -109,7 +164,9 @@ function N.Tick(elapsed)
         if F.db.settings.sharing and channel then N.ScheduleSync() end
     end
     if not F.db.settings.sharing then
-        N.queue,N.buffers,N.followupProfiles,N.pendingSync,N.pendingPublish,N.autoElapsed={},{},{},nil,nil,0; return
+        N.queue,N.buffers,N.followupProfiles,N.pendingSync,N.pendingPublish,N.autoElapsed={},{},{},nil,nil,0
+        N.paused=nil; N.lockdownEpisode=nil; N.lockdownDelay=nil; N.lastError=nil; N.elapsed=0
+        N.throttled=nil; N.throttleDelay=nil; N.sendInterval=nil; N.pacedSuccesses=nil; N.pacingStableSince=nil; return
     end
     if not automatic then N.pendingSync,N.pendingPublish,N.autoElapsed=nil,nil,0
     elseif channel and N.available then
@@ -142,12 +199,17 @@ function N.Tick(elapsed)
                 break
             end
         end
+        if #N.queue==0 then
+            N.paused=nil; N.lockdownEpisode=nil; N.lockdownDelay=nil; N.throttled=nil; N.throttleDelay=nil
+        end
     end
     N.elapsed=N.elapsed+elapsed
-    if N.elapsed<.25 then return end
+    if N.elapsed<(N.sendInterval or .25) then return end
     N.elapsed=0
     local now=F.Now()
-    for key,b in pairs(N.buffers) do if now-b.created>150 then N.buffers[key]=nil end end
+    for key,b in pairs(N.buffers) do
+        if now-(b.updated or b.created)>150 or now-b.created>900 then N.buffers[key]=nil end
+    end
     for sender,rate in pairs(N.rates) do if now-rate.start>150 then N.rates[sender]=nil end end
     for sender,at in pairs(N.hello) do if now-at>150 then N.hello[sender]=nil end end
     local msg=N.queue[1]
@@ -159,17 +221,41 @@ function N.Tick(elapsed)
     end
     local send=C_ChatInfo and C_ChatInfo.SendAddonMessage or SendAddonMessage
     if not send or not N.available then return end
+    -- Outgoing CHAT restrictions are not an authoritative gate for addon
+    -- comms. Use the SendAddonMessage result, as ChatThrottleLib does.
+    msg=refreshTransfer(msg,now)
     local ok,result=pcall(send,N.prefix,msg.text,msg.channel)
+    N.lastSendResult=ok and result or 'API exception'
     if ok and sendAccepted(result) then
-        table.remove(N.queue,1); N.stats.sent=N.stats.sent+1; N.lastError=nil
+        local wasPaused=N.paused or N.throttled
+        N.paused=nil; N.lockdownDelay=nil; N.lastError=nil; N.lastSuccessAt=now
+        N.throttled=nil; N.throttleDelay=nil
+        N.pacedSuccesses=(N.pacedSuccesses or 0)+1
+        if (N.sendInterval or .25)>.25 and N.pacingStableSince and now-N.pacingStableSince>=60 and N.pacedSuccesses>=32 then
+            N.sendInterval=math.max(.25,N.sendInterval/2); N.pacingStableSince=now; N.pacedSuccesses=0
+        end
+        if msg.transfer then msg.transfer.started=msg.transfer.started or now; msg.transfer.lastSent=now end
+        table.remove(N.queue,1); N.stats.sent=N.stats.sent+1
+        if #N.queue==0 then N.lockdownEpisode=nil end
+        if wasPaused then F.UI.DataChanged() end
     else
         local codes=Enum and Enum.SendAddonMessageResult
+        if ok and result==(codes and codes.AddOnMessageLockdown or 11) then pause(); return end
         local throttle=ok and (result==(codes and codes.AddonMessageThrottle or 3) or result==(codes and codes.ChannelThrottle or 8))
         if throttle then
-            msg.retries=(msg.retries or 0)+1
-            if msg.retries<=20 then N.elapsed=-.75; return end
+            local changed=not N.throttled or N.paused
+            N.throttled=true; N.paused=nil; N.lockdownDelay=nil; N.lastError=F.L('NET_THROTTLE')
+            N.stats.throttles=(N.stats.throttles or 0)+1; N.lastThrottleAt=now
+            N.pacingStableSince=now; N.pacedSuccesses=0
+            N.sendInterval=math.min(1,(N.sendInterval or .25)*2)
+            N.throttleDelay=math.min(15,(N.throttleDelay or .5)*2)
+            N.elapsed=N.sendInterval-N.throttleDelay
+            if changed then F.UI.DataChanged() end
+            return
         end
-        N.queue={}; N.Error(F.L('NET_SEND_FAILED')..' ('..tostring(ok and result or 'API')..')')
+        N.queue={}; N.paused=nil; N.lockdownEpisode=nil; N.lockdownDelay=nil
+        N.throttled=nil; N.throttleDelay=nil
+        N.Error(F.L('NET_SEND_FAILED')..' ('..tostring(ok and result or 'API')..')')
     end
 end
 
@@ -198,7 +284,9 @@ function N.Receive(prefix, text, channel, sender)
         buffer = {total = total, chunks = {}, count = 0, created = now}; N.buffers[key] = buffer
     end
     if buffer.total ~= total then N.buffers[key] = nil; return end
-    if not buffer.chunks[index] then buffer.chunks[index] = chunk; buffer.count = buffer.count + 1 end
+    if not buffer.chunks[index] then
+        buffer.chunks[index] = chunk; buffer.count = buffer.count + 1; buffer.updated=now
+    end
     if buffer.count ~= total then return end
     N.buffers[key] = nil
     local message = F.Codec.Decode(table.concat(buffer.chunks))

@@ -38,7 +38,12 @@ assert(F.UI.entries[1].subtitle==string.format(F.L('CRAFTER_COUNT'),2)) -- two p
 F.db.profiles['Kynaretth-Athmora']=nil
 F.UI.Status(); assert(#F.UI.entries==1 and F.UI.entries[1].subtitle==F.L('YOU'))
 F.UI.Select(F.UI.entries[1])
-local _,mentions=F.UI.blocks[1].text:GetText():gsub(F.L('YOU'),'')
+local providerText
+for _,block in ipairs(F.UI.blocks) do
+    if block.title:IsShown() and block.title:GetText()==F.L('AVAILABLE_CRAFTERS') then providerText=block.text:GetText() end
+end
+assert(providerText)
+local _,mentions=providerText:gsub(F.L('YOU'),'')
 assert(mentions==1) -- one person can know several variants of the same item
 F.UI.Navigate('network'); assert(#F.UI.entries==0)
 local payload=F.Codec.Encode({kind='PROFILE',data=profile('spell:99')})

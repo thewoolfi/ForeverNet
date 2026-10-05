@@ -131,6 +131,42 @@ function C.ProfileProfessions(profile)
     end)
     return entries
 end
+function C.Crafters(profiles,item,query)
+    local entries={}
+    if not F.ID(item) then return entries end
+    local filter=C.Fold(query)
+    for _,owner in ipairs(F.Keys(profiles)) do
+        if not F.IsSelf(owner) then
+            local profile=profiles[owner]
+            local matches,searchable,professions={},{owner},{}
+            for _,recipeID in ipairs(F.Keys(profile.recipes)) do
+                local recipe=profile.recipes[recipeID]
+                if recipe.output==item then
+                    matches[#matches+1]={recipeID=recipeID,recipe=recipe}
+                    if filter~='' then
+                        searchable[#searchable+1]=recipe.name
+                        professions[recipe.profession]=true
+                    end
+                end
+            end
+            for _,profession in ipairs(F.Keys(professions)) do searchable[#searchable+1]=C.ProfessionName(profession) end
+            if #matches>0 and (filter=='' or C.Fold(table.concat(searchable,' ')):find(filter,1,true)) then
+                entries[#entries+1]={key=owner,kind='crafter',owner=owner,title=owner,profile=profile,recipes=matches,
+                    subtitle=string.format(F.L('RECIPE_COUNT'),#matches)..(F.ProfileStale(profile) and '\n'..F.L('PROFILE_CACHED') or '')}
+            end
+        end
+    end
+    table.sort(entries,function(a,b)
+        local favoriteA,favoriteB=F.IsFavorite('profiles',a.owner),F.IsFavorite('profiles',b.owner)
+        if favoriteA~=favoriteB then return favoriteA end
+        local staleA,staleB=F.ProfileStale(a.profile),F.ProfileStale(b.profile)
+        if staleA~=staleB then return not staleA end
+        local an,bn=C.Fold(a.owner),C.Fold(b.owner)
+        if an~=bn then return an<bn end
+        return a.owner<b.owner
+    end)
+    return entries
+end
 function C.GroupRecipes(entries)
     local groups,result={},{}
     for _,entry in ipairs(entries) do

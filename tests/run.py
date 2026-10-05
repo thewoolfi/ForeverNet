@@ -69,6 +69,36 @@ F.Command('demo'); F.Command('show'); F.Command('graph'); F.Command('help')
 assert(F.ValidProfile(F.localProfile))
 local before=F.Codec.Encode(F.localProfile); F.Command('recipe bad'); assert(before==F.Codec.Encode(F.localProfile))
 F.Command('share on')
+-- Normal transport refusals are user-facing notices, not Lua exceptions.
+local savedGuild,savedGroup,savedRaid=IsInGuild,IsInGroup,IsInRaid
+function IsInGuild() return false end
+function IsInGroup() return false end
+function IsInRaid() return false end
+F.Net.queue={}; F.db.settings.locale='ruRU'
+local function notice(command,expected)
+    local count=#chatMessages
+    F.Command(command)
+    assert(#chatMessages==count+1)
+    local text=chatMessages[#chatMessages]
+    assert(text:find(expected,1,true))
+    assert(not text:find('Bootstrap.lua',1,true) and not text:find(F.L('Ошибка: '),1,true))
+end
+notice('sync',F.L('Для обмена нужна гильдия или обычная группа.'))
+local requests=F.Codec.Encode(F.db.requests)
+notice('request item:999 1',F.L('Для обмена нужна гильдия или обычная группа.'))
+assert(#F.Net.queue==0 and F.Codec.Encode(F.db.requests)==requests)
+F.db.settings.locale='enUS'
+notice('sync',F.L('Для обмена нужна гильдия или обычная группа.'))
+F.db.settings.sharing=false
+notice('sync',F.L('Обмен выключен: /fn share on'))
+F.db.settings.sharing=true
+local available=F.Net.available; F.Net.available=false
+notice('sync',F.L('API обмена недоступен.'))
+F.Net.available=available
+IsInGuild,IsInGroup,IsInRaid=savedGuild,savedGroup,savedRaid
+notice('sync',F.L('Синхронизация поставлена в очередь.'))
+assert(#F.Net.queue>0)
+F.Net.queue={}; F.db.settings.locale=nil
 '''),
 ]
 for name, body in tests:
@@ -238,7 +268,7 @@ for locale,file in [('koKR','ForeverNetCJKKR.ttf'),('zhCN','ForeverNetCJKSC.ttf'
     font=TTFont(ROOT/'Fonts'/file)
     assert font.sfntVersion=='\x00\x01\x00\x00' and 'glyf' in font and 'fvar' not in font and 'gvar' not in font
     cmap=font.getBestCmap()
-    text=(ROOT/'Locales'/f'{locale}.lua').read_text(encoding='utf-8')+'ForeverNet 简体中文 繁體中文 한국어 АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ абвгдеёжзийклмнопрстуфхцчшщъыьэюя éàößŒñçã'
+    text=(ROOT/'Locales'/f'{locale}.lua').read_text(encoding='utf-8')+(ROOT/'FeatureLocales.lua').read_text(encoding='utf-8')+'ForeverNet 简体中文 繁體中文 한국어 АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ абвгдеёжзийклмнопрстуфхцчшщъыьэюя éàößŒñçã'
     missing={c for c in text if ord(c)>127 and ord(c) not in cmap}
     assert not missing,(locale,sorted(missing))
     assert manifest['fonts'][file]['sha256']==hashlib.sha256((ROOT/'Fonts'/file).read_bytes()).hexdigest()
@@ -246,4 +276,74 @@ for locale,file in [('koKR','ForeverNetCJKKR.ttf'),('zhCN','ForeverNetCJKSC.ttf'
     font.close()
 assert 'SIL OPEN FONT LICENSE Version 1.1' in (ROOT/'Fonts/OFL.txt').read_text(encoding='utf-8')
 print('PASS bundled CJK fonts: static TTF/glyph coverage/hashes/license, Russian-client language menu, all button states, titles, inputs, tooltips, live switch and native font isolation')
+queue_client=client('QueueTest')
+queue_client.execute((ROOT/'tests/queue.lua').read_text(encoding='utf-8'))
+saved_queue=saved_literal(queue_client.globals().ForeverNetDB)
+queue_reload=client('QueueTest',setup='ForeverNetDB='+saved_queue)
+queue_reload.execute("assert(#ForeverNet.Queue.data.goals==1 and ForeverNet.Queue.data.goals[1].quantity==3)")
+print('PASS shared crafting queue: inventory once, surplus reuse, source selection, editing, bounds, private character storage, dashboard, all locales and fresh-runtime reload')
+lockdown=client('LockdownTest')
+lockdown.execute((ROOT/'tests/network_lockdown.lua').read_text(encoding='utf-8'))
+print('PASS messaging lockdown: actual enum 11, chat flags do not block addon comms, preserved queue, no notice spam, complete transfer restart after TTL and disabled sharing')
+recovery=client('NetworkRecoveryTest')
+recovery.execute((ROOT/'tests/network_recovery.lua').read_text(encoding='utf-8'))
+print('PASS network recovery: intermittent rejections finish complete profiles, bounded backoff/notices, no duplicate sync/request snapshots, fresh tokens only for expired partial messages, private diagnostics and disabled-sharing reset')
+throttle=client('NetworkThrottleTest')
+throttle.execute((ROOT/'tests/network_throttle.lua').read_text(encoding='utf-8'))
+print('PASS network rate limits: codes 3/8 retain the queue beyond 20 attempts, bounded silent backoff with one-minute auto sync, complete profile after recovery, learned pacing/stable recovery, distinct lockdown/throttle state, all locales and share-off reset')
+market_client=client('MarketTest')
+market_client.execute((ROOT/'tests/market.lua').read_text(encoding='utf-8'))
+saved_market=saved_literal(market_client.globals().ForeverNetDB)
+market_reload=client('MarketTest',setup='clock=1808899200; ForeverNetDB='+saved_market)
+market_reload.execute("assert(ForeverNet.Market.Quote('item:2318',8).minimum==1100)")
+print('PASS market prices/history: depth, whole-lot optimization, unavailable prices, overflow, stale/partial flags, daily retention, gap rendering, scope isolation and fresh-runtime reload')
+auction_client=client('AuctionTest')
+auction_client.execute((ROOT/'tests/auction.lua').read_text(encoding='utf-8'))
+print('PASS auction integration: native fourth tab, readiness, pagination, own auctions, bid-only/variant exclusion, cancellations, external-search coexistence and bounded retries')
+slow=client('SlowTransportTest')
+slow.execute((ROOT/'tests/slow_transport.lua').read_text(encoding='utf-8'))
+print('PASS slow profile reassembly: continuing transfers survive over 150 seconds; duplicates do not refresh idle expiry')
+tracker=client('TrackerTest')
+tracker.execute((ROOT/'tests/tracker.lua').read_text(encoding='utf-8'))
+tracker.execute('ForeverNet.Tracker.Toggle(true)')
+saved_tracker=saved_literal(tracker.globals().ForeverNetDB)
+tracker_reload=client('TrackerTest',setup='ForeverNetDB='+saved_tracker)
+tracker_reload.execute('assert(ForeverNet.Queue.data.tracker and ForeverNet.Tracker.frame:IsShown())')
+print('PASS material tracker: shared stock, bank withdrawal, acquisition/crafting updates, bank preference, independent window, character persistence and all locales')
+search=client('AuctionSearchTest')
+search.execute((ROOT/'tests/auction_search.lua').read_text(encoding='utf-8'))
+print('PASS native auction lookup: closed/not-ready guards, loading names, scanner handoff, category reset and native search without purchases')
+profession_actions=client('ProfessionActionsTest')
+profession_actions.execute((ROOT/'tests/profession_actions.lua').read_text(encoding='utf-8'))
+print('PASS native profession actions: current selected recipe, read-only previews, finished-item quantities, shared bags/bank, pinned plans, own-mode/loading/unsupported guards, limits, metadata, layout and all locales')
+source_costs=client('SourceCostsTest')
+source_costs.execute((ROOT/'tests/source_costs.lua').read_text(encoding='utf-8'))
+print('PASS source comparisons: whole-queue stock/surplus, batch rounding, cash deltas, unknown service fees, stale/partial/insufficient prices, cycles, bounded previews, pinned goals, UI choices and all locales')
+queue_sets=client('QueueSetsTest')
+queue_sets.execute((ROOT/'tests/queue_sets.lua').read_text(encoding='utf-8'))
+saved_sets=saved_literal(queue_sets.globals().ForeverNetDB)
+sets_reload=client('QueueSetsTest',setup='ForeverNetDB='+saved_sets)
+sets_reload.execute("assert(ForeverNet.Queue.data.sets['Поход'].goals[1].quantity==3 and ForeverNet.Queue.data.sets['Поход'].sources['item:10']=='external' and ForeverNet.Queue.data.tracker)")
+print('PASS queue sets: private persistence, pins/sources, preview/replace/append/undo, atomic caps, live stock recalculation, bag-only goal cleanup without surplus or double allocation and all locales')
+restock=client('RestockTest')
+restock.execute((ROOT/'tests/restock.lua').read_text(encoding='utf-8'))
+saved_restock=saved_literal(restock.globals().ForeverNetDB)
+restock_reload=client('RestockTest',setup='ForeverNetDB='+saved_restock)
+restock_reload.execute("assert(ForeverNet.Queue.data.goals[1].mode=='stock' and ForeverNet.Queue.data.goals[1].quantity==20 and ForeverNet.Queue.data.sets.Supplies.goals[1].mode=='stock')")
+print('PASS stock targets: use/refill events, bank-retained targets versus withdrawals, shared allocations, cleanup protection, duplicates/atomic loading, mode UI, pins/sources, all locales and fresh-runtime persistence')
+crafters=client('CrafterFinderTest')
+crafters.execute((ROOT/'tests/crafter_finder.lua').read_text(encoding='utf-8'))
+print('PASS crafter finder: native learned/unlearned lookup, exact item IDs, no self/duplicate masters, favorites/age/skills, selected-crafter plans and facilities, changed-profile guards, read-only behavior and all locales')
+layout=client('UILayoutTest')
+layout.execute((ROOT/'tests/ui_layout.lua').read_text(encoding='utf-8'))
+print('PASS compact interface: all locales, measured headers/actions, scrolling settings, inline language list, update/tracker bounds, CJK filters, recycled rows and actual-range scroll preservation')
+toolbar=client('ToolbarLayoutTest')
+toolbar.execute((ROOT/'tests/toolbar_layout.lua').read_text(encoding='utf-8'))
+print('PASS horizontal layout: 12 locales, native toolbar 350/620/640/800/1000 widths, right-side action placement, adaptive natural widths, inline queue tools/goal actions, long-label fallback and read-only refresh')
+right_panel=client('RightPanelTest')
+right_panel.execute((ROOT/'tests/right_panel.lua').read_text(encoding='utf-8'))
+print('PASS dense right panel: no overview/material/master overlap, measured multiline and empty-card offsets, two-column materials, bounded long text, no repeated master/item names, reusable blocks/cards, passive list rows, goal-first queue and expandable stock on all locales')
+protected_diagnostics=client('ProtectedDiagnosticsTest')
+protected_diagnostics.execute((ROOT/'tests/protected_diagnostics.lua').read_text(encoding='utf-8'))
+print('PASS protected-action diagnostics: read-only bank scans, native item-use functions unchanged, own-event capture, bounded private stacks, no spam, explicit taint-log switch and original CVar restoration; no native taint reproduction claimed')
 print('All Lua 5.1 checks passed. Client rendering still requires an in-game check.')

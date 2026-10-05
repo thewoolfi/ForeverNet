@@ -1,312 +1,122 @@
 # ForeverNet
 
-**Crafting plans and cooperation for World of Warcraft: Forever.**  
-**Планирование изготовления и взаимопомощь в World of Warcraft: Forever.**
-
 [English](#english) · [Русский](#русский)
 
 ## English
 
-ForeverNet connects profession profiles within your guild or group. Select an item and quantity to see materials, missing components, crafting steps, and potential crafters.
+**1.0.0 Release** · Forever 1.60.1 (70124), Interface 16001
 
-**Version:** 0.4.0 Beta · **Target client:** Forever 1.60.1 (70124), Interface 16001<br>
-**Author:** Andrew Woolfi · **License:** [MIT](LICENSE)
+[Download](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.0.0) · [Support Andrew Woolfi](https://boosty.to/andrewwoolfi)
+
+ForeverNet connects your profession recipes with crafters in your guild or home group. Build a plan for one item or a shared queue, account for carried materials and your saved personal bank, and request help for missing components.
 
 ### Features
 
-- Searchable catalog of learned recipes scanned from your open profession, grouped into collapsible profession sections; each item appears once, with a choice of crafters. Search by item, player or profession.
-- The Network page lists other players; your own capabilities remain available for planning.
-- Player profiles organize recipes into collapsible profession sections with skill ranks, item cards and Blueprint highlights. Click a card to open that player's recipe and plan a craft.
-- Production chains with component quantities, crafting order, and potential crafters.
-- Stock calculation using carried items and saved personal bank contents.
-- Automatic personal bank snapshots on visits and inventory changes, stored per character.
-- Guild/group profile sharing and item requests through in-game addon messages.
-- Request lifecycle: open, accepted, completed, or cancelled; the first offer is accepted automatically by the owner's addon.
-- Manual Blueprint flags and Camping facility requirements.
-- Item cards, separate help sections, settings, and a movable minimap button using game textures and fonts.
-- Styling inspired by Forever's profession window: dark brown panels, readable light text, gold headings, narrow profession section strips and native Forever side tabs.
-- Compact search, recipe filters by profession/type/crafter and native thin scrollbars.
-- Star up to 5 player profiles and 5 recipe items. Favorite profiles stay at the top and are retained across sessions; favorite recipes appear in a section above profession groups.
-- Interface localization for all 12 WoW locale codes, with automatic detection and a language selector.
-- Bundled Korean and Chinese fonts cover the interface, buttons, window titles, input fields, and tooltips even on a Russian or English client. Asian language names are readable before selecting them.
-- Optional notifications when a group/guild participant reports a newer addon version, with manual download instructions.
+- Character overview with reported profession ranks, scan age and queue progress.
+- Recipe catalog grouped by profession, search and combined filters. One item row retains all known recipe/crafter variants; your character never appears as a duplicate network member.
+- Other players' profiles grouped by profession. Favorite up to 5 profiles and 5 recipe items; favorites appear first and are saved between sessions.
+- Production chains with quantities, batch surplus and shared stock. Choose to obtain an intermediate material separately, craft it with a known recipe or restore automatic source selection.
+- Per-character queue of up to 50 goals, editing/reordering and a movable material tracker. Save up to 10 goal sets, preview before loading, and undo the last successful load or cleanup.
+- Maintained stock targets recalculate after use. Goals, sets and source choices persist; finished stock may remain in the saved bank.
+- Native profession panel with finished-item quantity, Add to queue, Materials and Find a crafter. Crafter search also supports unlearned recipes with a supported item output; it does not send messages or add them to your own profile.
+- ForeverNet auction-house tab for targeted material scans, observed unit/shortage prices, market volume and daily price history with 30/90-day views. Auction buttons open native name search; buying remains manual.
+- Source comparisons recalculate additional purchases for the entire plan, including shared stock and batch surplus. Unknown prices, volume gaps and unknown crafting fees are shown explicitly; choices remain manual.
+- Private snapshots of purchased personal-bank tabs. Carried/bank quantities remain visible; unavailable tabs retain their last snapshot. Account/guild banks are excluded.
+- Guild/home-group requests and offers, manual Sync and optional automatic refresh every 1/2/5 minutes. Queued profiles are coalesced; short interruptions preserve progress and send-rate limits retain queued messages with automatic retry.
+- Dark profession-style interface, compact material cards and native scrollbars. All 12 WoW locale codes, a language selector and bundled CJK fonts for Korean and Chinese even on a different client locale.
 
-### Screenshots
-
-**Recipe catalog and favorites**
-
-<img src="docs/screenshots/recipes.png" alt="Recipe catalog and favorites" width="832">
-
-**Production chain example**
-
-<img src="docs/screenshots/production-chain.png" alt="Production chain example" width="832">
-
-**Guild and group network**
-
-<img src="docs/screenshots/network.png" alt="Guild and group network" width="827">
-
-**Settings and addon information**
-
-<img src="docs/screenshots/settings.png" alt="Settings and addon information" width="528">
-
-**Interface language selection**
-
-<img src="docs/screenshots/languages.png" alt="Interface language selection, including Korean and Chinese" width="493">
-
-**Addon update information**
-
-<img src="docs/screenshots/updates.png" alt="Addon update information and download instructions" width="563">
-
-### Installation
-
-1. Place the `ForeverNet` folder in your client's `Interface/AddOns` directory. `ForeverNet.toc` must be directly inside that folder.
-2. Include all Lua files listed in the TOC and the `LICENSE` file. Development folders such as `work`, `tests`, and `docs` are not needed in game.
-3. Enable ForeverNet in the AddOns list. Restart the client after the first installation; use `/reload` after updating an existing installation.
+Recipe chat-link buttons have been extracted from ForeverNet. They belong to the separately prepared **ForeverLink**, which is not included in this repository or release. Blizzard's existing profession-share control remains available.
 
 ### Getting started
 
-1. Open ForeverNet using the minimap button or `/fn`.
-2. Open your own profession and click **Scan**. Clear the profession window's filters and search to include more learned recipes.
-3. Select a recipe, enter a quantity, and click **Build chain**.
-4. Visit your personal bank to save its contents. Withdraw required materials before crafting and rebuild the plan after stock changes.
-5. To cooperate, join the same guild or group as other ForeverNet users, enable **Sharing** on both sides. Discovery starts automatically; **Sync** also refreshes profiles and requests manually.
-6. Select a missing component and click **Ask for help**.
+1. Extract the release ZIP into `Interface/AddOns`, so the file is `Interface/AddOns/ForeverNet/ForeverNet.toc`. Enable the addon and restart the client after first installing its fonts.
+2. Open `/fn` or use the minimap button. Open your own profession and click Scan; repeat for your professions. Clear native filters if you want a broader scan.
+3. Visit your personal bank to save its stock. Select a recipe/quantity and build a chain, or add goals to the queue.
+4. Review the required materials and source choices. Withdraw bank materials needed for crafting; craft, travel and trade manually.
+5. For cooperation, enable Sharing on both sides in a common guild/home group. Sync manually or keep automatic refresh enabled. Select a missing component to request help.
 
-The **Example** button shows an isolated sample chain that is never published to other players.
+### Controls and data
 
-The chain has two lists: **What to get** and **What to craft**. Each crafting step shows its crafter and the total ingredients needed. Use **Get N ready-made** on a material's crafting step to get the finished reagent instead; use **Craft N** on a missing material to make it. For example, getting 10 leather removes its conversion from 30 scraps. **Other recipes** unfolds alternative recipes and their total costs in the same list. Stock is used first and can be expanded separately. Choices recalculate the original item and apply to this plan only. Default recipe selection does not compare prices.
+`/fn` opens ForeverNet; `/fn settings`, `/fn help`, `/fn updates` and `/fn track` open the respective windows. `/fn demo` shows an isolated example. Left-click the minimap button to toggle the window, right-click for help. Star buttons toggle favorite recipes and profiles.
 
-### Controls and settings
+Settings control sharing, automatic refresh and its interval, bank scan/use, minimap visibility, interface language and participant-version notices. The update window compares versions reported by players and offers a download link; it does not query GitHub or install files in game.
 
-| Control | Action |
-|---|---|
-| `/fn` | Open the main window |
-| `/fn settings` | Open settings and addon information |
-| `/fn updates` | Check participant versions and open download instructions |
-| `/fn help` | Show the command reference |
-| `/fn demo` | Show a sample production chain |
-| `/fn language auto` | Use the client language, with English fallback |
-| `/fn language LOCALE` | Choose enUS, enGB, ruRU, deDE, frFR, esES, esMX, itIT, ptBR, koKR, zhCN, or zhTW |
-| Minimap left-click | Toggle the main window |
-| Minimap right-click | Open help |
-| Drag the minimap button | Reposition it; the position is saved |
+Sharing is off on first install. Profession capabilities, recipes, camping capabilities and requests use the client's guild/home-group channels; there is no external server. Bag/bank stock, queues, sets, prices and diagnostic records stay private. Nonfavorite peer profiles expire after 30 minutes without refresh; favorites are retained and marked stale. Requests expire after 30 minutes. Local recipes, bank snapshots and favorites are saved across normal logout/reload.
 
-Settings include language, sharing, automatic network refresh (on/off, 1/2/5-minute interval), automatic bank scanning, inclusion of bank stock in plans, and minimap button visibility. The About section provides GitHub and Boosty links: click a URL and press Ctrl+C to copy it.
+Use `/fn netstatus` for transfer result, pending fragments, rate-limit state and retry timing. To investigate a protected-action popup, `/fn taint status` shows captured events; `/fn taint on` enables native logging and `/fn taint off` restores its previous setting.
 
-The update window compares versions advertised by participants while sharing is enabled. It does not query GitHub or install files in game. Use the download link to check published releases and update manually, or configure an external addon manager. Notifications can be disabled. New translations are machine-assisted and need further native-speaker review; see [localization](docs/LOCALIZATION.md).
+### Limits
 
-Forever's first name and surname are matched across native and chat-name forms. Existing copies of your own profile are merged automatically, preserving learned recipes and the newest bank snapshot. Your Network page shows other players; they see one profile for you. Different crafters remain separate even when they know the same recipe.
+Targeted at Forever 1.60.1 (70124), Interface 16001. Other WoW clients and UI replacements are not validated. Release status does not establish every client integration as verified: auction/native layout needs further in-game coverage, and the reported protected item-use popup after visiting a bank is still under investigation.
 
-### Bank data and sharing
+The scanner reads learned item recipes currently visible through native filters. Ambiguous outputs, currency/variable costs and unsupported optional reagent cases may be skipped. Cached recipe/profile/bank/price data can be stale. The planner is bounded and greedy, not a global optimizer; it cannot guarantee a crafter's availability or fee. Equipment variants are not priced. Price history contains observed scans, not continuous market data. The addon neither buys items nor crafts automatically. Client-imposed messaging restrictions can pause sharing; API acceptance is not an acknowledgement from the receiver.
 
-Personal bank scanning and bank stock inclusion are enabled by default. Snapshots cover purchased personal bank tabs, not account or guild banks. Outside a bank visit, plans use the last saved snapshot; its age is displayed. An unavailable or incompletely loaded tab does not replace the previous snapshot.
+### Screenshots
 
-Sharing is disabled on first installation. Enabling it allows profession, recipe, camp, and request messages through guild or group channels. Bag and bank inventories are not shared. Automatic network refresh is enabled by default, every 2 minutes; choose 1, 2, or 5 minutes in settings. It also discovers participants on login, enabling sharing, and group/guild changes, and publishes your profile after a scan or manual recipe edit. New participants receive existing unexpired requests in that channel. Refresh waits for outgoing transfers to finish and coalesces identical profiles. Disabling automatic refresh stops initiated background synchronization; Sync still works, and enabled sharing still receives messages and answers other participants. There is no external server. Scanning your open profession remains a separate action.
+![Recipes](docs/screenshots/recipes.png)
+![Network](docs/screenshots/network.png)
+![Production chain](docs/screenshots/production-chain.png)
+![Settings](docs/screenshots/settings.png)
+![Languages](docs/screenshots/languages.png)
+![Updates](docs/screenshots/updates.png)
 
-Ordinary peer profiles expire after 30 minutes without an update; favorite profiles are retained and labeled as saved data when stale. Your learned recipes, favorite selections, and personal bank snapshots persist across normal logouts/reloads. Recipe favorites are item bookmarks; a remote-only recipe requires its crafter's profile to remain available (favorite that profile to retain it). Requests last 30 minutes. Offers use the request's original channel, so leaving that channel can prevent delivery. Disabling sharing clears outgoing messages but does not immediately erase profiles already received by others.
+### Development and license
 
-### Current limitations
+Python 3 with `requirements-dev.txt`: `python tests/run.py`. Tests use Lua 5.1 mocks and include the two-client transport fixtures in `tests/network_transport.py` and `tests/forever_transport.py`. See [architecture](docs/ARCHITECTURE.md) and [localization](docs/LOCALIZATION.md). Runtime packages contain TOC/Lua, the MIT license and required font files; private work notes, developer tests and screenshots are excluded.
 
-ForeverNet is a Beta targeting Forever. Compatibility with other WoW clients is not confirmed, although a legacy profession scanner remains in the code.
-
-- The scanner reads the current filtered list of learned item recipes and merges it with saved recipes. Remove obsolete entries with `/fn forget RECIPE_ID` after losing a profession.
-- Recipes with unsupported alternative reagents, variable costs, currency costs, or ambiguous item outputs are skipped. Optional reagents are not included in the base calculation.
-- Blueprint flags and Camping requirements are entered manually. Camp availability is declared by the player, not verified in the world.
-- Selecting an item pins the chosen recipe and crafter for the final item; use Change crafter / recipe to switch between available options. Intermediate components prefer the local character, then use a stable ordering. The bounded greedy planner detects shortages and cycles but can miss a workable alternative route.
-- Plans do not optimize prices, travel, layers, or other players' inventory. Players craft, travel, and trade manually; a plan is not a confirmed order.
-- Friends outside the supported group/guild channels, cross-faction networking, automatic whispers, material reservations, and automatic orders for every chain step are not supported.
-
-Automated checks do not replace in-game testing. Validate bank scanning, UI scale and scrolling, and the complete request flow between real clients before relying on a release.
-
-### Development
-
-```text
-python -m pip install -r requirements-dev.txt
-python tests/run.py
-```
-
-Tests run Lua 5.1 with mocked WoW APIs. They cover module loading, scanning, planning, inventory, cycles, message validation, two-client sharing, requests, expiry, UI behavior, bank snapshots, and settings. Python and Lupa are development dependencies only.
-
-The directed capability graph is available through `ForeverNet.SkillGraph` for development; it is not a dedicated graphical editor.
-
-### Manual example
-
-These `custom:*` identifiers are fictional and are added to your local profile. Keep sharing disabled while experimenting, or use `/fn demo` for an isolated example. For actual items and recipes, use valid `item:ID` and `spell:ID` identifiers.
-
-```text
-/fn profession engineering 300
-/fn recipe custom:engine custom:engine 1 engineering custom:ore=3
-/fn blueprint custom:engine on
-/fn recipe custom:bag custom:bag 1 tailoring custom:engine=1,custom:cloth=4
-/fn station custom:bag custom:workshop on
-/fn camp custom:workshop 0
-/fn plan custom:bag 1
-```
-
-Raw materials appear as missing in this example. Use `/fn help` for additional commands. Command names are the same in every language. Received recipe names may retain the sender's language; local item names are used when available from the client cache.
-
-### Support
-
-If you would like to support development: [Andrew Woolfi on Boosty](https://boosty.to/andrewwoolfi).
-
-### Documentation and license
-
-- [Architecture and protocol — Russian](docs/ARCHITECTURE.md)
-
-**MIT License. Copyright (c) 2026 Andrew Woolfi.** See [LICENSE](LICENSE) for the full terms. Include the license with distributed copies.
-
-Bundled fonts derived from Noto Sans CJK have a separate [SIL Open Font License 1.1](Fonts/OFL.txt); see [font sources and notices](Fonts/README.md). Include the `Fonts` folder when distributing or installing the addon.
-
----
+Code: [MIT](LICENSE), Copyright 2026 Andrew Woolfi. Bundled Noto Sans CJK derivatives: [SIL OFL 1.1](Fonts/OFL.txt), [provenance](Fonts/README.md).
 
 ## Русский
 
-ForeverNet объединяет профили профессий участников гильдии или группы. Выберите предмет и количество — аддон покажет материалы, недостающие компоненты, этапы изготовления и возможных исполнителей.
+**1.0.0 Release** · Forever 1.60.1 (70124), Interface 16001
 
-**Версия:** 0.4.0 Beta · **Целевой клиент:** Forever 1.60.1 (70124), Interface 16001<br>
-**Автор:** Andrew Woolfi · **Лицензия:** [MIT](LICENSE)
+[Скачать](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.0.0) · [Поддержать Andrew Woolfi](https://boosty.to/andrewwoolfi)
+
+ForeverNet объединяет ваши рецепты с возможностями мастеров гильдии или обычной группы. Рассчитывайте одну вещь или общую очередь, учитывайте сумки и сохранённый личный банк, запрашивайте помощь с недостающими компонентами.
 
 ### Возможности
 
-- Каталог изученных рецептов со сканированием открытой профессии и сворачиваемыми разделами профессий: один предмет — одна строка, с выбором мастера. Поиск работает по предмету, игроку и профессии.
-- В разделе «Сеть» отображаются другие игроки; ваши возможности продолжают учитываться в расчётах.
-- В профилях игроков рецепты распределены по сворачиваемым разделам профессий с навыком, карточками предметов и выделением Blueprint. Нажатие на карточку открывает рецепт этого мастера для расчёта.
-- Производственные цепочки с количеством компонентов, порядком изготовления и возможными исполнителями.
-- Расчёт запасов с учётом предметов при персонаже и сохранённого личного банка.
-- Автосканирование личного банка при посещении и изменении содержимого; отдельные снимки для каждого персонажа.
-- Обмен профилями и запросами через игровые каналы гильдии или группы.
-- Заявки: открыта, принята, завершена или отменена; первый отклик автоматически принимает аддон автора заявки.
-- Ручные метки Blueprint и требования к объектам Camping.
-- Карточки предметов, справка по шагам, настройки и перемещаемая кнопка миникарты с игровыми текстурами и шрифтами.
-- Оформление по окну профессий Forever: тёмные коричневые панели, светлый текст, золотые заголовки, узкие разделы профессий и штатные боковые вкладки.
-- Компактный поиск, фильтры рецептов по профессии/типу/мастерам и штатные тонкие полосы прокрутки.
-- До 5 избранных профилей и 5 рецептов со звёздочками. Избранные профили идут первыми и сохраняются между входами; избранные рецепты вынесены выше разделов профессий.
-- Локализация интерфейса для всех 12 кодов языков WoW, автоподбор и список выбора языка.
-- Встроенные шрифты для корейского и китайского: тексты, кнопки, заголовки окон, поля ввода и подсказки поддерживаются и на русском/английском клиенте. Азиатские названия языков читаются ещё до их выбора.
-- Отключаемое уведомление о более новой версии у участника группы/гильдии и инструкция по ручному обновлению.
+- Обзор персонажа: сообщённые уровни профессий, возраст сканирования и состояние очереди.
+- Каталог по профессиям, поиск и совместимые фильтры. Один предмет занимает одну строку со всеми известными вариантами рецепта/мастера; свой персонаж не дублируется в сети.
+- Профили других игроков с группировкой по профессиям. До 5 избранных профилей и 5 рецептов, сохранение отметок и размещение сверху.
+- Цепочки изготовления с партиями, остатками и общими запасами. Для промежуточного материала можно выбрать получение отдельно, конкретный рецепт или автовыбор источника.
+- Личная очередь до 50 целей: количество, порядок, удаление и подвижный трекер материалов. До 10 наборов с просмотром перед загрузкой и отменой последней успешной загрузки/очистки.
+- Постоянные цели запаса пересчитываются после расходования. Цели, наборы и источники сохраняются; готовый запас может оставаться в сохранённом банке.
+- Панель в штатном окне профессии: количество готовых вещей, добавление в очередь, материалы и поиск мастера. Поиск поддерживает неизученные рецепты с распознаваемым результатом, не отправляет сообщения и не добавляет их в личный профиль.
+- Вкладка ForeverNet на аукционе: сканирование материалов, наблюдавшиеся цены за штуку/дефицит, объём лотов и история дневных цен на 30/90 дней. Кнопки аукциона запускают штатный поиск по названию; покупка ручная.
+- Сравнение источников пересчитывает дополнительные покупки всего плана с общими запасами и остатками партий. Неизвестные цены, нехватка лотов и неизвестная плата мастеру отмечаются; способ получения выбираете сами.
+- Частные снимки купленных вкладок личного банка. Видны сумки/банк; недоступная вкладка сохраняет предыдущий снимок. Банк аккаунта и гильдии не учитывается.
+- Запросы и отклики в гильдии/обычной группе, ручное обновление и автоинтервалы 1/2/5 минут. Одинаковые ожидающие профили объединяются, короткая пауза сохраняет прогресс, лимит частоты не удаляет очередь.
+- Тёмное оформление окна профессий, компактные материалы и штатные полосы прокрутки. Все 12 кодов локалей WoW, выбор языка и встроенные CJK-шрифты для корейского/китайского на клиенте другой локали.
 
-### Скриншоты
-
-**Каталог рецептов и избранное**
-
-<img src="docs/screenshots/recipes.png" alt="Каталог рецептов и избранное" width="832">
-
-**Пример производственной цепочки**
-
-<img src="docs/screenshots/production-chain.png" alt="Пример производственной цепочки" width="832">
-
-**Сеть гильдии и группы**
-
-<img src="docs/screenshots/network.png" alt="Сеть гильдии и группы" width="827">
-
-**Настройки и информация об аддоне**
-
-<img src="docs/screenshots/settings.png" alt="Настройки и информация об аддоне" width="528">
-
-**Выбор языка интерфейса**
-
-<img src="docs/screenshots/languages.png" alt="Выбор языка интерфейса, включая корейский и китайский" width="493">
-
-**Информация об обновлениях аддона**
-
-<img src="docs/screenshots/updates.png" alt="Информация об обновлениях аддона и инструкция по скачиванию" width="563">
-
-### Установка
-
-1. Поместите папку `ForeverNet` в каталог `Interface/AddOns` вашего клиента. Файл `ForeverNet.toc` должен находиться непосредственно внутри этой папки.
-2. Включите все Lua-файлы из TOC и файл `LICENSE`. Папки разработки `work`, `tests` и `docs` для игры не нужны.
-3. Включите ForeverNet в списке модификаций. После первой установки перезапустите клиент; после обновления существующей установки выполните `/reload`.
+Кнопки ссылок рецептов вынесены из ForeverNet в отдельно подготовленный **ForeverLink**. Он не входит в этот репозиторий или выпуск. Штатная кнопка ссылки на профессию остаётся доступной.
 
 ### Начало работы
 
-1. Откройте ForeverNet кнопкой у миникарты или командой `/fn`.
-2. Откройте свою профессию и нажмите **«Сканировать»**. Очистите фильтры и поиск окна профессии, чтобы включить больше изученных рецептов.
-3. Выберите рецепт, укажите количество и нажмите **«Собрать цепочку»**.
-4. Посетите личный банк, чтобы сохранить содержимое. Перед изготовлением заберите нужные материалы и пересчитайте цепочку после изменения запасов.
-5. Для совместной работы вступите в одну гильдию или группу с другими пользователями ForeverNet, включите **«Обмен»** у обоих. Поиск участников запускается автоматически; **«Обновить»** также позволяет вручную обновить профили и запросы.
-6. Выберите недостающий компонент и нажмите **«Запросить помощь»**.
+1. Распакуйте ZIP выпуска в `Interface/AddOns`: файл должен находиться по пути `Interface/AddOns/ForeverNet/ForeverNet.toc`. Включите аддон; после первой установки шрифтов перезапустите клиент.
+2. Откройте `/fn` или кнопку миникарты. Откройте свою профессию и нажмите «Сканировать», повторите для остальных. Для более полного сканирования снимите штатные фильтры.
+3. Посетите личный банк. Выберите рецепт/количество и постройте цепочку либо добавьте цели в очередь.
+4. Проверьте материалы и способы получения. Заберите банковские реагенты, нужные для изготовления. Крафт, перемещение и обмен выполняйте вручную.
+5. Для совместной работы включите «Обмен» у обоих участников общей гильдии/обычной группы. Обновляйте вручную или автоматически. Выберите недостающий компонент, чтобы запросить помощь.
 
-Кнопка **«Пример»** показывает изолированную учебную цепочку, которая не публикуется другим игрокам.
+### Управление и данные
 
-В цепочке два списка: **«Что нужно получить»** и **«Что потом изготовить»**. У каждого шага показаны мастер и полный расход материалов. Кнопка **«Получить N шт.»** заменяет изготовление реагента на получение готового, а **«Изготовить N шт.»** возвращает изготовление. Например, получение 10 готовых единиц кожи убирает их переработку из 30 обрывков. **«Другие рецепты»** раскрывает альтернативы и полный расход тут же, в этом списке. Запасы используются первыми и раскрываются отдельно. Выбор пересчитывает исходную вещь и действует только в текущей цепочке. Выбор рецепта по умолчанию не сравнивает цены.
+`/fn` открывает ForeverNet; `/fn settings`, `/fn help`, `/fn updates`, `/fn track` — соответствующие окна. `/fn demo` показывает отдельный пример. Левый клик миникарты открывает окно, правый — справку. Звёздочки переключают избранные рецепты и профили.
 
-### Управление и настройки
+В настройках: обмен, автообновление и интервал, сканирование/учёт банка, миникарта, язык и уведомления о версиях участников. Окно обновлений сравнивает сообщённые игроками версии и даёт ссылку скачивания; оно не обращается к GitHub и не устанавливает файлы из игры.
 
-| Действие | Назначение |
-|---|---|
-| `/fn` | Открыть главное окно |
-| `/fn settings` | Открыть настройки и информацию об аддоне |
-| `/fn updates` | Проверить версии участников и открыть инструкцию по скачиванию |
-| `/fn help` | Справка по командам |
-| `/fn demo` | Учебная производственная цепочка |
-| `/fn language auto` | Язык клиента с английским резервным вариантом |
-| `/fn language LOCALE` | Выбрать enUS, enGB, ruRU, deDE, frFR, esES, esMX, itIT, ptBR, koKR, zhCN или zhTW |
-| Левый клик по кнопке миникарты | Открыть или закрыть главное окно |
-| Правый клик по кнопке миникарты | Открыть справку |
-| Перетаскивание кнопки миникарты | Изменить положение; оно сохраняется |
+При первой установке обмен выключен. Профессии, рецепты, лагерные возможности и запросы передаются через каналы клиента; внешнего сервера нет. Сумки/банк, очереди, наборы, цены и диагностика остаются личными. Обычные профили удаляются через 30 минут без обновления; избранные сохраняются с отметкой устаревания. Запросы действуют 30 минут. Личные рецепты, снимки банка и избранное сохраняются при обычном выходе и /reload.
 
-В настройках доступны язык, обмен, автообновление сети (вкл./выкл. и интервал 1/2/5 минут), автосканирование банка, учёт банковских запасов и видимость кнопки миникарты. В разделе об аддоне есть ссылки на GitHub и Boosty: нажмите на адрес и скопируйте его через Ctrl+C.
+`/fn netstatus` показывает результат отправки, очередь, лимит частоты и ожидание. Для расследования блокировки действия: `/fn taint status` показывает события, `/fn taint on` включает штатный журнал, `/fn taint off` возвращает прежнюю настройку.
 
-Окно обновлений сравнивает версии, сообщённые участниками при включённом обмене. Оно не обращается к GitHub и не устанавливает файлы из игры. По ссылке можно проверить опубликованные выпуски и обновиться вручную либо настроить внешний менеджер аддонов. Уведомления отключаются. Новые переводы подготовлены с помощью машинного перевода и требуют дальнейшей проверки носителями; подробнее — [локализация](docs/LOCALIZATION.md).
+### Ограничения
 
-Имя и фамилия Forever сопоставляются между формами игрового API и чата. Сохранённые дубли собственного профиля объединяются автоматически с сохранением рецептов и последнего снимка банка. В вашей «Сети» остаются другие игроки, а они видят один ваш профиль. Разные мастера продолжают учитываться отдельно, даже когда знают одинаковый рецепт.
+Целевой клиент Forever 1.60.1 (70124), Interface 16001. Другие клиенты и замены UI не проверены. Статус Release не означает проверки всех интеграций: штатный интерфейс/аукцион требуют дальнейшей проверки в игре, причина сообщения о блокировке еды после банка ещё исследуется.
 
-### Банк и обмен данными
+Сканер читает изученные предметные рецепты текущего отфильтрованного списка. Неоднозначный результат, затраты валюты, переменный выход и неподдержанные дополнительные реагенты могут пропускаться. Рецепты, профили, банк и цены могут устареть. Ограниченный жадный планировщик не гарантирует глобальный оптимум, доступность мастера и цену его услуг. Варианты экипировки не оцениваются. История цен содержит наблюдавшиеся сканирования, а не непрерывные данные рынка. Автопокупки и автокрафта нет. Ограничения клиента могут приостановить сообщения; принятие API не подтверждает получение другим игроком.
 
-Автосканирование и учёт банка включены по умолчанию. Снимки охватывают купленные вкладки личного банка; банк аккаунта и гильдии не сканируется. Вне посещения банка используются последние сохранённые данные, возраст которых отображается в интерфейсе. Недоступная или не полностью загруженная вкладка не заменяет предыдущий снимок.
+### Скриншоты и разработка
 
-Обмен выключен при первой установке. После включения через каналы гильдии или группы передаются профессии, рецепты, лагерные возможности и запросы. Содержимое сумок и банка не передаётся. Автообновление сети включено по умолчанию раз в 2 минуты; в настройках доступны интервалы 1, 2 и 5 минут. Оно также находит участников при входе, включении обмена и изменении группы/гильдии и отправляет профиль после сканирования или ручного изменения рецептов. Новые участники получают существующие неистёкшие запросы этого канала. Обновление ждёт окончания текущей отправки; одинаковые профили не дублируются в очереди. Выключение автообновления прекращает самостоятельные фоновые синхронизации; кнопка «Обновить», приём сообщений и ответы участникам при включённом обмене продолжают работать. Внешнего сервера нет. Сканирование открытой профессии остаётся отдельным действием.
+Скриншоты приведены в английском разделе выше. Python 3 и `requirements-dev.txt`: `python tests/run.py`; проверки двух клиентов (`tests/network_transport.py`, `tests/forever_transport.py`) включены в этот запуск. Mock не заменяет проверку в игре. Подробнее: [архитектура](docs/ARCHITECTURE.md), [локализация](docs/LOCALIZATION.md).
 
-Обычные профили других игроков удаляются через 30 минут без обновления; избранные сохраняются и при устаревании отмечаются как сохранённые данные. Личные изученные рецепты, отметки избранного и снимки личного банка сохраняются после обычного выхода и /reload. Избранное рецептов — закладки предметов: рецепт, известный только другому игроку, требует доступного профиля этого мастера (добавьте профиль в избранное, чтобы сохранить его). Заявки действуют 30 минут. Отклики идут по исходному каналу запроса, поэтому выход из него может помешать доставке. Отключение обмена очищает очередь отправки, но не удаляет немедленно профили, уже полученные другими игроками.
-
-### Текущие ограничения
-
-ForeverNet — Beta для Forever. Совместимость с другими клиентами WoW не подтверждена, хотя в коде сохранён старый адаптер профессий.
-
-- Сканер читает текущий отфильтрованный список изученных предметных рецептов и объединяет его с сохранёнными. После утраты профессии удаляйте устаревшие записи командой `/fn forget RECIPE_ID`.
-- Рецепты с неподдерживаемыми альтернативными реагентами, переменной стоимостью, валютой или неоднозначным предметным результатом пропускаются. Необязательные реагенты в базовый расчёт не входят.
-- Метки Blueprint и требования Camping вводятся вручную. Доступность лагеря заявляется игроком и не проверяется в игровом мире.
-- Выбор рецепта закрепляет исполнителя конечного предмета. Для промежуточных компонентов приоритет имеет ваш персонаж, затем используется стабильный порядок. Ограниченный жадный алгоритм обнаруживает дефицит и циклы, но может пропустить подходящий альтернативный маршрут.
-- Расчёт не оптимизирует цены, перемещение, слои мира и запасы других игроков. Изготовление, перемещение и торговля выполняются вручную; план не является подтверждённым заказом.
-- Друзья вне поддерживаемых каналов группы/гильдии, межфракционная сеть, автоматические личные сообщения, резервирование материалов и автоматические заявки на каждый этап не поддерживаются.
-
-Автоматические проверки не заменяют проверку в игре. Перед использованием выпуска проверьте сканирование банка, масштаб и прокрутку окон, а также полный цикл заявки между реальными клиентами.
-
-### Разработка
-
-```text
-python -m pip install -r requirements-dev.txt
-python tests/run.py
-```
-
-Тесты выполняют Lua 5.1 с заглушками WoW API. Они проверяют загрузку модулей, сканирование, цепочки, запасы, циклы, валидацию сообщений, обмен двух клиентов, заявки, истечение данных, интерфейс, снимки банка и настройки. Python и Lupa нужны только для разработки.
-
-Направленный граф возможностей доступен разработчикам через `ForeverNet.SkillGraph`; отдельного графического редактора для него нет.
-
-### Ручной пример
-
-Идентификаторы `custom:*` вымышлены и добавляются в ваш локальный профиль. Оставьте обмен выключенным на время эксперимента либо используйте `/fn demo` для изолированного примера. Для реальных предметов и рецептов нужны действительные идентификаторы `item:ID` и `spell:ID`.
-
-```text
-/fn profession engineering 300
-/fn recipe custom:engine custom:engine 1 engineering custom:ore=3
-/fn blueprint custom:engine on
-/fn recipe custom:bag custom:bag 1 tailoring custom:engine=1,custom:cloth=4
-/fn station custom:bag custom:workshop on
-/fn camp custom:workshop 0
-/fn plan custom:bag 1
-```
-
-В этом примере сырьё отображается как недостающее. Дополнительные команды доступны через `/fn help`. Их имена одинаковы на обоих языках. Названия полученных рецептов могут сохранять язык отправителя; локальные названия предметов используются при наличии в кэше клиента.
-
-### Поддержка
-
-Поддержать разработку: [Andrew Woolfi на Boosty](https://boosty.to/andrewwoolfi).
-
-### Документация и лицензия
-
-- [Архитектура и протокол](docs/ARCHITECTURE.md)
-
-**MIT License. Copyright (c) 2026 Andrew Woolfi.** Полный текст находится в [LICENSE](LICENSE). Включайте лицензию в распространяемые копии.
-
-Встроенные шрифты на основе Noto Sans CJK распространяются отдельно под [SIL Open Font License 1.1](Fonts/OFL.txt); [источники и уведомления](Fonts/README.md). Папку `Fonts` нужно включать в установку и распространяемые копии аддона.
+В игровой пакет входят TOC/Lua, MIT и обязательные файлы шрифтов. Приватные заметки, рабочие скрипты, тесты и скриншоты не включаются. Код — [MIT](LICENSE), Copyright 2026 Andrew Woolfi; шрифты — [SIL OFL 1.1](Fonts/OFL.txt), [происхождение](Fonts/README.md).
