@@ -4,26 +4,28 @@
 
 ## English
 
-**1.0.0 Release** · Forever 1.60.1 (70124), Interface 16001
+**1.1.0 Release** · Forever 1.60.1 (70124), Interface 16001
 
-[Download](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.0.0) · [Support Andrew Woolfi](https://boosty.to/andrewwoolfi)
+[Download](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.1.0) · [Support Andrew Woolfi](https://boosty.to/andrewwoolfi)
 
 ForeverNet connects your profession recipes with crafters in your guild or home group. Build a plan for one item or a shared queue, account for carried materials and your saved personal bank, and request help for missing components.
 
 ### Features
 
-- Character overview with reported profession ranks, scan age and queue progress.
+[Changes since 1.0.0](docs/RELEASE-1.1.0.md)
+
+- Character overview with professions, rank/max skill and progress only in the left sidebar; queue/network state and saved-bank status on the right. Profession rows open filtered recipes.
 - Recipe catalog grouped by profession, search and combined filters. One item row retains all known recipe/crafter variants; your character never appears as a duplicate network member.
-- Other players' profiles grouped by profession. Favorite up to 5 profiles and 5 recipe items; favorites appear first and are saved between sessions.
+- Other players' profiles grouped by profession. Favorite up to 5 profiles, 5 recipe items and 5 independent market-watch items; favorites appear first and are saved between sessions.
 - Production chains with quantities, batch surplus and shared stock. Choose to obtain an intermediate material separately, craft it with a known recipe or restore automatic source selection.
 - Per-character queue of up to 50 goals, editing/reordering and a movable material tracker. Save up to 10 goal sets, preview before loading, and undo the last successful load or cleanup.
 - Maintained stock targets recalculate after use. Goals, sets and source choices persist; finished stock may remain in the saved bank.
 - Native profession panel with finished-item quantity, Add to queue, Materials and Find a crafter. Crafter search also supports unlearned recipes with a supported item output; it does not send messages or add them to your own profile.
 - ForeverNet auction-house tab for targeted material scans, observed unit/shortage prices, market volume and daily price history with 30/90-day views. Auction buttons open native name search; buying remains manual.
-- Source comparisons recalculate additional purchases for the entire plan, including shared stock and batch surplus. Unknown prices, volume gaps and unknown crafting fees are shown explicitly; choices remain manual.
+- Source comparisons recalculate additional purchases for the entire plan, including shared stock and batch surplus. Automatic source selection uses eligible known purchase costs while preserving explicit choices; unknown/stale prices, volume gaps and unknown crafting fees do not drive it. This is a bounded comparison, not a global economic optimizer.
 - Private snapshots of purchased personal-bank tabs. Carried/bank quantities remain visible; unavailable tabs retain their last snapshot. Account/guild banks are excluded.
 - Guild/home-group requests and offers, manual Sync and optional automatic refresh every 1/2/5 minutes. Queued profiles are coalesced; short interruptions preserve progress and send-rate limits retain queued messages with automatic retry.
-- Dark profession-style interface, compact material cards and native scrollbars. All 12 WoW locale codes, a language selector and bundled CJK fonts for Korean and Chinese even on a different client locale.
+- Switch Modern / Classic in Settings. Modern uses flat dark surfaces, bundled Sans typography and compact icon navigation; Classic restores native portrait borders, red buttons, side-tab art and game fonts. The saved choice applies immediately. Translated buttons wrap with measured height and surrounding spacing. The queue shows goals once on the left and shared material cards or crafting order on the right; selected-goal quantity autosaves. Sets/cleanup/undo live in one scrolling menu, and material cards open source comparisons. Native scrollbars remain. All 12 WoW locale codes, a language selector and bundled CJK fonts for Korean and Chinese even on a different client locale.
 
 Recipe chat-link buttons have been extracted from ForeverNet. They belong to the separately prepared **ForeverLink**, which is not included in this repository or release. Blizzard's existing profession-share control remains available.
 
@@ -37,9 +39,9 @@ Recipe chat-link buttons have been extracted from ForeverNet. They belong to the
 
 ### Controls and data
 
-`/fn` opens ForeverNet; `/fn settings`, `/fn help`, `/fn updates` and `/fn track` open the respective windows. `/fn demo` shows an isolated example. Left-click the minimap button to toggle the window, right-click for help. Star buttons toggle favorite recipes and profiles.
+`/fn` opens ForeverNet; `/fn settings`, `/fn help`, `/fn updates` and `/fn track` open the respective windows. The Commands button (or `/fn help`) opens the command reference; Help keeps the short walkthrough. Startup shows the installed version; a newer version reported by another player is saved and reminded on later logins. Left-click the minimap button to toggle the window, right-click for help. Star buttons toggle favorite recipes, profiles and market items. Market favorites have their own top sidebar group and remain available without price history; an auction scan with no shortages includes favorite recipes and market-watch items.
 
-Settings control sharing, automatic refresh and its interval, bank scan/use, minimap visibility, interface language and participant-version notices. The update window compares versions reported by players and offers a download link; it does not query GitHub or install files in game.
+Settings control sharing, automatic refresh and its interval, bank scan/use, minimap visibility, interface style/language and participant-version notices. Recipe scanning on profession open and automatic purchase-cost source selection are enabled by default and can be switched off. Scanning reads your current native filters and merges recipes without deleting older entries; the open plan recalculates after inventory/profile/price changes, keeping manual choices. The update window compares versions reported by players and offers a download link. A separate built-in channel announces only the addon version in guild/home/instance groups, even with profession sharing disabled; no recipes or bank data are sent by this check. A higher reported version is saved and reminded once per session on later logins. It does not certify the latest published release or make HTTP requests. No external program or launch shortcut is needed; CurseForge installation remains in its own app.
 
 Sharing is off on first install. Profession capabilities, recipes, camping capabilities and requests use the client's guild/home-group channels; there is no external server. Bag/bank stock, queues, sets, prices and diagnostic records stay private. Nonfavorite peer profiles expire after 30 minutes without refresh; favorites are retained and marked stale. Requests expire after 30 minutes. Local recipes, bank snapshots and favorites are saved across normal logout/reload.
 
@@ -53,12 +55,11 @@ The scanner reads learned item recipes currently visible through native filters.
 
 ### Screenshots
 
+![Character](docs/screenshots/character.png)
 ![Recipes](docs/screenshots/recipes.png)
 ![Network](docs/screenshots/network.png)
-![Production chain](docs/screenshots/production-chain.png)
+![Market](docs/screenshots/market.png)
 ![Settings](docs/screenshots/settings.png)
-![Languages](docs/screenshots/languages.png)
-![Updates](docs/screenshots/updates.png)
 
 ### Development and license
 
@@ -68,26 +69,26 @@ Code: [MIT](LICENSE), Copyright 2026 Andrew Woolfi. Bundled Noto Sans CJK deriva
 
 ## Русский
 
-**1.0.0 Release** · Forever 1.60.1 (70124), Interface 16001
+**1.1.0 Release** · Forever 1.60.1 (70124), Interface 16001
 
-[Скачать](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.0.0) · [Поддержать Andrew Woolfi](https://boosty.to/andrewwoolfi)
+[Скачать](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.1.0) · [Поддержать Andrew Woolfi](https://boosty.to/andrewwoolfi)
 
 ForeverNet объединяет ваши рецепты с возможностями мастеров гильдии или обычной группы. Рассчитывайте одну вещь или общую очередь, учитывайте сумки и сохранённый личный банк, запрашивайте помощь с недостающими компонентами.
 
 ### Возможности
 
-- Обзор персонажа: сообщённые уровни профессий, возраст сканирования и состояние очереди.
+- Профессии на главной только слева: ранг/максимум, полосы навыка, давность сканирования и переход к отфильтрованным рецептам. Справа — состояние очереди, сети и сохранённого банка.
 - Каталог по профессиям, поиск и совместимые фильтры. Один предмет занимает одну строку со всеми известными вариантами рецепта/мастера; свой персонаж не дублируется в сети.
-- Профили других игроков с группировкой по профессиям. До 5 избранных профилей и 5 рецептов, сохранение отметок и размещение сверху.
+- Профили других игроков с группировкой по профессиям. До 5 избранных профилей, 5 рецептов и 5 отдельных вещей рынка, сохранение отметок и размещение сверху.
 - Цепочки изготовления с партиями, остатками и общими запасами. Для промежуточного материала можно выбрать получение отдельно, конкретный рецепт или автовыбор источника.
 - Личная очередь до 50 целей: количество, порядок, удаление и подвижный трекер материалов. До 10 наборов с просмотром перед загрузкой и отменой последней успешной загрузки/очистки.
 - Постоянные цели запаса пересчитываются после расходования. Цели, наборы и источники сохраняются; готовый запас может оставаться в сохранённом банке.
 - Панель в штатном окне профессии: количество готовых вещей, добавление в очередь, материалы и поиск мастера. Поиск поддерживает неизученные рецепты с распознаваемым результатом, не отправляет сообщения и не добавляет их в личный профиль.
 - Вкладка ForeverNet на аукционе: сканирование материалов, наблюдавшиеся цены за штуку/дефицит, объём лотов и история дневных цен на 30/90 дней. Кнопки аукциона запускают штатный поиск по названию; покупка ручная.
-- Сравнение источников пересчитывает дополнительные покупки всего плана с общими запасами и остатками партий. Неизвестные цены, нехватка лотов и неизвестная плата мастеру отмечаются; способ получения выбираете сами.
+- Сравнение источников пересчитывает дополнительные покупки всего плана с общими запасами и остатками партий. Автовыбор использует пригодные известные цены и сохраняет ручные решения. Неизвестные/устаревшие цены, нехватка лотов и неизвестная плата мастеру не определяют автоподбор; сравнение ограничено и не гарантирует глобальный экономический оптимум.
 - Частные снимки купленных вкладок личного банка. Видны сумки/банк; недоступная вкладка сохраняет предыдущий снимок. Банк аккаунта и гильдии не учитывается.
 - Запросы и отклики в гильдии/обычной группе, ручное обновление и автоинтервалы 1/2/5 минут. Одинаковые ожидающие профили объединяются, короткая пауза сохраняет прогресс, лимит частоты не удаляет очередь.
-- Тёмное оформление окна профессий, компактные материалы и штатные полосы прокрутки. Все 12 кодов локалей WoW, выбор языка и встроенные CJK-шрифты для корейского/китайского на клиенте другой локали.
+- Переключение «Современный / Классический» в настройках с сохранением и применением сразу. Классический стиль возвращает штатные рамки, красные кнопки, оформление боковых вкладок и игровые шрифты; современные компактные разделы сохраняются. Переведённые кнопки измеряются и переносят текст с адаптацией соседних отступов. Плоский тёмный интерфейс: Sans-шрифт, светлые заголовки, спокойные акценты и компактная навигация. В очереди цели показаны один раз слева; справа общие материалы или порядок изготовления. Количество выбранной цели сохраняется сразу. Наборы/очистка/отмена доступны из одного меню, сравнение источников открывается нажатием на материал. Штатные полосы прокрутки сохранены. Все 12 кодов локалей WoW, выбор языка и встроенные CJK-шрифты для корейского/китайского на клиенте другой локали.
 
 Кнопки ссылок рецептов вынесены из ForeverNet в отдельно подготовленный **ForeverLink**. Он не входит в этот репозиторий или выпуск. Штатная кнопка ссылки на профессию остаётся доступной.
 
@@ -101,9 +102,9 @@ ForeverNet объединяет ваши рецепты с возможност�
 
 ### Управление и данные
 
-`/fn` открывает ForeverNet; `/fn settings`, `/fn help`, `/fn updates`, `/fn track` — соответствующие окна. `/fn demo` показывает отдельный пример. Левый клик миникарты открывает окно, правый — справку. Звёздочки переключают избранные рецепты и профили.
+`/fn` открывает ForeverNet; `/fn settings`, `/fn help`, `/fn updates`, `/fn track` — соответствующие окна. Кнопка «Команды» (или `/fn help`) открывает список команд; «Справка» сохраняет короткое руководство. При загрузке показывается установленная версия; более новая версия от другого игрока сохраняется и напоминается при следующих входах. Левый клик миникарты открывает окно, правый — справку. Звёздочки переключают избранные рецепты, профили и вещи рынка. Избранное рынка — отдельная группа сверху слева; вещи остаются доступны без истории цен. При пустом дефиците сканирование аукциона включает избранные рецепты и вещи рынка.
 
-В настройках: обмен, автообновление и интервал, сканирование/учёт банка, миникарта, язык и уведомления о версиях участников. Окно обновлений сравнивает сообщённые игроками версии и даёт ссылку скачивания; оно не обращается к GitHub и не устанавливает файлы из игры.
+В настройках: обмен, автообновление и интервал, сканирование/учёт банка, миникарта, стиль/язык и сообщения проверки версии. Автосканирование при открытии профессии и автовыбор стоимости покупки включены по умолчанию и отключаются отдельно. Сканирование читает текущие штатные фильтры и добавляет рецепты без удаления прежних; открытый план пересчитывается при изменениях запасов, профилей и цен, сохраняя ручные решения. Окно обновлений сравнивает версии от игроков и даёт ссылку скачивания. Отдельный встроенный канал передаёт только номер версии в гильдии/обычной или инстансной группе, даже при выключенном обмене профессиями; рецепты и банк этой проверкой не отправляются. Более новая сообщённая версия сохраняется и напоминается при следующих входах один раз за сеанс. Это не подтверждение последнего опубликованного релиза и не HTTP-запрос. Внешняя программа или особый ярлык не нужны; установка CurseForge остаётся в его приложении.
 
 При первой установке обмен выключен. Профессии, рецепты, лагерные возможности и запросы передаются через каналы клиента; внешнего сервера нет. Сумки/банк, очереди, наборы, цены и диагностика остаются личными. Обычные профили удаляются через 30 минут без обновления; избранные сохраняются с отметкой устаревания. Запросы действуют 30 минут. Личные рецепты, снимки банка и избранное сохраняются при обычном выходе и /reload.
 

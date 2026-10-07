@@ -5,23 +5,21 @@ F.localProfile.recipes.test=recipe
 local peer=F.NewProfile(); peer.recipes.test=F.Copy(recipe); F.db.profiles['Peer-Realm']=peer
 for _,locale in ipairs(F.LocaleOrder) do
     F.db.settings.locale=locale; U.Navigate('recipes'); U.Select(U.entries[1])
-    assert(U.blocks[1].text:GetText():find(string.format(F.L('RECIPE_OVERVIEW'),1,0,1,1),1,true))
-    assert(not U.blocks[1].title:IsShown())
-    assert(U.blocks[2].title:GetText()==F.L('AVAILABLE_CRAFTERS'))
-    assert(not U.blocks[2].text:GetText():find('Target item',1,true)) -- No repeated item name for every master.
-    assert(not U.blocks[1].text:GetText():find(F.L('RECIPE_NEXT'),1,true)) -- Available on the plan button.
-    assert(U.cards[1].point[2]==0 and U.cards[2].point[2]==222)
-    local overviewBottom=-U.blocks[1].text.point[3]+U.blocks[1].text:GetStringHeight()
-    assert(-U.cards[1].point[3]>=overviewBottom+8, 'Material cards overlap the recipe calculation')
-    assert(U.cards[1].point[3]==U.cards[2].point[3] and U.cards[3].point[3]<U.cards[1].point[3])
-    assert(U.cards[1]:GetWidth()==212 and U.cards[1]:GetHeight()==U.cards[2]:GetHeight())
+    assert(U.visualStats[1].value:GetText()=='1' and U.visualStats[3].value:GetText()=='1')
+    assert(U.visualTiles[1].point[2]==0 and U.visualTiles[2].point[2]==222)
+    local overviewBottom=-U.visualStats[1].point[3]+U.visualStats[1]:GetHeight()
     local bottom=0
     for i=1,4 do
-        local card=U.cards[i]; assert(card:IsShown())
-        assert(card:GetHeight()>=-card.detail.point[3]+card.detail:GetStringHeight()+8)
-        bottom=math.max(bottom,-card.point[3]+card:GetHeight())
+        local tile=U.visualTiles[i]; assert(tile:IsShown())
+        assert(-tile.point[3]>=overviewBottom+8)
+        assert(tile:GetHeight()>=-tile.detail.point[3]+tile.detail:GetStringHeight()+16)
+        assert(tile.entry.hint:find(string.format(F.L('MATERIAL_CARD'),0,0,recipe.reagents[tile.entry.item]),1,true))
+        bottom=math.max(bottom,-tile.point[3]+tile:GetHeight())
     end
-    assert(-U.blocks[2].title.point[3]>=bottom)
+    assert(U.visualTiles[1]:GetWidth()==212 and U.visualTiles[1]:GetHeight()==U.visualTiles[2]:GetHeight())
+    assert(U.visualTiles[1].point[3]==U.visualTiles[2].point[3] and U.visualTiles[3].point[3]<U.visualTiles[1].point[3])
+    assert(U.crafter:IsShown())
+    U.crafter.scripts.OnEnter(U.crafter); assert(F.Theme.tooltip:IsShown()); U.crafter.scripts.OnLeave()
     U.Show(''); U.ShowCards({{item='item:2',title='A',text='0 / 0 / 1'},{item='item:3',title='B',text='0 / 0 / 1'},
         {item='item:4',title='C',text='0 / 0 / 1'},{item='item:5',title='D',text='0 / 0 / 1'}})
     local total=-U.cards[4].point[3]+U.cards[4]:GetHeight()+6
@@ -56,19 +54,10 @@ F.db.settings.locale='enUS'
 F.db.profiles['Peer-Realm']=nil
 C_Item.GetItemCount=function() return 100 end
 U.Navigate('recipes'); U.Select(U.entries[1])
-assert(U.blockCount==1) -- One owner is already identified in the header.
-for i=1,4 do assert(not U.cards[i].detail:GetText():find(F.L('MARKET_UNKNOWN'),1,true)) end
+assert(not U.crafter:IsShown()) -- One owner is already identified in the header.
+for i=1,4 do assert(not U.visualTiles[i].detail:GetText():find(F.L('MARKET_UNKNOWN'),1,true)) end
 F.Queue.Add('item:1',1,F.me,'test'); U.Navigate('queue')
-local goal,tools
-for i,entry in ipairs(U.chainRows) do
-    if entry.extraAction then goal=i end
-    if entry.title==F.L('SETS_TITLE') then tools=i end
-end
-assert(goal and tools and goal<tools)
-local stock
-for _,entry in ipairs(U.chainRows) do if entry.title==F.L('CHAIN_STOCK') then stock=entry end end
-assert(stock and not U.showQueueStock)
-stock.actions[1].run(); assert(U.showQueueStock)
-local found=false
-for _,entry in ipairs(U.chainRows) do if entry.text==string.format(F.L('STOCK_CARD'),1,0) then found=true end end
-assert(found)
+assert(U.queueBoard.materials:IsShown() and not U.queueBoard.menu:IsShown())
+assert(U.queueBoard.next:IsShown() and U.queueBoard.next.title:GetText()==F.L('ALREADY_OWNED'))
+U.Select(U.entries[1]); assert(U.queueBoard.goalBar:IsShown() and U.qty:IsShown())
+assert(U.qty.parent==U.queueBoard.goalBar and not U.chosen:IsShown())

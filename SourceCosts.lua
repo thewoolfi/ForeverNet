@@ -10,10 +10,15 @@ end
 function S.Compare(profiles,goals,inventory,item,options)
     options=options or {}
     local now=F.Now()
-    local context={quotes={},remaining=S.MAX_WORK}
+    local context={quotes={},remaining=math.min(S.MAX_WORK,options.maxWork or S.MAX_WORK)}
+    local initialWork=context.remaining
     local baseOptions=F.Copy(options)
     baseOptions.localOwner=baseOptions.localOwner or F.me
     baseOptions.sources=baseOptions.sources or {}
+    if not baseOptions.sourceIndex then
+        local index=F.Planner.SourceIndex(profiles,now,baseOptions.localOwner)
+        baseOptions.sourceIndex=function() return index end
+    end
     local function evaluate(choice,kind,source)
         local opts=F.Copy(baseOptions); opts.sources[item]=F.Copy(choice)
         local plan=F.Planner.BuildQueue(profiles,goals,inventory,now,opts)
@@ -45,7 +50,7 @@ function S.Compare(profiles,goals,inventory,item,options)
     result.current=evaluate(current,'current')
     result.rows[1]=evaluate(nil,'auto')
     result.rows[2]=evaluate('external','external')
-    local sources=F.Planner.Sources(profiles,item,now,baseOptions.localOwner)
+    local sources=baseOptions.sourceIndex()[item] or {}
     local included={}
     -- Keep a pinned source visible even if it lies beyond the preview limit.
     if type(current)=='table' then
@@ -69,5 +74,6 @@ function S.Compare(profiles,goals,inventory,item,options)
         row.lowest=count>1 and row.eligible and row.budget.cost==best
         if row.eligible and result.current.eligible then row.delta=row.budget.cost-result.current.budget.cost end
     end
+    result.workUsed=initialWork-context.remaining
     return result
 end

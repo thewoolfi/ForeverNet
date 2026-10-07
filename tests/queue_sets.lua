@@ -92,23 +92,20 @@ for _,locale in ipairs(F.LocaleOrder) do
     d.first.scripts.OnClick(d.first); assert(not d:IsShown() and #Q.data.goals==1)
     U.QueueSetDialog('load','Поход'); d.second.scripts.OnClick(d.second)
     assert(#Q.data.goals==2 and Q.Undo())
-    U.queueSetsExpanded=true; U.Status()
+    U.QueueMenu()
     local found=false
-    for _,row in ipairs(U.sourceRows) do
-        if row:IsShown() and row.entry.title=='UI' then
-            found=true; row.buttons[2].scripts.OnClick(row.buttons[2]); break
+    for _,row in ipairs(U.queueBoard.menuRows) do
+        if row:IsShown() and row.open:GetText()=='UI' then
+            found=true; row.delete.scripts.OnClick(row.delete); break
         end
     end
     assert(found and not Q.data.sets.UI)
     U.QueueSetDialog('load','Поход'); U.Navigate('recipes'); assert(not d:IsShown())
 end
 F.db.settings.locale='enUS'; U.Navigate('queue'); bags[1]=3
-for _,entry in ipairs(U.chainRows) do
-    if entry.title==F.L('SETS_CLEAN') then entry.actions[1].run(); break end
-end
+if U.queueBoard.menu:IsShown() then U.queueBoard.menu:Hide() end
+U.QueueMenu(); local cleanup=U.queueBoard.menuRows[2].open; cleanup.scripts.OnClick(cleanup)
 assert(#Q.data.goals==0 and Q.undo)
-for _,entry in ipairs(U.chainRows) do
-    if entry.title==F.L('SETS_CLEAN') then entry.actions[2].run(); break end
-end
+U.QueueMenu(); local undo=U.queueBoard.menuRows[3].open; undo.scripts.OnClick(undo)
 assert(#Q.data.goals==1 and not Q.undo and F.localProfile.rev==peerRevision)
 Q.data.tracker=true

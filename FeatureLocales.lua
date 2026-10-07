@@ -579,3 +579,95 @@ zhTW='用戶端正在限制傳送頻率。訊息保留在佇列中並會自動�
 }
 throttle.enGB=throttle.enUS; throttle.esMX=throttle.esES
 for locale,text in pairs(throttle) do F.Locales[locale].NET_THROTTLE=text end
+
+local visualKeys={'VIS_TARGET','VIS_OWNED','VIS_CRAFTS','VIS_COST','VIS_GET','VIS_MAKE','VIS_DETAILS','VIS_TOOLS','VIS_SOURCES','VIS_QUEUE_MINI'}
+local visual={
+enUS={'Wanted','Owned','Crafts','Purchases','Get','Craft','Details','Manage queue','Material choices','%d goals / %d missing'},
+ruRU={'Нужно','Есть','Крафтов','Покупки','Получить','Изготовить','Подробнее','Управление очередью','Выбор материалов','%d целей / %d не хватает'},
+deDE={'Ziel','Vorhanden','Herstellungen','Einkäufe','Besorgen','Herstellen','Details','Warteschlange verwalten','Materialauswahl','%d Ziele / %d fehlen'},
+frFR={'Objectif','Possédé','Fabrications','Achats','Obtenir','Fabriquer','Détails','Gérer la file','Choix des matériaux','%d objectifs / %d manquants'},
+esES={'Objetivo','Disponible','Fabricaciones','Compras','Conseguir','Fabricar','Detalles','Gestionar cola','Elegir materiales','%d objetivos / %d faltantes'},
+itIT={'Obiettivo','Posseduti','Creazioni','Acquisti','Ottieni','Crea','Dettagli','Gestisci coda','Scelta materiali','%d obiettivi / %d mancanti'},
+ptBR={'Objetivo','Disponível','Criações','Compras','Obter','Criar','Detalhes','Gerenciar fila','Escolher materiais','%d objetivos / %d faltando'},
+koKR={'목표','보유','제작 횟수','구매','확보','제작','자세히','대기열 관리','재료 선택','목표 %d / 부족 %d'},
+zhCN={'目标','拥有','制作次数','购买','获取','制作','详情','管理队列','材料选择','%d个目标 / %d种缺少'},
+zhTW={'目標','擁有','製作次數','購買','取得','製作','詳情','管理佇列','材料選擇','%d個目標 / 缺少%d種'},
+}
+visual.enGB=visual.enUS; visual.esMX=visual.esES
+for locale,values in pairs(visual) do for i,key in ipairs(visualKeys) do F.Locales[locale][key]=values[i] end end
+local ready={enUS={'Materials ready','Goals'},ruRU={'Материалы готовы','Целей'},deDE={'Material bereit','Ziele'},frFR={'Matériaux prêts','Objectifs'},esES={'Materiales listos','Objetivos'},itIT={'Materiali pronti','Obiettivi'},ptBR={'Materiais prontos','Objetivos'},koKR={'재료 준비됨','목표'},zhCN={'材料齐全','目标'},zhTW={'材料齊全','目標'}}
+ready.enGB=ready.enUS; ready.esMX=ready.esES
+for locale,values in pairs(ready) do F.Locales[locale].VIS_READY=values[1]; F.Locales[locale].VIS_GOALS=values[2] end
+
+local auto={
+enUS={'Scan my recipes when opening a profession','Automatically choose the lowest known purchase cost'},
+ruRU={'Сканировать рецепты при открытии профессии','Автоматически выбирать наименьшую известную стоимость покупки'},
+deDE={'Rezepte beim Öffnen eines Berufs scannen','Automatisch die niedrigsten bekannten Einkaufskosten wählen'},
+frFR={'Analyser mes recettes à l’ouverture d’un métier','Choisir automatiquement le coût d’achat connu le plus bas'},
+esES={'Escanear mis recetas al abrir una profesión','Elegir automáticamente el menor coste de compra conocido'},
+itIT={'Scansiona ricette quando apro una professione','Scegli automaticamente il costo di acquisto noto più basso'},
+ptBR={'Escanear receitas ao abrir uma profissão','Escolher automaticamente o menor custo de compra conhecido'},
+koKR={'전문 기술을 열면 내 조리법 검색','알려진 최소 구매 비용을 자동 선택'},
+zhCN={'打开专业时扫描我的配方','自动选择已知最低购买成本'},
+zhTW={'開啟專業時掃描我的配方','自動選擇已知最低購買成本'},
+}
+auto.enGB=auto.enUS; auto.esMX=auto.esES
+for locale,values in pairs(auto) do
+    F.Locales[locale].SETTING_AUTOSCAN=values[1]; F.Locales[locale].SETTING_AUTOSOURCES=values[2]
+end
+local board={enUS={'Materials','Maintain stock','Next step'},ruRU={'Материалы','Поддерживать запас','Следующий шаг'},deDE={'Materialien','Vorrat halten','Nächster Schritt'},frFR={'Matériaux','Maintenir le stock','Étape suivante'},esES={'Materiales','Mantener existencias','Siguiente paso'},itIT={'Materiali','Mantieni scorte','Passo successivo'},ptBR={'Materiais','Manter estoque','Próximo passo'},koKR={'재료','재고 유지','다음 단계'},zhCN={'材料','维持库存','下一步'},zhTW={'材料','維持庫存','下一步'}}
+board.enGB=board.enUS; board.esMX=board.esES
+for locale,values in pairs(board) do F.Locales[locale].QB_MATERIALS=values[1]; F.Locales[locale].QB_STOCK=values[2]; F.Locales[locale].QB_NEXT=values[3] end
+local boardTabs={enUS={'All materials','Crafts'},ruRU={'Все материалы','Крафт'},deDE={'Alle Materialien','Herstellungen'},frFR={'Tous les matériaux','Fabrications'},esES={'Todos los materiales','Fabricación'},itIT={'Tutti i materiali','Creazione'},ptBR={'Todos os materiais','Criação'},koKR={'전체 재료','제작'},zhCN={'全部材料','制作'},zhTW={'全部材料','製作'}}
+boardTabs.enGB=boardTabs.enUS; boardTabs.esMX=boardTabs.esES
+for locale,values in pairs(boardTabs) do F.Locales[locale].QB_MATERIALS=values[1]; F.Locales[locale].QB_CRAFTS=values[2] end
+
+local appearance={
+enUS={'Appearance','Modern','Classic','Commands'},ruRU={'Стиль интерфейса','Современный','Классический','Команды'},
+deDE={'Darstellung','Modern','Klassisch','Befehle'},frFR={'Apparence','Moderne','Classique','Commandes'},
+esES={'Apariencia','Moderno','Clásico','Comandos'},itIT={'Aspetto','Moderno','Classico','Comandi'},
+ptBR={'Aparência','Moderno','Clássico','Comandos'},koKR={'외관','현대적','기본','명령어'},
+zhCN={'界面样式','现代','经典','命令'},zhTW={'介面樣式','現代','經典','指令'}}
+appearance.enGB=appearance.enUS; appearance.esMX=appearance.esES
+for locale,values in pairs(appearance) do
+    for i,key in ipairs({'SETTING_STYLE','STYLE_MODERN','STYLE_CLASSIC','COMMANDS_BUTTON'}) do F.Locales[locale][key]=values[i] end
+end
+local watchLimit={enUS='You can favorite up to 5 market items.',ruRU='Можно добавить не более 5 вещей рынка в избранное.',
+deDE='Bis zu 5 Marktgegenstände können favorisiert werden.',frFR='Vous pouvez ajouter jusqu’à 5 objets du marché aux favoris.',
+esES='Puedes marcar hasta 5 objetos del mercado como favoritos.',itIT='Puoi aggiungere fino a 5 oggetti del mercato ai preferiti.',
+ptBR='Você pode favoritar até 5 itens do mercado.',koKR='시장 관심 품목은 최대 5개까지 등록할 수 있습니다.',
+zhCN='最多可收藏5种市场物品。',zhTW='最多可收藏5種市場物品。'}
+watchLimit.enGB=watchLimit.enUS; watchLimit.esMX=watchLimit.esES
+for locale,value in pairs(watchLimit) do F.Locales[locale].MARKET_FAVORITE_LIMIT=value end
+local diagnostics={
+enUS={'network diagnostics','protected-action logging'},ruRU={'диагностика сети','журнал заблокированных действий'},
+deDE={'Netzwerkdiagnose','Protokoll geschützter Aktionen'},frFR={'diagnostic réseau','journal des actions protégées'},
+esES={'diagnóstico de red','registro de acciones protegidas'},itIT={'diagnostica di rete','registro delle azioni protette'},
+ptBR={'diagnóstico da rede','registro de ações protegidas'},koKR={'네트워크 진단','보호된 동작 기록'},
+zhCN={'网络诊断','受保护操作日志'},zhTW={'網路診斷','受保護操作記錄'}}
+diagnostics.enGB=diagnostics.enUS; diagnostics.esMX=diagnostics.esES
+local updated={}
+for locale,values in pairs(diagnostics) do
+    local dict=F.Locales[locale]
+    if not updated[dict] then
+        dict.HELP=dict.HELP..'\nhelp / commands — '..dict.COMMANDS_BUTTON..'\ntrack — '..dict.TRACK_TITLE..
+            '\nnetstatus — '..values[1]..'\ntaint status|on|off — '..values[2]
+        updated[dict]=true
+    end
+end
+
+local versionMessages={
+enUS={'Previously, %s reported version %s (installed: %s). /fn updates','Version check queued.','Join a guild or group to check participant versions.'},
+ruRU={'Ранее %s сообщил версию %s (установлена %s). /fn updates','Проверка версий поставлена в очередь.','Для проверки версий нужна гильдия или группа.'},
+deDE={'%s meldete zuvor Version %s (installiert: %s). /fn updates','Versionsprüfung vorgemerkt.','Tritt einer Gilde oder Gruppe bei, um Spielerversionen zu prüfen.'},
+frFR={'%s avait signalé la version %s (installée : %s). /fn updates','Vérification des versions en attente.','Rejoignez une guilde ou un groupe pour vérifier les versions.'},
+esES={'%s informó antes de la versión %s (instalada: %s). /fn updates','Comprobación de versiones en cola.','Únete a una hermandad o grupo para comprobar versiones.'},
+itIT={'%s ha segnalato la versione %s (installata: %s). /fn updates','Verifica versioni in coda.','Unisciti a una gilda o a un gruppo per verificare le versioni.'},
+ptBR={'%s informou a versão %s antes (instalada: %s). /fn updates','Verificação de versões na fila.','Entre em uma guilda ou grupo para verificar versões.'},
+koKR={'%s님이 이전에 버전 %s을 알렸습니다 (설치됨: %s). /fn updates','버전 확인이 대기 중입니다.','길드 또는 파티에 참여하여 버전을 확인하세요.'},
+zhCN={'%s曾报告版本%s（已安装%s）。/fn updates','版本检查已排队。','加入公会或队伍以检查玩家版本。'},
+zhTW={'%s曾回報版本%s（已安裝%s）。/fn updates','版本檢查已排隊。','加入公會或隊伍以檢查玩家版本。'}}
+versionMessages.enGB=versionMessages.enUS; versionMessages.esMX=versionMessages.esES
+for locale,values in pairs(versionMessages) do
+    for i,key in ipairs({'UPDATE_PEER_CACHED','UPDATE_VERSION_QUEUED','UPDATE_VERSION_NO_CHANNEL'}) do F.Locales[locale][key]=values[i] end
+end

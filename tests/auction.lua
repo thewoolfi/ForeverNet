@@ -16,11 +16,15 @@ C_AuctionHouse={
 function hooksecurefunc(_,name,fn) hooks[name]=fn end
 AuctionHouseFrameDisplayMode={Buy={'Browse'},Sell={'SellFrame'},Auctions={'AuctionsFrame'}}
 AuctionHouseFrame=CreateFrame('Frame'); local frame=AuctionHouseFrame
+frame.MoneyFrameInset=CreateFrame('Frame',nil,frame); frame.MoneyFrameInset:SetHeight(24)
+frame.MoneyFrameBorder=CreateFrame('Frame',nil,frame); frame.MoneyFrameBorder:SetHeight(19)
 frame.Tabs={CreateFrame('Button'),CreateFrame('Button'),CreateFrame('Button')}; frame.tabsForDisplayMode={}
 function PanelTemplates_SetNumTabs(f,count)
     f.numTabs=count
     for i=2,count do f.Tabs[i]:SetPoint('TOPLEFT',f.Tabs[i-1],'TOPRIGHT',3,0) end
 end
+
+
 function frame:SetDisplayMode(mode)
     self.mode=mode
     for _,group in pairs(AuctionHouseFrameDisplayMode) do
@@ -41,6 +45,13 @@ local seen={}
 for _,tab in ipairs(frame.Tabs) do assert(not seen[tab]); seen[tab]=true end
 A.Attach(); assert(#frame.Tabs==4)
 A.tab.scripts.OnClick(); assert(frame.mode==AuctionHouseFrameDisplayMode.ForeverNet)
+assert(A.panel.points.BOTTOMRIGHT[3]>=36)
+for _,style in ipairs({'classic','modern'}) do
+    F.Theme.SetStyle(style); A.Render()
+    assert(A.panel.points.BOTTOMRIGHT[3]>=36 and frame.MoneyFrameInset:IsShown())
+    frame.MoneyFrameInset:SetHeight(48); A.Render(); assert(A.panel.points.BOTTOMRIGHT[3]>=59)
+    frame.MoneyFrameInset:SetHeight(24)
+end
 assert(A.Scan({'item:2318','item:2318'})); assert(#A.pending==1)
 ready=false; A.Tick(1); assert(queries==0)
 ready=true; A.Tick(1); assert(queries==1)
@@ -103,3 +114,15 @@ for _,locale in ipairs(F.LocaleOrder) do
         assert(-A.scroll.points.TOPLEFT[3]>=-A.progress.point[3]+A.progress:GetStringHeight()+8)
     end
 end
+
+-- An empty-deficit targeted scan includes the independent market watch list
+-- and old recipe bookmarks once each, without starting a real scan here.
+local savedScan,savedBuild=A.Scan,F.Queue.Build
+F.Queue.Build=function() return {missing={}} end
+F.db.favorites.market={['item:700']=true,['item:701']=true}
+F.db.favorites.recipes={['item:700']=true,['item:702']=true}
+local scanned
+A.Scan=function(items) scanned=items; return true end
+A.scanButton.scripts.OnClick()
+assert(#scanned==3 and scanned[1]=='item:700' and scanned[2]=='item:701' and scanned[3]=='item:702')
+A.Scan,F.Queue.Build=savedScan,savedBuild

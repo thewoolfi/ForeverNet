@@ -35,7 +35,7 @@ function U.Ensure()
     U.paper,U.paperBase=F.Theme.Background(frame)
     frame:SetMovable(true); frame:EnableMouse(true); frame:RegisterForDrag('LeftButton')
     frame:SetScript('OnDragStart',frame.StartMoving); frame:SetScript('OnDragStop',frame.StopMovingOrSizing)
-    U.heading=label(frame,'GameFontNormal',78,-48,310,'')
+    U.heading=label(frame,'GameFontNormal',24,-48,360,'')
     U.sharing=label(frame,'GameFontHighlightSmall',24,-73,730,'')
     U.scan=button(frame,'',405,-48,108,function() F.Command('scan') end)
     U.share=button(frame,'',519,-48,108,function() F.Command('share '..(F.db.settings.sharing and 'off' or 'on')) end)
@@ -49,7 +49,7 @@ function U.Ensure()
     U.search:SetFontObject('GameFontHighlightSmall')
     F.Theme.Font(U.search,12)
     U.search:SetSize(124,22); U.search:SetPoint('TOPLEFT',16,-29); U.search:SetAutoFocus(false)
-    U.filterButton=button(left,'',150,-29,82,function() U.OpenFilters() end)
+    U.filterButton=button(left,'',150,-29,82,function() if U.page=='queue' then U.QueueMenu() else U.OpenFilters() end end)
     U.filterButton:SetHeight(22)
     U.search:SetScript('OnTextChanged',function(self)
         U.filter=self:GetText(); if not U.resettingSearch then U.Status() end
@@ -81,7 +81,7 @@ function U.Ensure()
         if U.page=='queue' then F.Tracker.Toggle()
         elseif U.page=='crafters' then U.Navigate('network') else U.CycleCrafter() end
     end)
-    U.enqueue=button(right,'',248,-319,220,function() U.Enqueue() end)
+    U.enqueue=button(right,'',248,-319,220,function() if U.page=='network' then U.Navigate('requests') else U.Enqueue() end end)
     U.itemLabel=label(frame,'GameFontNormalSmall',24,-461,235,'')
     local chosen=CreateFrame('Frame',nil,frame,'BackdropTemplate')
     U.chosen=chosen
@@ -96,7 +96,14 @@ function U.Ensure()
     U.qty:SetSize(55,24); U.qty:SetPoint('TOPLEFT',285,-487); U.qty:SetNumeric(true); U.qty:SetAutoFocus(false); U.qty:SetText('1')
     U.qty:SetScript('OnTextChanged',function()
         if U.frame and not U.settingTarget then
+            if U.page=='queue' and U.selectedEntry and U.selectedEntry.kind=='goal' and F.Integer(U.Quantity(),1,10000) then
+                local goal=F.Queue.data.goals[U.selectedEntry.index]
+                if goal and goal.quantity~=U.Quantity() then F.Queue.Quantity(U.selectedEntry.index,U.Quantity()) end
+            end
             local position=U.details:GetVerticalScroll() or 0
+            if U.page=='chain' and U.planData and U.target and U.target.item==U.planData.target and F.Integer(U.Quantity(),1,10000) then
+                U.planData.quantity=U.Quantity(); F.Automation.RefreshPlan()
+            end
             U.UpdateActions(); U.RenderSelection(); U.LayoutDetails()
             U.details:SetVerticalScroll(math.min(position,U.details:GetVerticalScrollRange()))
         end
@@ -106,7 +113,7 @@ function U.Ensure()
     tooltip(U.plan,'RECIPE_NEXT')
     U.request=button(frame,'',550,-487,200,function() U.RequestSelected() end)
     U.footer=label(frame,'GameFontHighlightSmall',24,-535,450,'')
-    U.demo=button(frame,'',490,-535,112,function() F.Command('demo') end)
+    U.commands=button(frame,'',490,-535,112,function() U.Commands() end)
     U.help=button(frame,'',614,-535,136,function() U.Help() end)
     local icons={'INV_Misc_Head_Human_01','INV_Scroll_03','INV_Misc_Note_05','INV_Misc_Coin_01','INV_Misc_GroupLooking','INV_Misc_Note_01','INV_Misc_EngGizmos_01','Trade_Engineering'}
     local pages={'home','recipes','queue','market','network','requests','chain','settings'}
@@ -118,6 +125,7 @@ function U.Ensure()
         if previousTab then nav:SetPoint('TOPLEFT',previousTab,'BOTTOMLEFT',0,-3)
         else nav:SetPoint('TOPLEFT',frame,'TOPRIGHT',-3,-93) end
         nav.Icon:SetTexture('Interface\\Icons\\'..icons[i]); nav:SetFillToInterior(true,40); nav:SetChecked(false)
+        F.Theme.SideTab(nav)
         nav:SetCustomOnMouseUpHandler(function(_,mouse,inside)
             if mouse=='LeftButton' and inside then
                 if page=='settings' then
@@ -136,6 +144,7 @@ function U.Ensure()
         F.Theme.HideTooltip()
         if U.filterMenu then U.filterMenu:Hide() end
         if U.setDialog then U.setDialog:Hide() end
+        if U.queueBoard then U.queueBoard.menu:Hide() end
     end)
 end
 function U.Toggle()
@@ -146,7 +155,7 @@ function U.Navigate(page)
     if U.setDialog then U.setDialog:Hide() end
     U.resettingSearch=true; U.search:SetText(''); U.filter=''; U.resettingSearch=false
     U.listScroll:SetVerticalScroll(0)
-    if page=='chain' and U.planData then U.SetTarget(U.planData.target,U.planData.quantity,U.planData.owner,U.planData.recipeID,U.planData.demo) end
+    if page=='chain' and U.planData then U.SetTarget(U.planData.target,U.planData.quantity,U.planData.owner,U.planData.recipeID) end
     U.Status()
 end
 function U.FindCrafters(item,quantity)
@@ -155,8 +164,8 @@ function U.FindCrafters(item,quantity)
     U.SetTarget(item,quantity); U.Navigate('crafters')
     return true
 end
-function U.SetTarget(item,quantity,owner,recipeID,demo)
-    U.Ensure(); U.target={item=item,owner=owner,recipeID=recipeID,demo=demo}
+function U.SetTarget(item,quantity,owner,recipeID)
+    U.Ensure(); U.target={item=item,owner=owner,recipeID=recipeID}
     U.settingTarget=true; U.qty:SetText(amount(quantity or 1)); U.settingTarget=false
     U.UpdateActions()
 end
@@ -170,18 +179,20 @@ function U.UpdateActions()
     U.itemIcon:SetTexture(target and C.Icon(target.item) or 'Interface\\Icons\\INV_Misc_QuestionMark')
     U.plan:SetEnabled(not not valid and U.page~='crafters')
     U.plan:SetText(F.L(U.page=='chain' and U.planData and 'CHAIN_REFRESH' or 'Собрать цепочку'))
-    local canRequest=valid and not target.demo and U.page~='requests' and U.page~='crafters' and F.db.settings.sharing and F.Net.available and F.Net.Channel()
+    local canRequest=valid and U.page~='requests' and U.page~='crafters' and F.db.settings.sharing and F.Net.available and F.Net.Channel()
     U.request:SetEnabled(not not canRequest)
     local hint
     if not target then hint='CHOOSE_RECIPE'
     elseif not F.Integer(qty,1,10000) then hint='QUANTITY_ERROR'
-    elseif target.demo then hint='DEMO_ONLY'
     elseif not F.db.settings.sharing then hint='ENABLE_TO_REQUEST'
     elseif not F.Net.Channel() then hint='JOIN_TO_REQUEST'
     else hint='FOOTER_FLOW' end
     U.footer:SetText(F.L(hint))
 end
 function U.Show(text,title,subtitle,tone)
+    if U.HideGraphics then U.HideGraphics() end
+    if U.HideQueueBoard then U.HideQueueBoard() end
+    if U.crafter then U.crafter:SetScript('OnEnter',nil); U.crafter:SetScript('OnLeave',F.Theme.HideTooltip) end
     if U.marketPlot then U.marketPlot:Hide() end
     U.Ensure(); U.blockCount=0; for _,block in ipairs(U.blocks or {}) do block.title:Hide(); block.text:Hide() end
     for _,header in ipairs(U.profileHeaders or {}) do header:Hide() end
@@ -198,13 +209,39 @@ function U.Show(text,title,subtitle,tone)
     U.body:SetHeight(math.max(240,U.bodyText:GetStringHeight()+24))
     U.LayoutDetails(); U.details:SetVerticalScroll(0); U.frame:Show()
 end
+function U.LayoutMain(browsing)
+    local T=F.Theme
+    U.heading:SetHeight(0); U.heading:ClearAllPoints()
+    U.heading:SetPoint('TOPLEFT',T.IsClassic() and 78 or 24,-48); U.heading:SetWidth(T.IsClassic() and 310 or 360)
+    local headerHeight=U.heading:GetStringHeight()
+    for _,b in ipairs({U.scan,U.share,U.sync}) do headerHeight=math.max(headerHeight,T.FitButton(b,b:GetWidth())) end
+    local top=math.max(93,48+headerHeight+12)
+    U.paneTop=top
+    local footerHeight=0
+    for _,b in ipairs({U.plan,U.request}) do
+        footerHeight=math.max(footerHeight,T.FitButton(b,b:GetWidth()))
+        b:ClearAllPoints(); b:SetPoint('BOTTOMLEFT',b==U.plan and 355 or 550,59)
+    end
+    for _,b in ipairs({U.commands,U.help}) do
+        T.FitButton(b,b:GetWidth()); b:ClearAllPoints(); b:SetPoint('BOTTOMLEFT',b==U.commands and 490 or 614,11)
+    end
+    local footerExtra=browsing and 0 or math.max(0,footerHeight-40)
+    U.left:ClearAllPoints(); U.left:SetPoint('TOPLEFT',14,-top)
+    U.right:ClearAllPoints(); U.right:SetPoint('TOPLEFT',270,-top)
+    local paneHeight=(browsing and 433 or 357)-(top-93)-footerExtra
+    U.left:SetHeight(paneHeight); U.right:SetHeight(paneHeight)
+    local listTop=math.max(65,29+(U.filterButton:IsShown() and U.filterButton:GetHeight() or U.search:GetHeight())+10)
+    U.listScroll:ClearAllPoints(); U.listScroll:SetPoint('TOPLEFT',8,-listTop); U.listScroll:SetPoint('BOTTOMRIGHT',-28,12)
+end
 function U.LayoutDetails()
     if not U.frame then return end
-    local browsing=U.page=='home' or U.page=='network' or U.view=='help'
-    for _,region in ipairs({U.itemLabel,U.chosen,U.qtyLabel,U.qty,U.plan,U.request}) do region:SetShown(not browsing) end
+    local browsing=U.page=='home' or U.page=='network' or U.page=='market' or U.page=='queue' or U.view=='help' or U.view=='commands'
+    for _,region in ipairs({U.itemLabel,U.chosen,U.qtyLabel,U.qty,U.plan,U.request}) do
+        if not (U.page=='queue' and U.view~='help' and U.view~='commands' and (region==U.qty or region==U.qtyLabel)) then region:SetShown(not browsing) end
+    end
     -- Overview/profile browsing does not need the crafting footer controls.
     -- Reclaim that area for both content panes rather than leaving disabled buttons.
-    U.left:SetHeight(browsing and 433 or 357); U.right:SetHeight(browsing and 433 or 357)
+    U.LayoutMain(browsing)
     U.detailTitle:SetWordWrap(true); U.detailTitle:SetHeight(0)
     U.summary:SetWordWrap(true); U.summary:SetHeight(0)
     U.hero:SetSize(32,32)
@@ -234,6 +271,7 @@ function U.LayoutDetails()
     end
     U.details:ClearAllPoints(); U.details:SetPoint('TOPLEFT',16,-top)
     U.details:SetPoint('BOTTOMRIGHT',-28,height>0 and height+20 or 12)
+    if U.LayoutQueueControls then U.LayoutQueueControls() end
 end
 function U.RefreshRows()
     for _, row in ipairs(U.rows) do row:Hide() end
@@ -244,9 +282,14 @@ function U.RefreshRows()
         if U.filter=='' or text:find(C.Fold(U.filter),1,true) then entries[#entries+1]=entry end
     end
     if U.page=='home' then
+        local scans=F.db.professionScans and F.db.professionScans[F.me] or {}
         for _,group in ipairs(C.ProfileProfessions(F.localProfile)) do
+            local scan=scans[group.id]
+            local maximum=scan and F.Integer(scan.maximum,1,1000) and scan.maximum
+            local rank=tostring(group.rank or '?')..(maximum and '/'..maximum or '')
             add({key=group.id,kind='profession',profession=group.id,title=group.title,icon=C.ProfessionIcon(group.id),
-                subtitle=tostring(group.rank or '?')..' / '..#group.recipes..' '..F.L('RECIPES_COUNT')})
+                rank=group.rank,maximum=maximum,
+                subtitle=rank..'  /  '..#group.recipes..' '..F.L('RECIPES_COUNT')})
         end
     elseif U.page=='queue' then
         for i,goal in ipairs(F.Queue.data.goals) do
@@ -258,6 +301,7 @@ function U.RefreshRows()
         for item in pairs(F.Market.data.snapshots) do items[item]=true end
         for item in pairs(F.Queue.Build().missing) do items[item]=true end
         for item in pairs(F.db.favorites.recipes) do items[item]=true end
+        for item in pairs(F.db.favorites.market) do items[item]=true end
         for _,item in ipairs(F.Keys(items)) do add({key=item,kind='market',item=item,title=C.ItemName(item),subtitle=F.Market.data.snapshots[item] and F.L('MARKET_HISTORY') or F.L('MARKET_UNKNOWN')}) end
     elseif U.page=='recipes' then entries=C.Recipes(profiles,U.filter,U.recipeChoices,U.recipeFilters)
     elseif U.page=='crafters' then entries=C.Crafters(profiles,U.finder and U.finder.item,U.filter)
@@ -296,29 +340,29 @@ function U.RefreshRows()
     end
     local rows,positions,heights,y={}, {},{},0
     U.rowMeasure=U.rowMeasure or label(U.list,'GameFontHighlightSmall',0,0,158,'')
-    local starPage=U.page=='recipes' or U.page=='network' or U.page=='crafters'
+    local starPage=U.page=='recipes' or U.page=='network' or U.page=='crafters' or U.page=='market'
     U.rowMeasure:SetWidth(starPage and 136 or 158)
     U.rowMeasure:SetWordWrap(true); U.rowMeasure:Hide()
     local function append(entry)
         U.rowMeasure:SetHeight(0); U.rowMeasure:SetText(C.Safe(entry.title..'\n'..(entry.subtitle or '')))
-        local height=math.max(46,U.rowMeasure:GetStringHeight()+14)
+        local height=math.max(entry.kind=='profession' and 66 or 50,U.rowMeasure:GetStringHeight()+(entry.kind=='profession' and 30 or 18))
         rows[#rows+1]=entry; positions[#positions+1]=y; heights[#heights+1]=height; y=y+height+4
     end
-    if U.page=='recipes' then
+    if U.page=='recipes' or U.page=='market' then
         U.recipeHeaders,U.catalogCollapsed=U.recipeHeaders or {},U.catalogCollapsed or {}
         local pinned,regular={},{}
         for _,entry in ipairs(entries) do
-            local destination=F.IsFavorite('recipes',entry.item) and pinned or regular
+            local destination=F.IsFavorite(U.page=='market' and 'market' or 'recipes',entry.item) and pinned or regular
             destination[#destination+1]=entry
         end
-        U.recipeGroups=C.GroupRecipes(regular)
-        if #pinned>0 then table.insert(U.recipeGroups,1,{id='favorite-recipes',title=F.L('FAVORITES'),recipes=pinned}) end
+        U.recipeGroups=U.page=='market' and (#regular>0 and {{id='market-items',title=F.L('PAGE_market'),recipes=regular}} or {}) or C.GroupRecipes(regular)
+        if #pinned>0 then table.insert(U.recipeGroups,1,{id=U.page=='market' and 'favorite-market' or 'favorite-recipes',title=F.L('FAVORITES'),recipes=pinned}) end
         for i,group in ipairs(U.recipeGroups) do
             local header=U.recipeHeaders[i]
             if not header then
                 header=CreateFrame('Button',nil,U.list,'BackdropTemplate'); header:SetWidth(208); F.Theme.Section(header)
                 header.label=label(header,'GameFontNormalSmall',8,-5,173,''); header.label:SetWordWrap(true)
-                header.label:SetTextColor(1,.82,.22)
+                F.Theme.Color(header.label,'heading')
                 header.toggle=label(header,'GameFontNormal',189,-5,15,''); header.toggle:SetTextColor(1,.82,.22)
                 U.recipeHeaders[i]=header
             end
@@ -356,25 +400,43 @@ function U.RefreshRows()
             b.favorite=CreateFrame('Button',nil,b); b.favorite:SetSize(20,20); b.favorite:SetPoint('TOPRIGHT',-6,-6)
             b.favorite.icon=b.favorite:CreateTexture(nil,'ARTWORK'); b.favorite.icon:SetSize(20,18); b.favorite.icon:SetPoint('CENTER')
             b.favorite:SetScript('OnClick',function()
-                local kind=(b.entry.kind=='player' or b.entry.kind=='crafter') and 'profiles' or 'recipes'
+                local kind=(b.entry.kind=='player' or b.entry.kind=='crafter') and 'profiles' or b.entry.kind=='market' and 'market' or 'recipes'
                 local ok,why=F.ToggleFavorite(kind,kind=='profiles' and b.entry.owner or b.entry.item)
                 if not ok then F.Print(why) end
                 U.Status()
             end)
             tooltip(b.favorite,'FAVORITE_HINT')
-            b:SetScript('OnEnter',function(self) self:SetBackdropBorderColor(.95,.75,.22,1) end)
-            b:SetScript('OnLeave',function(self) self:SetBackdropBorderColor(self.selected and .95 or .52,self.selected and .75 or .38,.18,1) end)
+            b.progress=b:CreateTexture(nil,'BACKGROUND'); b.progress:SetColorTexture(.22,.20,.16,1)
+            b.progress:SetPoint('BOTTOMLEFT',40,8); b.progress:SetSize(158,3)
+            b.fill=b:CreateTexture(nil,'ARTWORK'); b.fill:SetColorTexture(.72,.55,.27,1)
+            b.fill:SetPoint('BOTTOMLEFT',40,8); b.fill:SetHeight(3)
+            b:SetScript('OnEnter',function(self)
+                self:SetBackdropBorderColor(.95,.75,.22,1)
+                if self.entry.kind=='profession' then
+                    local scans=F.db.professionScans and F.db.professionScans[F.me] or {}
+                    local scan=scans[self.entry.profession]
+                    F.Theme.ShowTooltip(self,self.entry.title,scan and F.Integer(scan.seen,0,2147483647) and string.format(F.L('SCAN_AGE'),math.max(0,math.floor((F.Now()-scan.seen)/60))) or F.L('SCAN_UNKNOWN'))
+                end
+            end)
+            b:SetScript('OnLeave',function(self) F.Theme.HideTooltip(); self:SetBackdropBorderColor(self.selected and .95 or .52,self.selected and .75 or .38,.18,1) end)
             U.rows[i]=b
         end
         b.entry,b.selected=entry,U.selectionKey==entry.key
         b.label:SetWidth(starPage and 136 or 158); b.favorite:SetShown(starPage)
         if starPage then
-            local kind=(U.page=='network' or U.page=='crafters') and 'profiles' or 'recipes'
+            local kind=(U.page=='network' or U.page=='crafters') and 'profiles' or U.page=='market' and 'market' or 'recipes'
             b.favorite.icon:SetAtlas(F.IsFavorite(kind,kind=='profiles' and entry.owner or entry.item)
                 and 'auctionhouse-icon-favorite' or 'auctionhouse-icon-favorite-off')
         end
         b:ClearAllPoints(); b:SetPoint('TOPLEFT',0,-positions[i]); b:SetHeight(heights[i])
         b.label:SetText(C.Safe(entry.title..'\n'..(entry.subtitle or '')))
+        local progress=entry.kind=='profession' and entry.maximum and entry.maximum>0 and type(entry.rank)=='number'
+        b.progress:SetShown(not not progress); b.fill:SetShown(not not progress)
+        if progress then b.fill:SetWidth(math.max(1,158*math.min(1,entry.rank/entry.maximum))) end
+        if U.page=='queue' then
+            b:SetBackdropBorderColor(.25,.225,.185,1)
+            b:SetBackdropColor(b.selected and .18 or .085,b.selected and .16 or .078,b.selected and .12 or .066,1)
+        end
         b.icon:SetTexture(entry.icon or entry.item and C.Icon(entry.item) or 'Interface\\Icons\\INV_Misc_GroupLooking')
         b:SetBackdropBorderColor(b.selected and .95 or .52,b.selected and .75 or .38,.18,1)
         b:SetScript('OnClick',function(self) U.Select(self.entry) end); b:Show()
@@ -391,8 +453,8 @@ function U.Select(entry)
     elseif entry.kind=='market' then U.SetTarget(entry.item,F.Queue.Build().missing[entry.item] or 1)
     elseif entry.kind=='recipe' then U.SetTarget(entry.item,U.Quantity() or 1,entry.owner,entry.recipeID)
     elseif entry.kind=='request' then U.SetTarget(entry.item,entry.request.quantity)
-    elseif entry.kind=='missing' then U.SetTarget(entry.item,entry.quantity,nil,nil,U.planData.demo)
-    elseif entry.kind=='step' then U.SetTarget(entry.item,entry.step.quantity,entry.step.owner,entry.step.recipeID,U.planData.demo) end
+    elseif entry.kind=='missing' then U.SetTarget(entry.item,entry.quantity,nil,nil)
+    elseif entry.kind=='step' then U.SetTarget(entry.item,entry.step.quantity,entry.step.owner,entry.step.recipeID) end
     U.Status()
 end
 function U.CycleCrafter()
@@ -407,6 +469,7 @@ function U.CycleCrafter()
 end
 function U.RenderSelection()
     local e=U.selectedEntry
+    if U.view=='commands' then U.Show(F.L('HELP'),F.L('COMMANDS_BUTTON')); return end
     if U.view=='help' then U.RenderHelp(); return end
     if U.page=='home' then U.RenderHome(); return end
     if U.page=='queue' then U.RenderQueue(); return end
@@ -422,50 +485,19 @@ function U.RenderSelection()
             local channel=F.Net.Channel()
             text=text..'\n\n'..F.L('NETWORK_CHANNEL')..(channel and F.L('CHANNEL_'..channel) or F.L('NETWORK_NO_CHANNEL'))
             if F.Net.lastError then text=text..'\n\n'..F.Net.lastError end
-            U.Show(text,F.L('PAGE_network')); return
+            U.Show(text,F.L('PAGE_network')); U.enqueue:SetText(F.L('PAGE_requests')); U.enqueue:Show(); return
         end
         if U.page~='recipes' then U.Show(F.L('EMPTY_'..U.page),F.L('PAGE_'..U.page)); return end
         local hasRecipes=#C.Recipes(F.Profiles(),'')>0
-        U.Show(F.L(hasRecipes and 'START_PICK' or 'START_SCAN'),F.L('WHAT_TO_MAKE'),F.L('START_SUBTITLE'))
+        U.Show(F.L(hasRecipes and 'CHOOSE_RECIPE' or 'START_SCAN'),F.L('PAGE_recipes'))
         return
     end
     if e.kind=='recipe' then
-        local r,qty=e.recipe,U.Quantity()
-        if not F.Integer(qty,1,10000) then U.Show(F.L('QUANTITY_ERROR'),e.title); return end
-        local inBags=F.Adapter.StockCount(e.item)
-        local batches=math.ceil(math.max(0,qty-inBags)/r.quantity)
-        local lines={string.format(F.L('RECIPE_OVERVIEW'),qty,inBags,r.quantity,batches)}
-        if next(r.reagents)==nil then lines[#lines+1]=F.L('NO_REAGENTS') end
-        for _,station in ipairs(F.Keys(r.stations)) do lines[#lines+1]='\n'..F.L('CAMP')..station end
-        if r.blueprint then lines[#lines+1]='\nBlueprint' end
-        U.Show('',e.title,F.L('CRAFTER')..who(e.owner))
-        U.crafter:SetText(F.L('CHANGE_CRAFTER')); U.crafter:SetShown(#e.providers>1)
-        U.enqueue:SetText(F.L('QUEUE_ADD')); U.enqueue:Show()
-        local cards={}
-        for _,item in ipairs(F.Keys(r.reagents)) do
-            local needed=r.reagents[item]*batches; local have=F.Adapter.StockCount(item)
-            cards[#cards+1]={item=item,title=C.ItemName(item),text=string.format(F.L('MATERIAL_CARD'),F.Adapter.ItemCount(item),F.Bank.Count(item),needed)..
-                (needed>have and '\n'..U.PriceText(item,needed-have) or ''),good=have>=needed}
-        end
-        local y=U.ShowBlocks({{text=table.concat(lines,'\n')}})
-        y=U.ShowCards(cards,y)
-        local providers,counts={},{}
-        for _,provider in ipairs(e.providers) do
-            counts[provider.owner]=(counts[provider.owner] or 0)+1
-        end
-        local owners=F.Keys(counts)
-        table.sort(owners,function(a,b) if (a==F.me)~=(b==F.me) then return a==F.me end; return a<b end)
-        for _,owner in ipairs(owners) do
-            local variants=counts[owner]>1 and ' ('..string.format(F.L('RECIPE_COUNT'),counts[owner])..')' or ''
-            providers[#providers+1]=who(owner)..variants
-        end
-        U.bodyText:Hide()
-        if #owners>1 or #e.providers>1 then
-            U.ShowBlocks({{title=F.L('AVAILABLE_CRAFTERS'),text=table.concat(providers,' / ')}},y,true)
-        end
+        U.RenderRecipe(e)
     elseif e.kind=='player' then
         local p=F.db.profiles[e.owner]; if not p then return end
         U.RenderPlayer(e,p)
+        U.enqueue:SetText(F.L('PAGE_requests')); U.enqueue:Show()
     elseif e.kind=='request' then
         local r=e.request
         U.requestID=r.id
@@ -502,8 +534,8 @@ function U.RenderPlayer(entry,profile)
         if not header then
             header=CreateFrame('Button',nil,U.body,'BackdropTemplate'); header:SetWidth(434); F.Theme.Section(header)
             header.icon=header:CreateTexture(nil,'ARTWORK'); header.icon:SetSize(22,22); header.icon:SetPoint('TOPLEFT',7,-6)
-            header.title=label(header,'GameFontNormal',36,-6,204,''); header.title:SetWordWrap(true); header.title:SetTextColor(1,.82,.22)
-            header.detail=label(header,'GameFontHighlightSmall',247,-6,153,''); header.detail:SetWordWrap(true); header.detail:SetTextColor(.91,.81,.60)
+            header.title=label(header,'GameFontNormal',36,-6,204,''); header.title:SetWordWrap(true); F.Theme.Color(header.title,'text')
+            header.detail=label(header,'GameFontHighlightSmall',247,-6,153,''); header.detail:SetWordWrap(true); F.Theme.Color(header.detail,'muted')
             header.toggle=label(header,'GameFontNormalLarge',407,-7,20,''); header.toggle:SetTextColor(1,.82,.22)
             U.profileHeaders[i]=header
         end
@@ -615,7 +647,7 @@ function U.RenderFinder()
     U.Show('',C.ItemName(context.item),string.format(F.L('FINDER_COUNT'),#U.entries))
     U.hero:SetTexture(C.Icon(context.item)); U.crafter:SetText(F.L('FINDER_NETWORK')); U.crafter:Show()
     local channel=F.Net.Channel()
-    local rows={{section=true,title=F.L('PAGE_crafters'),text=F.L('FINDER_HELP')..'\n'..F.L('NETWORK_CHANNEL')..
+    local rows={{section=true,title=F.L('PAGE_crafters'),hint=F.L('FINDER_HELP')..'\n'..F.L('NETWORK_CHANNEL')..
         (channel and F.L('CHANNEL_'..channel) or F.L('NETWORK_NO_CHANNEL'))}}
     local selected=U.selectedEntry
     if selected and selected.kind=='crafter' then
@@ -659,12 +691,6 @@ function U.RenderFinder()
         if #U.entries>20 then rows[#rows+1]={title=F.L('FINDER_PICK'),text=string.format(F.L('FINDER_PLAYER_LIMIT'),20)} end
     end
     U.ShowSourceRows(rows)
-end
-local function defaultSource(material)
-    for _,source in ipairs(material and material.alternatives or {}) do
-        if source.ready and (not material.chosen or (source.owner==material.chosen.owner and source.recipeID==material.chosen.recipeID)) then return source end
-    end
-    for _,source in ipairs(material and material.alternatives or {}) do if source.ready then return source end end
 end
 function U.SourceComparison(item,queue)
     local profiles=F.Profiles()
@@ -720,91 +746,7 @@ function U.AddRecipeOptions(rows,item,material)
     if U.expandedSource~=item then return end
     if U.recipeOptionsRendered[item] then return end
     U.recipeOptionsRendered[item]=true
-    if not U.planData.demo then
-        U.AddCostOptions(rows,item,U.SourceComparison(item,false),function(choice) U.ChooseSource(item,choice) end)
-        return
-    end
-    rows[#rows+1]={section=true,title=F.L('CHAIN_RECIPES'),text=F.L('CHAIN_RECIPES_HELP')}
-    local profiles=U.planData.demo and F.Adapter.Demo() or F.Profiles()
-    local needed=math.max(0,material.quantity-material.stock)
-    for _,source in ipairs(F.Planner.Sources(profiles,item,nil,F.me)) do
-        local r=source.recipe
-        local batches=math.ceil(needed/r.quantity)
-        local text=string.format(F.L('CHAIN_FROM'),ingredientList(r.reagents,batches))..'\n'..F.L('CRAFTER')..who(source.owner)
-        if batches*r.quantity>needed then text=text..'\n'..string.format(F.L('CHAIN_SURPLUS'),batches*r.quantity-needed) end
-        if F.ProfileStale(profiles[source.owner]) then text=text..'\n'..F.L('PROFILE_CACHED') end
-        if not source.ready then text=text..'\n'..F.L('MISSING_REASON_camp') end
-        local owner,recipeID=source.owner,source.recipeID
-        local current=material.chosen and material.chosen.owner==owner and material.chosen.recipeID==recipeID
-        rows[#rows+1]={item=item,title=r.name..' x'..(batches*r.quantity),text=text,
-            actions={{text=F.L(current and 'SOURCE_SELECTED' or 'CHAIN_USE_RECIPE'),enabled=source.ready and not current,
-                run=function() U.ChooseSource(item,{owner=owner,recipeID=recipeID}) end}}}
-    end
-end
-function U.RenderPlan()
-    local p=U.planData
-    U.recipeOptionsRendered={}
-    U.Show('',C.ItemName(p.target)..' x'..p.quantity,F.L(p.demo and 'DEMO_ONLY' or 'CHAIN_PLAN_ONLY'),p.complete and 'good' or 'missing')
-    U.hero:SetTexture(C.Icon(p.target))
-    local rows={{section=true,title=F.L('CHAIN_GET'),text=F.L(next(p.missing) and 'CHAIN_GET_HELP' or 'NOTHING_MISSING')..
-        (not p.demo and '\n'..U.BudgetText(p.missing) or '')}}
-    for _,item in ipairs(F.Keys(p.missing)) do
-        local id,m=item,p.materials and p.materials[item]
-        local source=defaultSource(m)
-        local text=string.format(F.L('CHAIN_GET_COUNT'),p.missing[item])
-        if not p.demo then text=text..'\n'..U.PriceText(item,p.missing[item]) end
-        if m and m.stock>0 then text=text..'\n'..string.format(F.L('CHAIN_HAVE'),m.stock) end
-        local reason=p.missingReasons[item]
-        if reason=='camp' or reason=='source' or reason=='cycle' or reason=='limit' then text=text..'\n'..F.L('MISSING_REASON_'..reason) end
-        local actions={}
-        if source and id~=p.target then
-            local needed=math.max(0,m.quantity-m.stock)
-            local batches=math.ceil(needed/source.recipe.quantity)
-            text=text..'\n\n'..F.L('CHAIN_OR_MAKE')..'\n'..string.format(F.L('CHAIN_FROM'),ingredientList(source.recipe.reagents,batches))..'\n'..F.L('CRAFTER')..who(source.owner)
-            local owner,recipeID=source.owner,source.recipeID
-            actions[#actions+1]={text=string.format(F.L('CHAIN_MAKE_BUTTON'),needed),run=function() U.ChooseSource(id,{owner=owner,recipeID=recipeID}) end}
-        end
-        if m and id~=p.target and (#m.alternatives>1 or (#m.alternatives>0 and not source)) then
-            actions[#actions+1]={text=F.L(U.expandedSource==id and 'CHAIN_HIDE_RECIPES' or #m.alternatives==1 and 'CHAIN_RECIPES' or 'CHAIN_OTHER_RECIPES'),run=function() U.OpenSources(id) end}
-        end
-        rows[#rows+1]={key='get/'..id,item=id,title=C.ItemName(id)..' x'..p.missing[id],text=text,tone='missing',actions=actions}
-        if m then U.AddRecipeOptions(rows,id,m) end
-    end
-    rows[#rows+1]={section=true,title=F.L('CHAIN_MAKE'),text=next(p.missing) and F.L('CHAIN_MAKE_WAIT') or ''}
-    for i,step in ipairs(p.steps) do
-        local id,m=step.item,p.materials and p.materials[step.item]
-        local text=F.L('CRAFTER')..who(step.owner)..'\n'..string.format(F.L('CHAIN_FROM'),ingredientList(step.reagents))
-        for _,station in ipairs(F.Keys(step.stations)) do text=text..'\n'..F.L('CAMP')..station..': '..who(step.stations[station]) end
-        local actions={}
-        if m and id~=p.target then
-            local needed=math.max(0,m.quantity-m.stock)
-            if m.stock>0 then text=text..'\n'..string.format(F.L('CHAIN_HAVE'),m.stock) end
-            actions[#actions+1]={text=string.format(F.L('CHAIN_GET_BUTTON'),needed),run=function() U.ChooseSource(id,'external') end}
-            if #m.alternatives>1 then
-                actions[#actions+1]={text=F.L(U.expandedSource==id and 'CHAIN_HIDE_RECIPES' or 'CHAIN_OTHER_RECIPES'),run=function() U.OpenSources(id) end}
-            end
-        end
-        rows[#rows+1]={key='make/'..i,item=id,title=i..'. '..string.format(F.L('CHAIN_MAKE_ITEM'),C.ItemName(id,step.name),step.quantity),text=text,actions=actions}
-        if m then U.AddRecipeOptions(rows,id,m) end
-    end
-    if #p.steps==0 and p.complete then rows[#rows+1]={title=F.L('ALREADY_OWNED'),text=''} end
-    if #p.warnings>0 then rows[#rows+1]={title=F.L('PLAN_NEEDS'),text=F.L('PLAN_CYCLE_WARNING'),tone='missing'} end
-    if next(p.supplied) then
-        rows[#rows+1]={section=true,title=F.L('CHAIN_STOCK'),text='',actions={{text=F.L(U.showPlanStock and 'CHAIN_HIDE_STOCK' or 'CHAIN_SHOW_STOCK'),run=function()
-            local position=U.details:GetVerticalScroll(); U.showPlanStock=not U.showPlanStock; U.RenderPlan(); U.details:SetVerticalScroll(math.min(position,U.details:GetVerticalScrollRange()))
-        end}}}
-        if U.showPlanStock then
-            for _,item in ipairs(F.Keys(p.supplied)) do
-                local bags=p.bagSupplied and p.bagSupplied[item] or p.supplied[item]
-                rows[#rows+1]={item=item,title=C.ItemName(item)..' x'..p.supplied[item],text=string.format(F.L('STOCK_CARD'),bags,p.supplied[item]-bags),tone='good'}
-            end
-        end
-    end
-    local y=U.ShowSourceRows(rows,0)
-    local notes={}
-    if not p.demo and F.db.settings.useBank~=false then notes[#notes+1]={title=F.L('BANK_SECTION'),text=F.Bank.Status()..'\n'..F.L('BANK_REMINDER')} end
-    notes[#notes+1]={title=F.L('NEXT_SECTION'),text=F.L('MANUAL_CRAFT')}
-    U.ShowBlocks(notes,y)
+    U.AddCostOptions(rows,item,U.SourceComparison(item,false),function(choice) U.ChooseSource(item,choice) end)
 end
 function U.SetRecipeFilter(key,value)
     U.recipeFilters=U.recipeFilters or {}
@@ -883,28 +825,40 @@ function U.OpenFilters()
 end
 function U.Status()
     F.Theme.RefreshFonts(); U.Ensure(); F.Prune()
-    U.heading:SetText(F.L(U.page=='recipes' and 'WHAT_TO_MAKE' or 'PAGE_'..U.page))
-    U.sharing:SetText(string.format(F.L('NETWORK_SUMMARY'),#C.Recipes(F.db.profiles,''),math.max(0,#F.Keys(F.db.profiles)-1),F.L(F.db.settings.sharing and 'включён' or 'выключен')))
+    U.heading:SetText(F.L('PAGE_'..U.page))
+    U.sharing:SetText('')
+    U.share:SetScript('OnEnter',function(self) F.Theme.ShowTooltip(self,F.L('SHARE_HINT'),string.format(F.L('NETWORK_SUMMARY'),#C.Recipes(F.db.profiles,''),math.max(0,#F.Keys(F.db.profiles)-1),F.L(F.db.settings.sharing and 'включён' or 'выключен'))..(F.Net.lastError and '\n'..F.Net.lastError or '')) end)
     U.scan:SetText(F.L('Сканировать')); U.share:SetText(F.L(F.db.settings.sharing and 'SHARE_ON' or 'SHARE_OFF')); U.sync:SetText(F.L('Обновить'))
     U.searchLabel:SetText(F.L('SEARCH_LABEL')); U.itemLabel:SetText(F.L('CHOSEN_ITEM')); U.qtyLabel:SetText(F.L('QUANTITY_FIELD'))
-    U.filterButton:SetShown(U.page=='recipes'); U.search:SetWidth(U.page=='recipes' and 124 or 210)
-    U.filterButton:SetText(F.L('FILTER_BUTTON')..(next(U.recipeFilters or {}) and ' *' or ''))
+    U.filterButton:SetShown(U.page=='recipes' or U.page=='queue'); U.search:SetWidth((U.page=='recipes' or U.page=='queue') and 124 or 210)
+    U.filterButton:SetText(U.page=='queue' and F.L('SETS_TITLE') or F.L('FILTER_BUTTON')..(next(U.recipeFilters or {}) and ' *' or ''))
     if U.page~='recipes' and U.filterMenu then U.filterMenu:Hide() end
-    U.plan:SetText(F.L('Собрать цепочку')); U.request:SetText(F.L('ASK_HELP')); U.demo:SetText(F.L('DEMO_BUTTON')); U.help:SetText(F.L('HELP_BUTTON'))
+    U.plan:SetText(F.L('Собрать цепочку')); U.request:SetText(F.L('ASK_HELP')); U.commands:SetText(F.L('COMMANDS_BUTTON')); U.help:SetText(F.L('HELP_BUTTON'))
     U.accept:SetText(F.L('ACCEPT')); U.done:SetText(F.L('DONE')); U.cancel:SetText(F.L('CANCEL'))
-    for page,nav in pairs(U.navigation) do nav:SetChecked(page==U.page or page=='network' and U.page=='crafters'); nav.tooltipText=F.L('PAGE_'..page) end
+    U.LayoutMain(U.page=='home' or U.page=='network' or U.page=='market' or U.page=='queue' or U.view=='help' or U.view=='commands')
+    local previous
+    for _,page in ipairs({'home','recipes','queue','market','network','requests','chain','settings'}) do
+        local nav=U.navigation[page]
+        nav:SetShown((page~='chain' and page~='requests') or U.page==page)
+        if nav:IsShown() then
+            nav:ClearAllPoints()
+            if previous then nav:SetPoint('TOPLEFT',previous,'BOTTOMLEFT',0,-3) else nav:SetPoint('TOPLEFT',U.frame,'TOPRIGHT',-3,-U.paneTop) end
+            previous=nav
+        end
+        nav:SetChecked(page==U.page or page=='network' and U.page=='crafters'); nav.tooltipText=F.L('PAGE_'..page)
+    end
     U.RefreshRows(); U.UpdateActions(); U.RenderSelection()
     U.LayoutDetails()
     if U.page=='home' or U.page=='queue' or U.page=='market' then
         U.plan:SetEnabled(false); U.request:SetEnabled(false)
-        U.footer:SetText(F.L('QUEUE_SHARED'))
+        U.footer:SetText('')
     end
     if U.page=='crafters' then U.footer:SetText(F.L('FINDER_PICK')) end
     U.frame:Show()
 end
 function U.Enqueue()
     local target=U.target
-    if not target or target.demo then return end
+    if not target then return end
     if U.page=='queue' and U.selectedEntry and U.selectedEntry.kind=='goal' then
         if not F.Queue.Quantity(U.selectedEntry.index,U.Quantity()) then F.Print(F.L('QUANTITY_ERROR')); return end
     else
@@ -912,39 +866,6 @@ function U.Enqueue()
         if not ok then F.Print(why); return end
     end
     U.Navigate('queue')
-end
-local function queueSummary(plan)
-    local ready=0
-    for _,state in ipairs(plan.goalStates) do if state.ready then ready=ready+1 end end
-    return string.format(F.L('QUEUE_SUMMARY'),#plan.goals,ready,#F.Keys(plan.missing))
-end
-function U.RenderHome()
-    local plan=F.Queue.Build()
-    U.Show('',F.me,F.L('PAGE_home'))
-    if SetPortraitTexture then SetPortraitTexture(U.hero,'player') end
-    local class=UnitClass and UnitClass('player') or '?'
-    local level=UnitLevel and UnitLevel('player') or 0
-    local zone=GetZoneText and GetZoneText() or '?'
-    local money=GetMoney and GetMoney() or 0
-    local coins=F.Market.Money(money)
-    local rows={{section=true,title=F.L('PAGE_home'),text=string.format(F.L('HOME_INFO'),class,level,zone,coins)},
-        {section=true,title=F.L('PAGE_queue'),text=queueSummary(plan)..'\n'..F.L('QUEUE_SHARED')..'\n'..U.BudgetText(plan.missing),
-            actions={{text=F.L('PAGE_queue'),run=function() U.Navigate('queue') end}}}}
-    local scans=F.db.professionScans and F.db.professionScans[F.me] or {}
-    for _,group in ipairs(C.ProfileProfessions(F.localProfile)) do
-        local scan=scans[group.id]
-        local rank=tostring(group.rank or '?')..(scan and scan.maximum and '/'..scan.maximum or '')
-        rows[#rows+1]={title=group.title,text=rank..' / '..#group.recipes..' '..F.L('RECIPES_COUNT')..'\n'..
-            (scan and string.format(F.L('SCAN_AGE'),math.max(0,math.floor((F.Now()-scan.seen)/60))) or F.L('SCAN_UNKNOWN')),
-            actions={{text=F.L('PAGE_recipes'),run=function() U.Navigate('recipes'); U.SetRecipeFilter('profession',group.id) end}}}
-    end
-    rows[#rows+1]={title=F.L('BANK_SECTION'),text=F.Bank.Status()..'\n'..F.L('BANK_REMINDER')}
-    local channel=F.Net.Channel()
-    local favorites=F.Keys(F.db.favorites.profiles)
-    rows[#rows+1]={title=F.L('PAGE_network'),text=F.L('NETWORK_CHANNEL')..(channel and F.L('CHANNEL_'..channel) or F.L('NETWORK_NO_CHANNEL'))..
-        (F.Net.lastError and '\n'..F.Net.lastError or '')..'\n'..F.L('FAVORITES')..': '..(#favorites>0 and table.concat(favorites,', ') or '-'),
-        actions={{text=F.L('PAGE_network'),run=function() U.Navigate('network') end}}}
-    U.ShowSourceRows(rows)
 end
 function U.QueueSetDialog(mode,name)
     U.Ensure()
@@ -997,6 +918,10 @@ function U.QueueSetDialog(mode,name)
     d.body:SetHeight(math.max(1,d.preview:GetStringHeight()+12)); d.scroll:SetVerticalScroll(0)
     d.first:SetText(F.L(mode=='save' and 'SETS_SAVE' or 'SETS_REPLACE'))
     d.second:SetText(F.L(mode=='save' and 'CANCEL' or 'SETS_APPEND'))
+    local actionHeight=math.max(F.Theme.FitButton(d.first,192),F.Theme.FitButton(d.second,192))
+    for _,b in ipairs({d.first,d.second}) do b:ClearAllPoints(); b:SetPoint('BOTTOMLEFT',b==d.first and 24 or 224,14) end
+    d.error:ClearAllPoints(); d.error:SetPoint('BOTTOMLEFT',24,actionHeight+22)
+    d.scroll:ClearAllPoints(); d.scroll:SetPoint('TOPLEFT',24,-top); d.scroll:SetPoint('BOTTOMRIGHT',-48,actionHeight+54)
     d:Show()
 end
 function U.ApplyQueueSet(append)
@@ -1008,103 +933,13 @@ function U.ApplyQueueSet(append)
     if not ok then
         d.error:SetText(why); d.error:SetHeight(0)
         local height=d.error:GetStringHeight()
-        d.error:SetHeight(height); d.error:ClearAllPoints(); d.error:SetPoint('BOTTOMLEFT',24,68)
-        d.scroll:SetPoint('BOTTOMRIGHT',-48,height+84)
+        local bottom=math.max(d.first:GetHeight(),d.second:GetHeight())+22
+        d.error:SetHeight(height); d.error:ClearAllPoints(); d.error:SetPoint('BOTTOMLEFT',24,bottom)
+        d.scroll:SetPoint('BOTTOMRIGHT',-48,height+bottom+12)
         return
     end
     if d.mode=='load' and why>0 then F.Print(string.format(F.L('SETS_CONFLICTS'),why)) end
     d:Hide(); U.selectionKey=nil; U.queueSourceItem=nil; U.Status()
-end
-function U.RenderQueue()
-    local plan=F.Queue.Build(); U.queuePlan=plan
-    U.Show('',F.L('PAGE_queue'),queueSummary(plan))
-    U.crafter:SetText(F.L('TRACK_SHOW')); U.crafter:Show()
-    local rows={{section=true,title=F.L('PAGE_queue'),text=(#plan.goals==0 and F.L('EMPTY_queue')..'\n' or '')..U.BudgetText(plan.missing)}}
-    for i,goal in ipairs(plan.goals) do
-        local index=i
-        local state=plan.goalStates[i]
-        rows[#rows+1]={item=goal.item,title=i..'. '..C.ItemName(goal.item)..' x'..goal.quantity,
-            text=F.L('CRAFTER')..who(goal.owner or F.me)..'\n'..
-                (goal.mode=='stock' and F.L('RESTOCK_MODE')..'\n'..string.format(F.L('RESTOCK_PROGRESS'),state.stock-state.bankStock,state.bankStock,goal.quantity)..
-                    (state.bankStock>0 and '\n'..F.Bank.Status() or '') or string.format(F.L('SETS_STOCK'),state.stock,goal.quantity))..
-                (state.stock<goal.quantity and '\n'..F.L(state.ready and 'QUEUE_READY' or 'CHAIN_MAKE_WAIT') or goal.mode=='stock' and '\n'..F.L('RESTOCK_READY') or ''),
-            actions={{text=F.L('QUEUE_REMOVE'),run=function() F.Queue.Remove(index); U.selectionKey=nil; U.Status() end},
-                {text=F.L('QUEUE_UP'),enabled=i>1,run=function() F.Queue.MoveUp(index); U.selectionKey=nil; U.Status() end}},
-            extraAction={text=F.L(goal.mode=='stock' and 'RESTOCK_ONCE' or 'RESTOCK_ENABLE'),hint=F.L('RESTOCK_HELP'),run=function()
-                local current=F.Queue.data.goals[index]
-                if not current then return end
-                local mode
-                if current.mode~='stock' then mode='stock' end
-                local ok,why=F.Queue.Mode(index,mode)
-                if not ok then F.Print(why); return end
-                U.Status()
-            end}}
-    end
-    rows[#rows+1]={section=true,title=F.L('SETS_TITLE'),actions={
-        {text=F.L('SETS_SAVE'),hint=F.L('SETS_HELP'),enabled=#plan.goals>0,run=function() U.QueueSetDialog('save') end},
-        {text=F.L('SETS_LIST'),hint=F.L('SETS_HELP'),run=function() U.queueSetsExpanded=not U.queueSetsExpanded; U.Status() end}}}
-    if U.queueSetsExpanded then
-        local names=F.Keys(F.Queue.data.sets)
-        if #names==0 then rows[#rows+1]={title=F.L('SETS_TITLE'),text=F.L('SETS_EMPTY')} end
-        for _,name in ipairs(names) do
-            local setName=name
-            rows[#rows+1]={title=name,text=string.format(F.L('SETS_COUNT'),#F.Queue.data.sets[name].goals),actions={
-                {text=F.L('SETS_OPEN'),run=function() U.QueueSetDialog('load',setName) end},
-                {text=F.L('SETS_DELETE'),run=function() F.Queue.DeleteSet(setName); U.Status() end}}}
-        end
-    end
-    rows[#rows+1]={section=true,title=F.L('SETS_CLEAN'),actions={
-        {text=F.L('SETS_CLEAN'),hint=F.L('SETS_CLEAN_HELP')..'\n'..F.L('SETS_GROUP_HELP'),enabled=#plan.goals>0,run=function()
-            local removed=F.Queue.RemoveOwned(); U.selectionKey=nil; U.Status()
-            F.Print(string.format(F.L('SETS_REMOVED'),removed))
-        end},
-        {text=F.L('SETS_UNDO'),enabled=F.Queue.undo~=nil,run=function() F.Queue.Undo(); U.selectionKey=nil; U.queueSourceItem=nil; U.Status() end}}}
-    rows[#rows+1]={section=true,title=F.L('CHAIN_GET'),text=F.L(next(plan.missing) and 'CHAIN_GET_HELP' or 'NOTHING_MISSING')}
-    for _,item in ipairs(F.Keys(plan.missing)) do
-        local id=item
-        rows[#rows+1]={item=item,title=C.ItemName(item)..' x'..plan.missing[item],text=F.L('MISSING_REASON_'..plan.missingReasons[item])..'\n'..U.PriceText(item,plan.missing[item]),tone='missing',
-            actions={{text=F.L('TRACK_SEARCH'),run=function() local ok,why=F.Auction.Search(id); if not ok then F.Print(why) end end}}}
-    end
-    rows[#rows+1]={section=true,title=F.L('CHAIN_MAKE'),text=F.L('CHAIN_PLAN_ONLY')}
-    for i,step in ipairs(plan.steps) do
-        rows[#rows+1]={item=step.item,title=i..'. '..string.format(F.L('CHAIN_MAKE_ITEM'),C.ItemName(step.item,step.name),step.quantity),
-            text=F.L('CRAFTER')..who(step.owner)..'\n'..string.format(F.L('CHAIN_FROM'),ingredientList(step.reagents))}
-    end
-    for _,item in ipairs(F.Keys(plan.materials)) do
-        local id=item; local material=plan.materials[item]
-        if #material.alternatives>0 then
-            local current=plan.sources[item]
-            local description=current=='external' and F.L('SOURCE_READY') or type(current)=='table' and
-                (material.chosen and material.chosen.name or F.L('MISSING_REASON_source')) or F.L('SOURCE_AUTO')
-            rows[#rows+1]={item=item,title=C.ItemName(item),text=F.L('SOURCE_SELECTED')..': '..description,
-                actions={{text=F.L('CHAIN_GET_BUTTON'):format(math.max(0,material.quantity-material.stock)),run=function()
-                    local ok,why=F.Queue.SetSource(id,'external'); if not ok then F.Print(why); return end
-                    U.Status()
-                end},
-                    {text=F.L('SOURCE_COMPARE'),run=function() U.queueSourceItem=U.queueSourceItem~=id and id or nil; U.Status() end}}}
-            if U.queueSourceItem==item then
-                U.AddCostOptions(rows,item,U.SourceComparison(item,true),function(choice)
-                    local ok,why=F.Queue.SetSource(id,choice); if not ok then F.Print(why); return end
-                    U.queueSourceItem=nil; U.Status()
-                end)
-            end
-        end
-    end
-    if next(plan.supplied) then
-        rows[#rows+1]={section=true,title=F.L('CHAIN_STOCK'),actions={{text=F.L(U.showQueueStock and 'CHAIN_HIDE_STOCK' or 'CHAIN_SHOW_STOCK'),run=function()
-            local position=U.details:GetVerticalScroll() or 0; U.showQueueStock=not U.showQueueStock; U.Status()
-            U.details:SetVerticalScroll(math.min(position,U.details:GetVerticalScrollRange()))
-        end}}}
-        if U.showQueueStock then
-            for _,item in ipairs(F.Keys(plan.supplied)) do
-                local bags=plan.bagSupplied[item]
-                rows[#rows+1]={item=item,title=C.ItemName(item)..' x'..plan.supplied[item],text=string.format(F.L('STOCK_CARD'),bags,plan.supplied[item]-bags)}
-            end
-        end
-    end
-    if #plan.warnings>0 then rows[#rows+1]={title=F.L('PLAN_NEEDS'),text=F.L('PLAN_CYCLE_WARNING'),tone='missing'} end
-    U.ShowSourceRows(rows)
-    if U.selectedEntry and U.selectedEntry.kind=='goal' then U.enqueue:SetText(F.L('QUEUE_EDIT')); U.enqueue:Show() end
 end
 function U.PriceText(item,quantity)
     if not F.Market.Number(quantity,0,10000) then return F.L('MARKET_UNKNOWN') end
@@ -1130,12 +965,12 @@ function U.RenderMarket()
     U.Show('',entry.title,F.L('PAGE_market'))
     U.hero:SetTexture(C.Icon(entry.item))
     local days=U.historyDays or 30
-    local rows={{item=entry.item,title=entry.title,text=U.PriceText(entry.item,quantity),
+    local rows={{key='market/'..entry.item,item=entry.item,title=entry.title,text=U.ShortPrice(entry.item,quantity),hint=U.PriceText(entry.item,quantity),
         actions={{text=F.L('MARKET_SCAN'),enabled=F.Auction.open==true,run=function()
             if F.Auction.panel and AuctionHouseFrame then AuctionHouseFrame:SetDisplayMode(AuctionHouseFrameDisplayMode.ForeverNet) end
             local ok,why=F.Auction.Scan({entry.item}); if why then F.Print(why) end
         end},{text=F.L('TRACK_SEARCH'),run=function() local ok,why=F.Auction.Search(entry.item); if not ok then F.Print(why) end end}}},
-        {section=true,title=F.L('MARKET_HISTORY')..' ('..days..'d)',text=F.L('MARKET_HISTORY_HELP'),
+        {section=true,title=F.L('MARKET_HISTORY')..' ('..days..'d)',hint=F.L('MARKET_HISTORY_HELP'),
             actions={{text='30d / 90d',run=function() U.historyDays=days==30 and 90 or 30; U.RenderMarket() end}}}}
     local points=F.Market.History(entry.item,days)
     if #points==0 then rows[#rows+1]={title=F.L('MARKET_HISTORY'),text=F.L('MARKET_HISTORY_EMPTY')}; U.ShowSourceRows(rows); return end
@@ -1187,19 +1022,20 @@ function U.BuildSelected()
     local target,qty=U.target,U.Quantity()
     if U.page=='chain' and U.planData and target and target.item~=U.planData.target then
         local p=U.planData
-        U.SetTarget(p.target,p.quantity,p.owner,p.recipeID,p.demo)
+        U.SetTarget(p.target,p.quantity,p.owner,p.recipeID)
         target,qty=U.target,U.Quantity()
     end
     if not target or not F.Integer(qty,1,10000) then return end
-    local profiles=target.demo and F.Adapter.Demo() or F.Profiles()
-    local inventory=target.demo and {['demo:ore']=3,['demo:cloth']=4} or F.Adapter.Inventory(profiles)
-    if not target.demo then inventory[target.item]=F.Adapter.StockCount(target.item) end
+    local profiles=F.Profiles()
+    local inventory=F.Adapter.Inventory(profiles)
+    inventory[target.item]=F.Adapter.StockCount(target.item)
     local previous=U.planData
-    local same=previous and previous.target==target.item and previous.owner==target.owner and previous.recipeID==target.recipeID and previous.demo==target.demo
+    local same=previous and previous.target==target.item and previous.owner==target.owner and previous.recipeID==target.recipeID
     if not same then U.expandedSource,U.showPlanStock=nil,nil end
-    local sources=same and previous.sources or {}
-    local p=F.Planner.Build(profiles,target.item,qty,inventory,nil,{owner=target.owner,recipeID=target.recipeID,localOwner=F.me,sources=sources})
-    p.demo,p.owner,p.recipeID=target.demo,target.owner,target.recipeID; U.Plan(p)
+    local sources=same and (previous.manualSources or previous.sources) or {}
+    local p=F.Automation.Build(profiles,{{item=target.item,quantity=qty,owner=target.owner,recipeID=target.recipeID}},inventory,{localOwner=F.me,sources=sources})
+    p.target,p.quantity=target.item,qty
+    p.owner,p.recipeID=target.owner,target.recipeID; U.Plan(p)
 end
 function U.OpenSources(item)
     local p=U.planData
@@ -1207,16 +1043,17 @@ function U.OpenSources(item)
     local position=U.details:GetVerticalScroll()
     U.expandedSource=U.expandedSource~=item and item or nil
     U.view,U.selectionKey=nil,nil
-    U.SetTarget(p.target,p.quantity,p.owner,p.recipeID,p.demo)
+    U.SetTarget(p.target,p.quantity,p.owner,p.recipeID)
     U.Status()
     U.details:SetVerticalScroll(math.min(position,U.details:GetVerticalScrollRange()))
 end
 function U.ChooseSource(item,choice)
     local p=U.planData
     if not p or item==p.target then return end
+    p.manualSources=p.manualSources or F.Copy(p.sources or {}); p.manualSources[item]=choice
     p.sources=p.sources or {}; p.sources[item]=choice
     U.view,U.selectionKey,U.expandedSource=nil,nil,nil
-    U.SetTarget(p.target,p.quantity,p.owner,p.recipeID,p.demo)
+    U.SetTarget(p.target,p.quantity,p.owner,p.recipeID)
     U.BuildSelected()
 end
 function U.ShowSourceRows(entries,offset)
@@ -1233,6 +1070,11 @@ function U.ShowSourceRows(entries,offset)
             row.detail=label(row,'GameFontHighlightSmall',10,-35,414,''); row.detail:SetWordWrap(true); row.detail:SetSpacing(1)
             row.divider=row:CreateTexture(nil,'BACKGROUND'); row.divider:SetColorTexture(.5,.35,.14,.3)
             row.divider:SetHeight(1); row.divider:SetPoint('BOTTOMLEFT',8,0); row.divider:SetPoint('BOTTOMRIGHT',-8,0)
+            row.track=row:CreateTexture(nil,'BACKGROUND'); row.track:SetColorTexture(.22,.19,.14,1); row.track:SetSize(414,4); row.track:SetPoint('BOTTOMLEFT',10,5)
+            row.fill=row:CreateTexture(nil,'ARTWORK'); row.fill:SetHeight(4); row.fill:SetPoint('BOTTOMLEFT',10,5)
+            row:EnableMouse(true)
+            row:SetScript('OnEnter',function(self) if self.entry.hint then F.Theme.ShowTooltip(self,self.entry.title,self.entry.hint) end end)
+            row:SetScript('OnLeave',F.Theme.HideTooltip)
             row.buttons={}
             for j=1,2 do
                 row.buttons[j]=button(row,'',10,0,200,function(self) if self.action then self.action() end end)
@@ -1243,10 +1085,32 @@ function U.ShowSourceRows(entries,offset)
             row.extraButton=button(row,'',10,0,410,function(self) if self.action then self.action() end end)
             row.extraButton:SetScript('OnEnter',function(self) if self.hint then F.Theme.ShowTooltip(self,self:GetText(),self.hint) end end)
             row.extraButton:SetScript('OnLeave',F.Theme.HideTooltip)
+            row.more=button(row,'+',402,-8,24,function(self) U.ToggleVisual(self.key) end)
+            row.more:SetScript('OnEnter',function(self) F.Theme.ShowTooltip(self,F.L('VIS_DETAILS'),self.hint) end)
+            row.more:SetScript('OnLeave',F.Theme.HideTooltip)
             U.sourceRows[i]=row
         end
         row:ClearAllPoints(); row:SetPoint('TOPLEFT',0,-y)
         row.entry=entry
+        local progress=entry.maximum and entry.maximum>0
+        row.track:SetShown(not not progress); row.fill:SetShown(not not progress and (entry.current or 0)>0)
+        if progress then
+            row.fill:SetWidth(math.max(1,414*math.min(1,(entry.current or 0)/entry.maximum)))
+            row.fill:SetColorTexture(.45,.9,.48,1)
+        end
+        local original=entry
+        if entry.visual then
+            local key=entry.key or ('visual/'..i)
+            local expanded=U.visualExpanded and U.visualExpanded[key]
+            row.more:SetShown(entry.hint~=nil or entry.actions~=nil or entry.extraAction~=nil)
+        row.more.key,row.more.hint=key,entry.hint
+            row.more:SetText(expanded and '-' or '+')
+            if not expanded then
+                entry={}
+                for k,v in pairs(original) do entry[k]=v end
+                entry.actions,entry.extraAction=nil,nil
+            end
+        else row.more:Hide(); row.more.key,row.more.hint=nil,nil end
         local passive=not entry.section and (not entry.actions or #entry.actions==0) and not entry.extraAction
         if entry.section then F.Theme.Section(row) elseif passive then row:SetBackdrop(nil) else skin(row,true) end
         row.divider:SetShown(passive)
@@ -1254,7 +1118,7 @@ function U.ShowSourceRows(entries,offset)
         row.icon:SetSize(passive and 26 or 36,passive and 26 or 36)
         row.icon:ClearAllPoints(); row.icon:SetPoint('TOPLEFT',passive and 8 or 10,passive and -8 or -10)
         row.icon:SetShown(entry.item~=nil); if entry.item then row.icon:SetTexture(C.Icon(entry.item)) end
-        row.title:ClearAllPoints(); row.title:SetPoint('TOPLEFT',x,-10); row.title:SetWidth(424-x)
+        row.title:ClearAllPoints(); row.title:SetPoint('TOPLEFT',x,-10); row.title:SetWidth(424-x-(row.more:IsShown() and 30 or 0))
         row.title:SetHeight(0); row.title:SetText(C.Safe(entry.title or '')); row.title:SetShown(entry.title and entry.title~='')
         local inline=false
         local widths,total={},0
@@ -1273,8 +1137,10 @@ function U.ShowSourceRows(entries,offset)
         row.detail:SetHeight(0); row.detail:SetText(C.Safe(entry.text or '')); row.detail:SetSpacing(1)
         row.detail:SetShown(entry.text and entry.text~='')
         if row.detail:IsShown() then top=top+row.detail:GetStringHeight()+6 end
+        if original.visual and original.reagents then top=U.DrawIngredients(row,original.reagents,top+2)
+        else for _,ingredient in ipairs(row.ingredients or {}) do ingredient:Hide() end end
         local inlineData=false
-        if passive and row.title:IsShown() and row.detail:IsShown() and not row.detail:GetText():find('\n',1,true) then
+        if not original.visual and passive and row.title:IsShown() and row.detail:IsShown() and not row.detail:GetText():find('\n',1,true) then
             local titleWidth=row.title:GetUnboundedStringWidth()
             inlineData=titleWidth+12+row.detail:GetUnboundedStringWidth()<=424-x
             if inlineData then
@@ -1325,12 +1191,13 @@ function U.ShowSourceRows(entries,offset)
             if sharedExtra then height=top+math.max(actionHeight,extraHeight)+6 else height=height+extraHeight+6 end
         else row.extraButton.action,row.extraButton.hint=nil,nil end
         if not entry.actions and not entry.extraAction or entry.actions and #entry.actions==0 and not entry.extraAction then height=height+(passive and 4 or 10) end
+        if progress then height=height+10 end
         row:SetHeight(height); row:Show(); y=y+height+(passive and 3 or 6)
     end
     U.body:SetHeight(math.max(240,y+8)); return y
 end
 function U.RequestSelected()
-    if not U.target or U.target.demo or U.page=='requests' then return end
+    if not U.target or U.page=='requests' then return end
     local ok,id=F.Requests.Create(U.target.item,U.Quantity())
     if not ok then F.Print(id); return end
     U.Navigate('requests'); U.selectionKey=id; U.Status(); F.Print(F.L('REQUEST_PUBLISHED'))
@@ -1346,9 +1213,10 @@ end
 function U.RequestList() U.Navigate('requests') end
 function U.Plan(plan)
     plan.bagSupplied={}
-    for item,count in pairs(plan.supplied) do plan.bagSupplied[item]=plan.demo and count or math.min(F.Adapter.ItemCount(item),count) end
+    for item,count in pairs(plan.supplied) do plan.bagSupplied[item]=math.min(F.Adapter.ItemCount(item),count) end
     U.planData=plan; U.Navigate('chain')
 end
+function U.Commands() U.Ensure(); U.view='commands'; U.Status() end
 function U.Help() U.Ensure(); U.view='help'; U.Status() end
 function U.DataChanged() U.dirty=true; if F.Tracker then F.Tracker.dirty=true end end
 function U.Tick(elapsed)
@@ -1359,6 +1227,7 @@ function U.Tick(elapsed)
         U.dirty=false
         if U.frame and U.frame:IsShown() then
             local position=U.details:GetVerticalScroll()
+            if U.page=='chain' and U.view~='help' and U.view~='commands' then F.Automation.RefreshPlan() end
             U.Status(); U.details:SetVerticalScroll(math.min(position,U.details:GetVerticalScrollRange()))
         end
     end

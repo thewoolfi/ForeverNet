@@ -5,19 +5,15 @@ local en = {
     [', связей '] = ', edges ',
     [': рецептов '] = ': recipes ',
     ['API обмена недоступен.'] = 'Communication API unavailable.',
-    ['DEMO: двигатель'] = 'DEMO: engine',
-    ['DEMO: сумка'] = 'DEMO: bag',
     ['ForeverNet 0.1 — сеть профессий'] = 'ForeverNet 0.1 — profession network',
     ['ForeverNet — обмен: '] = 'ForeverNet — sharing: ',
     ['Skill Graph: узлов '] = 'Skill Graph: nodes ',
-    ['\nhelp — команды; demo — безопасный пример цепочки; scan — считать открытую профессию'] = '\nhelp — commands; demo — example chain; scan — scan open profession',
     ['\nАвтор: '] = '\nOwner: ',
     ['\nЗапросы:'] = '\nRequests:',
     ['В этом клиенте нужен адаптер профессий; используйте ручной ввод.'] = 'This client needs a profession adapter; use manual entry.',
     ['Данные предметов ещё загружаются. Повторите сканирование.'] = 'Item data is still loading. Scan again.',
     ['Для обмена нужна гильдия или обычная группа.'] = 'Join a guild or a regular group to synchronize.',
     ['Дополнительно: команды без /fn. help — справка'] = 'Advanced: commands without /fn. help — command reference',
-    ['Загружен. /fn demo — пример, /fn help — команды.'] = 'Loaded. /fn demo — example, /fn help — commands.',
     ['Запрос недоступен.'] = 'Request unavailable.',
     ['Запрос уже закрыт.'] = 'Request already closed.',
     ['Запросы'] = 'Requests',
@@ -73,8 +69,7 @@ plan ITEM QTY — plan using your bags
 request ITEM QTY — publish a 30-minute request
 accept REQUEST_ID — offer to fulfill
 done REQUEST_ID / cancel REQUEST_ID — close your request
-graph — Skill Graph size
-demo — isolated production-chain example]],
+graph — Skill Graph size]],
 }
 local helpRU = [[ForeverNet — команды /fn:
 show — профиль, сеть и запросы
@@ -95,7 +90,6 @@ request ITEM QTY — запрос на 30 минут
 accept REQUEST_ID — предложить себя исполнителем
 done REQUEST_ID / cancel REQUEST_ID — закрыть свой запрос
 graph — размер Skill Graph
-demo — демонстрационная цепочка без записи и публикации
 language auto|enUS|ruRU — язык интерфейса]]
 local ru = {
     SCAN_EMPTY = 'Нет доступных изученных предметных рецептов. Откройте свою профессию, очистите поиск и фильтры и повторите сканирование.',
@@ -107,7 +101,7 @@ local ru = {
     RECIPES_COUNT = 'рецептов', PROFESSIONS = 'Профессии', CAPABILITIES = 'Возможности', CAMP = 'Лагерь: ', SECONDS = ' сек.',
     RECIPE = 'Рецепт', REAGENTS = 'Реагенты', OWNER = 'Автор: ', ACCEPT = 'Предложить помощь', DONE = 'Завершить', CANCEL = 'Отменить',
     HELP_BUTTON = 'Справка', ITEM_FIELD = 'Предмет (item:ID)', QUANTITY_FIELD = 'Количество',
-    CHAIN_HINT = 'Выберите рецепт или укажите предмет внизу. Затем нажмите «Собрать цепочку».\n\nДля примера введите demo в поле команд.',
+    CHAIN_HINT = 'Выберите рецепт или укажите предмет внизу. Затем нажмите «Собрать цепочку».',
     SELECT_HINT = 'Выберите запись слева.\n\nСканируйте открытую профессию, чтобы заполнить профиль. Включите обмен и нажмите «Обновить», чтобы найти игроков сети.',
     STATUS_open = 'Открыт', STATUS_accepted = 'Принят', STATUS_done = 'Завершён', STATUS_cancelled = 'Отменён',
 }
@@ -121,7 +115,7 @@ local extra = {
     RECIPES_COUNT = 'recipes', PROFESSIONS = 'Professions', CAPABILITIES = 'Capabilities', CAMP = 'Camp: ', SECONDS = ' sec.',
     RECIPE = 'Recipe', REAGENTS = 'Reagents', OWNER = 'Owner: ', ACCEPT = 'Offer help', DONE = 'Complete', CANCEL = 'Cancel',
     HELP_BUTTON = 'Help', ITEM_FIELD = 'Item (item:ID)', QUANTITY_FIELD = 'Quantity',
-    CHAIN_HINT = 'Select a recipe or enter an item below. Then click Build chain.\n\nFor an example, enter demo in the command field.',
+    CHAIN_HINT = 'Select a recipe or enter an item below. Then click Build chain.',
     SELECT_HINT = 'Select an entry on the left.\n\nScan an open profession to fill your profile. Enable sharing and click Sync to find players.',
     STATUS_open = 'Open', STATUS_accepted = 'Accepted', STATUS_done = 'Done', STATUS_cancelled = 'Cancelled',
 }
@@ -133,7 +127,6 @@ ru["SHARE_HINT"] = "Разрешить обмен профилем и запро
 ru["SYNC_HINT"] = "Отправить профиль и найти игроков с ForeverNet."
 ru["CHOOSE_RECIPE"] = "Выберите рецепт слева."
 ru["QUANTITY_ERROR"] = "Введите целое количество от 1 до 10000."
-ru["DEMO_ONLY"] = "Учебный пример: не отправляется игрокам."
 ru["ENABLE_TO_REQUEST"] = "Для запросов включите обмен."
 ru["JOIN_TO_REQUEST"] = "Для запросов нужна гильдия или группа."
 ru["FOOTER_FLOW"] = "Выберите предмет, рассчитайте цепочку и запросите помощь."
@@ -182,7 +175,6 @@ ru["SHARE_OFF"] = "Обмен: выкл."
 ru["SEARCH_LABEL"] = "Поиск"
 ru["CHOSEN_ITEM"] = "Выбранный предмет"
 ru["ASK_HELP"] = "Запросить помощь"
-ru["DEMO_BUTTON"] = "Пример"
 ru["REQUEST_PUBLISHED"] = "Запрос опубликован в сети."
 ru["OFFER_SENT"] = "Предложение отправлено. Ожидаем ответ автора."
 ru["QUICK_HELP"] = "1. Откройте профессию и нажмите «Сканировать». 2. Выберите рецепт и количество. 3. Соберите цепочку. 4. Выберите недостающий компонент и запросите помощь. Для обмена нужна гильдия или группа и ForeverNet у других игроков. Кнопка миникарты открывает окно; правая кнопка показывает справку. Команды: /fn help."
@@ -193,7 +185,6 @@ en["SHARE_HINT"] = "Share your profile and requests with your guild or group."
 en["SYNC_HINT"] = "Send your profile and discover ForeverNet players."
 en["CHOOSE_RECIPE"] = "Select a recipe on the left."
 en["QUANTITY_ERROR"] = "Enter a whole quantity from 1 to 10000."
-en["DEMO_ONLY"] = "Example only: never sent to players."
 en["ENABLE_TO_REQUEST"] = "Enable sharing to send requests."
 en["JOIN_TO_REQUEST"] = "Join a guild or group to send requests."
 en["FOOTER_FLOW"] = "Choose an item, build a chain and ask for help."
@@ -242,7 +233,6 @@ en["SHARE_OFF"] = "Sharing: off"
 en["SEARCH_LABEL"] = "Search"
 en["CHOSEN_ITEM"] = "Selected item"
 en["ASK_HELP"] = "Ask for help"
-en["DEMO_BUTTON"] = "Example"
 en["REQUEST_PUBLISHED"] = "Request published to the network."
 en["OFFER_SENT"] = "Offer sent. Waiting for the owner's reply."
 en["QUICK_HELP"] = "1. Open your profession and click Scan. 2. Select a recipe and quantity. 3. Build the chain. 4. Select a missing component and ask for help. Sharing requires a guild or group and other ForeverNet users. Left click the minimap button to toggle; right click for help. Commands: /fn help."

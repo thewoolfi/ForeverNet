@@ -44,12 +44,29 @@ function V.Newer(candidate,current)
     end
     return false
 end
+function V.Startup()
+    F.Print(F.version)
+    local known=F.db.newerAddonVersion
+    if type(known)=='table' and F.Text(known.source) and V.Newer(known.version,F.version) then
+        V.latest,V.source,V.cached=known.version,known.source,true
+    else F.db.newerAddonVersion=nil end
+end
+function V.Login()
+    if V.loginChecked then return end
+    V.loginChecked=true
+    if V.cached and V.latest and F.db.settings.updateNotifications~=false and not V.notified then
+        V.notified=true
+        F.Print(string.format(F.L('UPDATE_PEER_CACHED'),V.source,V.latest,F.version))
+    end
+    V.ScheduleAll(8)
+end
 function V.Observe(version,sender)
-    if sender==F.me or not V.Newer(version,F.version) then return end
+    if not F.Text(sender) or sender=='' or F.IsSelf(sender) or not V.Newer(version,F.version) then return end
     if V.latest and not V.Newer(version,V.latest) then return end
-    V.latest,V.source=version,sender
-    if F.db.settings.updateNotifications~=false then
-        F.Print(string.format(F.L('UPDATE_NOTIFICATION'),sender,version,F.version))
+    V.latest,V.source,V.cached=version,sender,nil
+    F.db.newerAddonVersion={version=version,source=sender,seen=F.Now()}
+    if F.db.settings.updateNotifications~=false and not V.notified then
+        V.notified=true; F.Print(string.format(F.L('UPDATE_NOTIFICATION'),sender,version,F.version))
     end
     V.Refresh()
 end
@@ -59,8 +76,9 @@ function V.Refresh()
     V.frame:SetTitle('ForeverNet - '..F.L('ADDON_UPDATES'))
     V.installed:SetText(string.format(F.L('UPDATE_INSTALLED'),F.version))
     local newer=V.latest and V.Newer(V.latest,F.version)
-    V.status:SetText(newer and string.format(F.L('UPDATE_FOUND'),V.latest,V.source) or F.L('UPDATE_NOT_FOUND'))
-    if newer then F.Theme.Color(V.status,'missing') else F.Theme.Text(V.status) end
+    local status=newer and string.format(F.L('UPDATE_FOUND'),V.latest,V.source) or F.L('UPDATE_NOT_FOUND')
+    V.status:SetText(status)
+    F.Theme.Color(V.status,newer and 'missing' or 'text')
     V.notify.label:SetText(F.L('UPDATE_NOTIFY_SETTING'))
     V.notify:SetChecked(F.db.settings.updateNotifications~=false)
     V.check:SetText(F.L('UPDATE_CHECK_PEERS'))
@@ -109,8 +127,8 @@ function V.Open()
         V.check:SetSize(320,26); V.check:SetPoint('TOPLEFT',28,-224)
         F.Theme.Button(V.check)
         V.check:SetScript('OnClick',function()
-            local ok,why=F.Net.Sync()
-            F.Print(ok and F.L('UPDATE_CHECK_QUEUED') or why)
+            local _,why=V.CheckNow()
+            F.Print(why)
         end)
         V.downloadLabel=label(-274,'GameFontNormal')
         V.link=CreateFrame('EditBox',nil,frame,'InputBoxTemplate')

@@ -45,7 +45,7 @@ function F.Command(input)
     local args = {}; for word in input:gmatch('%S+') do args[#args + 1] = word end
     local cmd, a, b = args[1] or 'show', args[2], args[3]
     local ok, err = pcall(function()
-        if cmd == 'help' then F.UI.Show(F.L("HELP"))
+        if cmd == 'help' or cmd == 'commands' then F.UI.Commands()
         elseif cmd == 'settings' then F.Settings.Open()
         elseif cmd == 'updates' then F.Updates.Open()
         elseif cmd == 'netstatus' then F.Net.Diagnostics()
@@ -88,7 +88,6 @@ function F.Command(input)
             local id = a and tonumber(a:match('^item:(%d+)$'))
             if id then inventory[a] = F.Adapter.StockCount(a) end
             F.UI.Plan(F.Planner.Build(profiles, a, tonumber(b) or 1, inventory))
-        elseif cmd == 'demo' then local plan=F.Planner.Build(F.Adapter.Demo(), 'demo:bag', 1, {['demo:ore']=3, ['demo:cloth']=4}); plan.demo=true; F.UI.Plan(plan)
         elseif cmd == 'graph' then
             local g = F.SkillGraph(F.Profiles()); F.UI.Show(F.L('Skill Graph: узлов ') .. #F.Keys(g.nodes) .. F.L(', связей ') .. #g.edges)
         elseif cmd == 'request' or cmd == 'accept' or cmd == 'done' or cmd == 'cancel' then
@@ -97,7 +96,7 @@ function F.Command(input)
             elseif cmd == 'accept' then success, why = F.Requests.Accept(a)
             else success, why = F.Requests.Close(a, cmd == 'done' and 'done' or 'cancelled') end
             if why then F.Print(why) end; F.UI.Status()
-        else F.UI.Show(F.L("HELP")) end
+        else F.UI.Commands() end
     end)
     if not ok then F.Print(F.L('Ошибка: ') .. tostring(err)) end
 end
@@ -107,21 +106,23 @@ frame:SetScript('OnEvent', function(self, event, ...)
     if event == 'ADDON_LOADED' then
         local name = ...; if name ~= F.name then return end
         if not F.Init() then return end
-        F.Net.Start(); F.Minimap.Init(); F.ProfessionActions.Start(); F.Auction.Start(); F.Tracker.Start(); self:RegisterEvent('CHAT_MSG_ADDON')
+        F.Net.Start(); F.Updates.Start(); F.Minimap.Init(); F.ProfessionActions.Start(); F.Auction.Start(); F.Tracker.Start(); self:RegisterEvent('CHAT_MSG_ADDON')
         for _,event in ipairs({'BANKFRAME_OPENED','BANKFRAME_CLOSED','PLAYERBANKSLOTS_CHANGED','BANK_TABS_CHANGED','BAG_CONTAINER_UPDATE'}) do self:RegisterEvent(event) end
         self:RegisterEvent('GROUP_ROSTER_UPDATE'); self:RegisterEvent('PLAYER_GUILD_UPDATE'); self:RegisterEvent('PLAYER_ENTERING_WORLD')
         self:RegisterEvent('PLAYER_LOGIN'); self:RegisterEvent('BAG_UPDATE_DELAYED'); self:RegisterEvent('GET_ITEM_INFO_RECEIVED')
+        for _,event in ipairs({'TRADE_SKILL_SHOW','TRADE_SKILL_CLOSE','TRADE_SKILL_LIST_UPDATE','TRADE_SKILL_DATA_SOURCE_CHANGED'}) do self:RegisterEvent(event) end
         self:RegisterEvent('ADDON_ACTION_BLOCKED'); self:RegisterEvent('ADDON_ACTION_FORBIDDEN')
-        self:SetScript('OnUpdate', function(_, elapsed) F.Net.Tick(elapsed); F.UI.Tick(elapsed); F.Bank.Tick(elapsed); F.Tracker.Tick(elapsed); F.ProfessionActions.Tick(elapsed) end)
+        self:SetScript('OnUpdate', function(_, elapsed) F.Net.Tick(elapsed); F.Updates.Tick(elapsed); F.UI.Tick(elapsed); F.Bank.Tick(elapsed); F.Tracker.Tick(elapsed); F.ProfessionActions.Tick(elapsed); F.Automation.Tick(elapsed) end)
         SLASH_FOREVERNET1, SLASH_FOREVERNET2 = '/fn', '/forevernet'
         SlashCmdList.FOREVERNET = F.Command
-        F.Print(F.L('Загружен. /fn demo — пример, /fn help — команды.'))
-    elseif event == 'CHAT_MSG_ADDON' then F.Net.Receive(...)
+        F.Updates.Startup()
+    elseif event == 'CHAT_MSG_ADDON' then F.Updates.Receive(...); F.Net.Receive(...)
     elseif event=='ADDON_ACTION_BLOCKED' or event=='ADDON_ACTION_FORBIDDEN' then F.ProtectedAction(event,...)
-    elseif event == 'PLAYER_LOGIN' then F.Minimap.Init(); if F.db.settings.sharing then F.Net.ScheduleSync() end
+    elseif event == 'PLAYER_LOGIN' then F.Minimap.Init(); F.Updates.Login(); if F.db.settings.sharing then F.Net.ScheduleSync() end
     elseif event=='GROUP_ROSTER_UPDATE' or event=='PLAYER_GUILD_UPDATE' or event=='PLAYER_ENTERING_WORLD' then
         F.RefreshIdentityAliases(); F.CleanSelfAliases()
+        F.Updates.ScheduleAll(1)
         if F.db.settings.sharing then F.Net.ScheduleSync() end
         F.UI.DataChanged()
-    else F.Bank.Event(event); F.UI.DataChanged() end
+    else F.Automation.Event(event); F.Bank.Event(event); F.UI.DataChanged() end
 end)

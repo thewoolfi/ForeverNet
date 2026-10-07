@@ -155,6 +155,7 @@ local function text(parent,width,x,y,size)
 end
 function A.Render()
     if not A.panel then return end
+    A.LayoutPanel()
     F.Theme.RefreshFonts()
     A.description:SetText(F.L('MARKET_SCAN_HELP'))
     A.scanButton:SetText(F.L('MARKET_SCAN')); A.scanButton:SetEnabled(A.open and not A.running)
@@ -183,13 +184,22 @@ function A.Render()
     A.results:SetText(F.Catalog.Safe(#lines>0 and table.concat(lines,'\n\n') or F.L('MARKET_NO_TARGETS')))
     A.scrollChild:SetHeight(math.max(300,A.results:GetStringHeight()+20))
 end
+function A.LayoutPanel()
+    if not A.panel or not A.host then return end
+    -- Native MoneyFrameInset ends 27px above the window bottom (XML), not
+    -- inside the content area. Reserve its strip in either addon theme.
+    local frame=A.host
+    local bottom=math.max(36,frame.MoneyFrameInset and frame.MoneyFrameInset:GetHeight()+11 or 0,
+        frame.MoneyFrameBorder and frame.MoneyFrameBorder:GetHeight()+14 or 0)
+    A.panel:ClearAllPoints(); A.panel:SetPoint('TOPLEFT',16,-40); A.panel:SetPoint('BOTTOMRIGHT',-16,bottom)
+end
 function A.Attach()
     local frame=AuctionHouseFrame
     if A.panel or not frame or type(frame.Tabs)~='table' or not frame.tabsForDisplayMode or not AuctionHouseFrameDisplayMode or
         not frame.SetDisplayMode or not PanelTemplates_SetNumTabs then return end
     local panel=CreateFrame('Frame',nil,frame,'BackdropTemplate'); panel:SetPoint('TOPLEFT',16,-40); panel:SetPoint('BOTTOMRIGHT',-16,10)
     F.Theme.Skin(panel,true); panel:Hide()
-    A.panel=panel; frame.ForeverNetPanel=panel
+    A.panel,A.host=panel,frame; frame.ForeverNetPanel=panel; A.LayoutPanel()
     local mode={'ForeverNetPanel'}; AuctionHouseFrameDisplayMode.ForeverNet=mode
     local tab=CreateFrame('Button',nil,frame,'AuctionHouseFrameDisplayModeTabTemplate'); tab:SetText('ForeverNet'); tab.displayMode=mode
     -- PanelTabButtonTemplate inherits parentArray="Tabs": CreateFrame has
@@ -212,7 +222,11 @@ function A.Attach()
     end
     A.scanButton=control(14,270,function()
         local items=F.Keys(F.Queue.Build().missing)
-        if #items==0 then items=F.Keys(F.db.favorites.recipes) end
+        if #items==0 then
+            local favorites=F.Copy(F.db.favorites.recipes)
+            for item in pairs(F.db.favorites.market) do favorites[item]=true end
+            items=F.Keys(favorites)
+        end
         local ok,why=A.Scan(items); if why then F.Print(why) end
     end)
     A.stopButton=control(296,160,function() A.Cancel() end)

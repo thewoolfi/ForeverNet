@@ -32,6 +32,9 @@ function region:IsShown() return self.shown end
 function region:IsVisible() return self.shown and (not self.parent or not self.parent.IsVisible or self.parent:IsVisible()) end
 function region:SetShown(shown) self.shown = shown end
 function region:SetAlpha(alpha) self.alpha=alpha end
+function region:GetAlpha() return self.alpha or 1 end
+function region:GetNumPoints() local n=0; for _ in pairs(self.points or {}) do n=n+1 end; return n end
+function region:GetPoint(i) local n=0; for _,point in pairs(self.points or {}) do n=n+1; if n==i then return unpack(point) end end end
 function region:SetParent(parent) self.parent=parent end
 
 local font = {}
@@ -75,6 +78,7 @@ function edit:SetText(text)
     if self.scripts.OnTextChanged then self.scripts.OnTextChanged(self, false) end
 end
 function edit:GetText() return self.text end
+function edit:SetTextColor(...) self.color={...} end
 for _, method in ipairs({'SetMultiLine', 'SetAutoFocus', 'SetFontObject', 'SetNumeric', 'ClearFocus'}) do edit[method] = function() end end
 local button = {SetText = edit.SetText, GetText = edit.GetText}
 local scroll = {}
@@ -84,6 +88,11 @@ function scroll:GetVerticalScroll() return self.verticalScroll end
 function scroll:GetVerticalScrollRange() return math.max(0,(self.child and self.child:GetHeight() or 0)-self:GetHeight()) end
 function scroll:EnableMouseWheel(value) self.mouseWheelEnabled=value end
 local texture = {SetTexture = function(self, value) self.texture = value end}
+function texture:GetTexture() return self.texture end
+function texture:GetAtlas() return self.atlas end
+function texture:GetTexCoord() return unpack(self.texCoord or {0,1,0,1}) end
+function texture:GetVertexColor() return unpack(self.vertex or {1,1,1,1}) end
+function texture:SetVertexColor(...) self.vertex={...} end
 local line = {}
 function line:SetThickness(value) self.thickness=value end
 function line:SetStartPoint(...) self.start={...} end

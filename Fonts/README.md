@@ -11,3 +11,5 @@ source revision and hashes. work/build_cjk_fonts.py reproduces the conversion.
 
 Copyright © 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name Source.
 The original copyright notice is also retained in each font’s name table.
+
+The local modern interface also uses the SC Sans variant for standard Latin/Cyrillic addon text. Regional CJK choices and explicit custom font paths remain supported; no shared game font objects are changed.

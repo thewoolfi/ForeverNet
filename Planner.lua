@@ -36,6 +36,9 @@ end
 function F.Planner.Sources(profiles,item,now,localOwner)
     return sourcesIndex(profiles,now or F.Now(),localOwner)[item] or {}
 end
+function F.Planner.SourceIndex(profiles,now,localOwner)
+    return sourcesIndex(profiles,now or F.Now(),localOwner)
+end
 -- A bounded, deterministic greedy plan, not a global cost optimizer.
 function F.Planner.BuildQueue(profiles, goals, inventory, now, options)
     assert(type(goals)=='table' and #goals<=50, 'invalid queue')
@@ -46,7 +49,7 @@ function F.Planner.BuildQueue(profiles, goals, inventory, now, options)
     local carried=F.Copy(options.bags or {})
     local result = {goals=F.Copy(goals), goalStates={}, steps = {}, missing = {}, missingReasons = {}, supplied = {},
         warnings = {}, inventory = F.Copy(inventory or {}), materials={}, sources=F.Copy(options.sources or {}),bagSupplied={},retainedBank={}}
-    local index=sourcesIndex(profiles,now,options.localOwner)
+    local index=options.sourceIndex and options.sourceIndex() or sourcesIndex(profiles,now,options.localOwner)
     local function missing(id, qty, reason)
         result.missing[id] = (result.missing[id] or 0) + qty
         result.missingReasons[id] = reason

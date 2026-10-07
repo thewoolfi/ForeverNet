@@ -1,6 +1,6 @@
 local addonName, F = ...
 _G.ForeverNet = F
-F.name, F.version = addonName, '1.0.0'
+F.name, F.version = addonName, '1.1.0'
 F.icon = 'Interface\\Icons\\INV_Scroll_03'
 F.MAX_RECIPES, F.PEER_TTL = 1000, 1800
 F.MAX_FAVORITES=5
@@ -8,10 +8,11 @@ function F.IsFavorite(kind,key)
     return F.db and F.db.favorites and F.db.favorites[kind] and F.db.favorites[kind][key]==true or false
 end
 function F.ToggleFavorite(kind,key)
-    if kind~='profiles' and kind~='recipes' then return false end
+    if kind~='profiles' and kind~='recipes' and kind~='market' then return false end
+    if type(key)~='string' or not (kind=='profiles' and F.Text(key) or kind~='profiles' and F.ID(key)) then return false end
     local entries=F.db.favorites[kind]
     if entries[key] then entries[key]=nil
-    elseif #F.Keys(entries)>=F.MAX_FAVORITES then return false,F.L('FAVORITE_LIMIT')
+    elseif #F.Keys(entries)>=F.MAX_FAVORITES then return false,F.L(kind=='market' and 'MARKET_FAVORITE_LIMIT' or 'FAVORITE_LIMIT')
     else entries[key]=true end
     return true
 end
@@ -121,12 +122,13 @@ function F.Init()
     F.db = ForeverNetDB
     F.db.profiles, F.db.requests = F.db.profiles or {}, F.db.requests or {}
     F.db.settings = F.db.settings or {sharing = false}
+    if F.db.settings.uiStyle~='modern' and F.db.settings.uiStyle~='classic' then F.db.settings.uiStyle='modern' end
     F.db.favorites=type(F.db.favorites)=='table' and F.db.favorites or {}
-    for _,kind in ipairs({'profiles','recipes'}) do
+    for _,kind in ipairs({'profiles','recipes','market'}) do
         local saved=type(F.db.favorites[kind])=='table' and F.db.favorites[kind] or {}
         local valid={}
         for key,value in pairs(saved) do
-            if type(key)=='string' and value==true and (kind=='profiles' and F.Text(key) or kind=='recipes' and F.ID(key)) then valid[key]=true end
+            if type(key)=='string' and value==true and (kind=='profiles' and F.Text(key) or kind~='profiles' and F.ID(key)) then valid[key]=true end
         end
         local keys=F.Keys(valid)
         for i=F.MAX_FAVORITES+1,#keys do valid[keys[i]]=nil end
@@ -140,6 +142,7 @@ function F.Init()
     F.localProfile.seen = F.Now()
     F.Queue.Init()
     F.Market.Init()
+    F.Theme.ApplyStyles()
     return true
 end
 function F.CleanSelfAliases()

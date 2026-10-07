@@ -31,8 +31,9 @@ F.Requests.Receive('OFFER',{id=r.id},'Helper-Realm','GUILD'); U.Tick(1)
 assert(U.selectedEntry.request.status=='accepted' and U.done:IsShown())
 U.frame:Hide(); F.UI.DataChanged(); U.Tick(1); assert(not U.frame:IsShown())
 local count=#F.Keys(F.db.requests)
-F.Command('demo'); assert(U.planData.demo and not U.request:IsEnabled())
-U.RequestSelected(); assert(#F.Keys(F.db.requests)==count)
+local before=U.planData
+F.Command('demo'); assert(U.view=='commands' and U.planData==before)
+assert(#F.Keys(F.db.requests)==count and not F.Adapter.Demo)
 U.Navigate('recipes'); U.Select(U.entries[1]); U.qty:SetText('0'); assert(not U.plan:IsEnabled())
 -- Every literal UI locale key must be translated in both bundled languages.
 assert(F.L('MINIMAP_HINT')~='MINIMAP_HINT')

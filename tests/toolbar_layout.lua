@@ -55,7 +55,7 @@ end
 assert(sent==0 and F.Codec.Encode(F.localProfile)==profile and #F.Queue.data.goals==0)
 for _,pageName in ipairs({'home','network','recipes','queue','crafters'}) do
     if pageName=='crafters' then U.FindCrafters('item:1',3) else U.Navigate(pageName) end
-    local browse=pageName=='home' or pageName=='network'
+    local browse=pageName=='home' or pageName=='network' or pageName=='queue'
     assert(U.right:GetHeight()==(browse and 433 or 357) and U.left:GetHeight()==U.right:GetHeight())
     assert(U.qty:IsShown()==not browse and U.chosen:IsShown()==not browse and U.plan:IsShown()==not browse)
 end

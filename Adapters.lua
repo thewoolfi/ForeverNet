@@ -222,13 +222,3 @@ function F.Adapter.Inventory(profiles,bagCounts)
     end
     return result
 end
-function F.Adapter.Demo()
-    local a, b = F.NewProfile(), F.NewProfile()
-    a.professions.engineering, b.professions.tailoring = 300, 300
-    a.recipes['demo:engine'] = {name = F.L('DEMO: двигатель'), output = 'demo:engine', quantity = 1, profession = 'engineering',
-        blueprint = true, reagents = {['demo:ore'] = 3}, stations = {}}
-    b.recipes['demo:bag'] = {name = F.L('DEMO: сумка'), output = 'demo:bag', quantity = 1, profession = 'tailoring',
-        blueprint = true, reagents = {['demo:engine'] = 1, ['demo:cloth'] = 4}, stations = {['demo:workshop'] = true}}
-    a.camps['demo:workshop'] = F.Now()
-    return {['DemoEngineer-Realm'] = a, ['DemoTailor-Realm'] = b}
-end

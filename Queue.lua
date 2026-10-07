@@ -180,7 +180,7 @@ function Q.Build()
             inventory[goal.item]=bags[goal.item]+(F.db.settings.useBank~=false and F.Bank.Count(goal.item) or 0)
         end
     end
-    local plan=F.Planner.BuildQueue(profiles,Q.data.goals,inventory,nil,{localOwner=F.me,sources=Q.data.sources,bags=bags})
+    local plan=F.Automation.Build(profiles,Q.data.goals,inventory,{localOwner=F.me,sources=Q.data.sources,bags=bags})
     for item in pairs(plan.supplied) do plan.bagSupplied[item]=plan.bagSupplied[item] or 0 end
     return plan
 end

@@ -14,7 +14,7 @@
 ## Notes-zhTW: 專業技能共享網路與製作規劃
 ## Author: Andrew Woolfi
 ## X-License: MIT
-## Version: 1.0.0
+## Version: 1.1.0
 ## X-ReleaseType: Release
 ## X-Compatibility: Forever 1.60.1 (70124); in-game validation in progress
 ## SavedVariables: ForeverNetDB
@@ -33,6 +33,7 @@ FeatureLocales.lua
 Core.lua
 Model.lua
 Theme.lua
+ThemeStyles.lua
 Updates.lua
 Catalog.lua
 Codec.lua
@@ -40,11 +41,15 @@ Planner.lua
 Adapters.lua
 Bank.lua
 Network.lua
+VersionChannel.lua
 Requests.lua
 Queue.lua
 Market.lua
 SourceCosts.lua
+Automation.lua
 UI.lua
+Graphics.lua
+QueueBoard.lua
 Minimap.lua
 Settings.lua
 ProfessionActions.lua

@@ -9,10 +9,18 @@ local function label(parent,y,text)
 end
 function S.Layout()
     local y=4
+    S.scroll:ClearAllPoints(); S.scroll:SetPoint('TOPLEFT',20,F.Theme.IsClassic() and -58 or -48); S.scroll:SetPoint('BOTTOMRIGHT',-34,18)
     local function place(region,x,gap)
         region:ClearAllPoints(); region:SetPoint('TOPLEFT',x,-y)
         region:SetHeight(0); y=y+region:GetStringHeight()+(gap or 8)
     end
+    S.styleLabel:ClearAllPoints(); S.styleLabel:SetPoint('TOPLEFT',8,-y); S.styleLabel:SetWidth(140); S.styleLabel:SetHeight(0)
+    local styleHeight=S.styleLabel:GetStringHeight()
+    for i,style in ipairs({'modern','classic'}) do
+        local b=S.styles[style]; b:ClearAllPoints(); b:SetPoint('TOPLEFT',160+(i-1)*154,-y)
+        styleHeight=math.max(styleHeight,F.Theme.FitButton(b,146))
+    end
+    y=y+styleHeight+14
     for _,check in ipairs(S.checks) do
         check:ClearAllPoints(); check:SetPoint('TOPLEFT',4,-y)
         check.label:SetHeight(0)
@@ -34,6 +42,17 @@ function S.Layout()
     S.languageButton:ClearAllPoints(); S.languageButton:SetPoint('TOPLEFT',20+languageWidth,-y)
     height=F.Theme.FitButton(S.languageButton,442-languageWidth)
     y=y+math.max(height,S.languageLabel:GetStringHeight()+4)+8
+    local menuY=9; local order={'auto'}
+    for _,locale in ipairs(F.LocaleOrder) do order[#order+1]=locale end
+    for first=1,#order,3 do
+        local rowHeight=0
+        for i=first,math.min(first+2,#order) do
+            local b=S.languages[order[i]]; b:ClearAllPoints(); b:SetPoint('TOPLEFT',6+(i-first)*150,-menuY)
+            rowHeight=math.max(rowHeight,F.Theme.FitButton(b,142))
+        end
+        menuY=menuY+rowHeight+4
+    end
+    S.languageMenu:SetHeight(menuY+5)
     S.languageMenu:ClearAllPoints(); S.languageMenu:SetPoint('TOPLEFT',8,-y)
     if S.languageMenu:IsShown() then y=y+S.languageMenu:GetHeight()+8 end
     place(S.bank,8,10)
@@ -50,6 +69,11 @@ function S.Refresh()
     if not S.frame then return end
     F.Theme.RefreshFonts()
     S.frame:SetTitle('ForeverNet - '..F.L('SETTINGS'))
+    S.styleLabel:SetText(F.L('SETTING_STYLE'))
+    for style,b in pairs(S.styles) do
+        b:SetText(F.L(style=='modern' and 'STYLE_MODERN' or 'STYLE_CLASSIC'))
+        b:SetEnabled(style~=F.db.settings.uiStyle)
+    end
     for _,check in ipairs(S.checks) do
         check:SetChecked(F.db.settings[check.key]~=false)
         if check.key=='sharing' then check:SetChecked(not not F.db.settings.sharing) end
@@ -67,7 +91,7 @@ function S.Refresh()
     S.githubLabel:SetText(F.L('PROJECT_GITHUB'))
     S.supportLabel:SetText(F.L('SUPPORT_BOOSTY'))
     S.linkHint:SetText(F.L('COPY_LINK_HINT'))
-    S.about:SetText(F.L('ABOUT')..'\nForeverNet '..F.version..'\n'..F.L('AUTHOR')..'Andrew Woolfi\n\n'..F.L('ABOUT_TEXT'))
+    S.about:SetText('ForeverNet '..F.version..'  /  Andrew Woolfi')
     S.updates:SetText(F.L('ADDON_UPDATES'))
     S.languages.auto:SetText(F.L('LANG_AUTO'))
     S.Layout()
@@ -89,7 +113,12 @@ function S.Open()
         S.body=CreateFrame('Frame',nil,S.scroll); S.body:SetSize(470,540); S.scroll:SetScrollChild(S.body)
         -- Controls live in a measured scrolling body, separate from the native border.
         local content=S.body
-        local choices={{'sharing','SETTING_SHARE'},{'autoBank','SETTING_AUTOBANK'},{'useBank','SETTING_USEBANK'},{'showMinimap','SETTING_MINIMAP'},{'autoSync','SETTING_AUTOSYNC'}}
+        S.styleLabel=label(content,0,''); S.styles={}
+        for _,style in ipairs({'modern','classic'}) do
+            local b=CreateFrame('Button',nil,content,'UIPanelButtonTemplate'); b:SetSize(146,24); F.Theme.Button(b)
+            b:SetScript('OnClick',function() F.Theme.SetStyle(style) end); S.styles[style]=b
+        end
+        local choices={{'sharing','SETTING_SHARE'},{'autoBank','SETTING_AUTOBANK'},{'useBank','SETTING_USEBANK'},{'showMinimap','SETTING_MINIMAP'},{'autoSync','SETTING_AUTOSYNC'},{'autoScan','SETTING_AUTOSCAN'},{'autoSources','SETTING_AUTOSOURCES'}}
         for i,choice in ipairs(choices) do
             local check=CreateFrame('CheckButton',nil,content,'UICheckButtonTemplate')
             check:SetSize(28,28); check:SetPoint('TOPLEFT',24,-55-(i-1)*34)
@@ -97,6 +126,10 @@ function S.Open()
             check.label=check:CreateFontString(nil,'OVERLAY','GameFontHighlight'); check.label:SetPoint('TOPLEFT',check,'TOPRIGHT',4,-5)
             check.label:SetWidth(426); check.label:SetJustifyH('LEFT'); check.label:SetWordWrap(true)
             F.Theme.Text(check.label,false,14)
+            if check.key=='autoSources' or check.key=='autoScan' then
+                check:SetScript('OnEnter',function(self) F.Theme.ShowTooltip(self,F.L(self.locale),F.L(self.key=='autoSources' and 'SOURCE_COST_HELP' or 'SCAN_HINT')) end)
+                check:SetScript('OnLeave',F.Theme.HideTooltip)
+            end
             check:SetScript('OnClick',function(self)
                 F.db.settings[self.key]=not not self:GetChecked()
                 if self.key=='sharing' and not self:GetChecked() then F.Net.queue,F.Net.buffers={},{} end

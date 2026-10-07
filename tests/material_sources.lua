@@ -71,17 +71,18 @@ local function recipeRow(owner)
     end
 end
 local function click(row,index)
-    assert(row and row.buttons[index or 1]:IsShown())
+    assert(row); if not row.buttons[index or 1]:IsShown() and row.more:IsShown() then row.more.scripts.OnClick(row.more) end
+    assert(row.buttons[index or 1]:IsShown())
     local b=row.buttons[index or 1]; assert(b.enabled~=false); b.scripts.OnClick(b)
 end
 U.Navigate('recipes'); U.SetTarget('item:252426',1,F.me,'boots'); U.BuildSelected()
 assert(U.planData.target=='item:252426')
-assert(U.chainRows[1].title==F.L('CHAIN_GET'))
-assert(U.chainRows[2].title==F.L('CHAIN_MAKE'))
+assert(U.chainRows[1].title==F.L('VIS_MAKE'))
 local leather=rowFor('make/1')
-assert(leather.detail:GetText():find('item:2934 x30',1,true))
+assert(leather.ingredients[1].count:GetText()=='30')
+assert(not leather.buttons[1]:IsShown()); leather.more.scripts.OnClick(leather.more)
 assert(leather.buttons[1]:GetText()==string.format(F.L('CHAIN_GET_BUTTON'),10))
-assert(rowFor('make/2').detail:GetText():find(F.Catalog.ItemName('item:2318')..' x12',1,true))
+assert(rowFor('make/2').ingredients[1].count:GetText()=='12')
 assert(U.planData.steps[1].reagents['item:2934']==30)
 assert(U.plan:GetText()==F.L('CHAIN_REFRESH'))
 -- One click replaces the leather craft with ten ready-made units to obtain.
@@ -89,8 +90,8 @@ click(leather)
 assert(U.view==nil and U.planData.target=='item:252426' and U.target.item=='item:252426')
 assert(U.planData.missing['item:2318']==10 and not U.planData.missing['item:2934'])
 local get=rowFor('get/item:2318')
-assert(get and get.detail:GetText():find('item:2934 x30',1,true))
-assert(get.buttons[1]:GetText()==string.format(F.L('CHAIN_MAKE_BUTTON'),10))
+assert(get and get.entry.hint:find('item:2934 x30',1,true))
+assert(get.entry.actions[1].text==string.format(F.L('CHAIN_MAKE_BUTTON'),10))
 assert(#U.planData.steps==1 and rowFor('make/1').entry.item=='item:252426')
 -- Crafting instead is another direct click; no separate screen or automatic mode.
 click(get)
@@ -122,21 +123,21 @@ click(rowFor('make/1'))
 local entry
 for _,e in ipairs(U.entries) do if e.kind=='missing' and e.item=='item:2318' then entry=e end end
 assert(entry); U.Select(entry)
-assert(U.target.item=='item:2318' and U.chainRows[1].title==F.L('CHAIN_GET'))
+assert(U.target.item=='item:2318' and U.chainRows[1].title==F.L('VIS_GET'))
 U.BuildSelected()
 assert(U.target.item=='item:252426' and U.planData.target=='item:252426')
 -- Adjusting the final target quantity retains the chosen path.
 U.qty:SetText('2'); U.BuildSelected()
 assert(U.planData.quantity==2 and U.planData.sources['item:2318']=='external')
 assert(U.planData.missing['item:2318']==22)
-assert(rowFor('get/item:2318').detail:GetText():find('item:2934 x66',1,true))
+assert(rowFor('get/item:2318').entry.hint:find('item:2934 x66',1,true))
 U.ChooseSource('item:2318',nil)
 assert(U.planData.quantity==2 and not U.planData.sources['item:2318'])
 assert(U.planData.missing['item:2934']==36)
 -- Stock is disclosed on demand; visiting other pages hides plan-specific widgets.
 local stockRow
-for _,row in ipairs(U.sourceRows) do if row:IsShown() and row.entry.title==F.L('CHAIN_STOCK') then stockRow=row end end
-assert(stockRow and not U.showPlanStock); click(stockRow); assert(U.showPlanStock)
+for _,row in ipairs(U.sourceRows) do if row:IsShown() and row.entry.title==F.L('VIS_DETAILS') then stockRow=row end end
+assert(stockRow and not U.planDetails); click(stockRow); assert(U.planDetails)
 U.Help(); for _,row in ipairs(U.sourceRows) do assert(not row:IsShown()) end
 U.Navigate('recipes'); U.SetTarget('item:4231',1,F.me,'hide'); U.BuildSelected()
 assert(next(U.planData.sources)==nil and not U.showPlanStock)

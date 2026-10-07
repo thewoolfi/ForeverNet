@@ -45,7 +45,7 @@ F.UI.DataChanged(); F.UI.Tick(1)
 assert(F.Settings.frame:IsShown() and F.Settings.frame.strata=='FULLSCREEN_DIALOG')
 
 -- External links are copyable and remain correct in both languages.
-assert(F.version=='1.0.0')
+assert(F.version=='1.1.0')
 for _,field in ipairs({F.Settings.githubLink,F.Settings.supportLink}) do
     field.scripts.OnMouseUp(field); assert(field.highlighted and field.focused)
     local url=field:GetText(); field:SetText('modified'); assert(field:GetText()==url)

@@ -14,7 +14,7 @@ for _,locale in ipairs({'koKR','zhCN','zhTW'}) do
         assert(font:GetFont()==T.fontFiles[locale])
     end
 end
-assert(S.languages.ruRU:GetNormalFontObject():GetFont()==normal)
+assert(S.languages.ruRU:GetNormalFontObject():GetFont()==T.defaultFont)
 for _,locale in ipairs({'koKR','zhCN','zhTW'}) do
     S.languages[locale].scripts.OnClick()
     local path=T.fontFiles[locale]

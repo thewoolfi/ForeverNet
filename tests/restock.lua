@@ -93,28 +93,20 @@ for _,locale in ipairs(F.LocaleOrder) do
     F.db.settings.locale=locale; U.Navigate('queue')
     U.Select(U.entries[1]); assert(U.qtyLabel:GetText()==F.L('RESTOCK_TARGET'))
     if locale=='enUS' then
-        U.qty:SetText('21'); U.enqueue.scripts.OnClick(U.enqueue)
+        U.qty:SetText('21'); assert(Q.data.goals[1].quantity==21)
         assert(Q.data.goals[1].quantity==21 and Q.data.goals[1].mode=='stock')
         Q.Quantity(1,20); U.Status(); U.Select(U.entries[1])
     end
-    local row
-    for _,candidate in ipairs(U.sourceRows) do
-        if candidate:IsShown() and candidate.entry.extraAction then row=candidate; break end
-    end
-    assert(row and row.extraButton:IsShown() and row.extraButton:GetText()==F.L('RESTOCK_ONCE'))
-    assert(row:GetHeight()>=-row.extraButton.point[3]+24)
-    row.extraButton.scripts.OnClick(row.extraButton)
+    local mode=U.queueBoard.stock
+    assert(mode:IsShown() and U.queueBoard.goalBar:IsShown())
+    mode.scripts.OnClick(mode)
     assert(Q.data.goals[1].mode==nil and U.qtyLabel:GetText()==F.L('QUANTITY_FIELD'))
-    for _,candidate in ipairs(U.sourceRows) do
-        if candidate:IsShown() and candidate.entry.extraAction then row=candidate; break end
-    end
-    assert(row.extraButton:GetText()==F.L('RESTOCK_ENABLE'))
-    row.extraButton.scripts.OnClick(row.extraButton); assert(Q.data.goals[1].mode=='stock')
+    mode.scripts.OnClick(mode); assert(Q.data.goals[1].mode=='stock')
     U.QueueSetDialog('load','Supplies'); assert(U.setDialog.preview:GetText():find(F.L('RESTOCK_MODE'),1,true))
     U.setDialog.second.scripts.OnClick(U.setDialog.second)
     assert(U.setDialog:IsShown() and U.setDialog.error:GetText()==F.L('RESTOCK_DUPLICATE'))
-    assert(U.setDialog.error.point[1]=='BOTTOMLEFT' and U.setDialog.error.point[3]==68)
-    assert(U.setDialog.error:GetHeight()+84<440) -- Wrapped errors shrink the preview, not overlap action buttons.
+    assert(U.setDialog.error.point[1]=='BOTTOMLEFT' and U.setDialog.error.point[3]>=U.setDialog.first:GetHeight()+22)
+    assert(U.setDialog.error:GetHeight()+U.setDialog.error.point[3]+12<440) -- Wrapped errors shrink the preview, not overlap action buttons.
     U.setDialog.first.scripts.OnClick(U.setDialog.first)
     T.Toggle(true); T.Render()
     assert(T.rows[2].text:GetText():find(F.L('RESTOCK_MODE'),1,true))
@@ -122,9 +114,10 @@ for _,locale in ipairs(F.LocaleOrder) do
         assert(F.L(key)~=key and type(F.Locales[locale][key])=='string')
     end
     U.Navigate('recipes')
-    for _,candidate in ipairs(U.sourceRows) do
+    for _,candidate in ipairs(U.sourceRows or {}) do
         if candidate:IsShown() and not candidate.entry.extraAction then assert(not candidate.extraButton:IsShown() and not candidate.extraButton.action) end
     end
+    assert(not U.queueBoard.goalBar:IsShown() and U.qty.parent==U.frame)
 end
 F.db.settings.locale='enUS'
 assert(F.localProfile.rev==rev)
