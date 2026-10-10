@@ -656,6 +656,21 @@ for locale,values in pairs(diagnostics) do
     end
 end
 
+local itemTooltips={
+enUS={'Loading item information…','Item information is unavailable.'},
+ruRU={'Загрузка информации о предмете…','Информация о предмете недоступна.'},
+deDE={'Gegenstandsinformationen werden geladen…','Gegenstandsinformationen sind nicht verfügbar.'},
+frFR={'Chargement des informations de l’objet…','Informations de l’objet indisponibles.'},
+esES={'Cargando información del objeto…','Información del objeto no disponible.'},
+itIT={'Caricamento delle informazioni sull’oggetto…','Informazioni sull’oggetto non disponibili.'},
+ptBR={'Carregando informações do item…','Informações do item indisponíveis.'},
+koKR={'아이템 정보 불러오는 중…','아이템 정보를 사용할 수 없습니다.'},
+zhCN={'正在加载物品信息…','物品信息不可用。'},
+zhTW={'正在載入物品資訊…','物品資訊無法使用。'}}
+itemTooltips.enGB=itemTooltips.enUS; itemTooltips.esMX=itemTooltips.esES
+for locale,values in pairs(itemTooltips) do
+    F.Locales[locale].ITEM_TOOLTIP_LOADING=values[1]; F.Locales[locale].ITEM_TOOLTIP_UNAVAILABLE=values[2]
+end
 local versionMessages={
 enUS={'Previously, %s reported version %s (installed: %s). /fn updates','Version check queued.','Join a guild or group to check participant versions.'},
 ruRU={'Ранее %s сообщил версию %s (установлена %s). /fn updates','Проверка версий поставлена в очередь.','Для проверки версий нужна гильдия или группа.'},
@@ -670,4 +685,22 @@ zhTW={'%s曾回報版本%s（已安裝%s）。/fn updates','版本檢查已排�
 versionMessages.enGB=versionMessages.enUS; versionMessages.esMX=versionMessages.esES
 for locale,values in pairs(versionMessages) do
     for i,key in ipairs({'UPDATE_PEER_CACHED','UPDATE_VERSION_QUEUED','UPDATE_VERSION_NO_CHANNEL'}) do F.Locales[locale][key]=values[i] end
+end
+
+local recipeChatLinks={
+enUS={RECIPE_CHAT_LINK="Link recipe in chat",RECIPE_CHAT_LINK_HELP="Insert the recipe link into chat. Press Enter to send.",RECIPE_CHAT_LINK_UNAVAILABLE="The recipe link is unavailable. Try again shortly."},
+ruRU={RECIPE_CHAT_LINK="Ссылка на рецепт в чат",RECIPE_CHAT_LINK_HELP="Вставить ссылку на рецепт в чат. Для отправки нажмите Enter.",RECIPE_CHAT_LINK_UNAVAILABLE="Ссылка на рецепт пока недоступна. Повторите позже."},
+deDE={RECIPE_CHAT_LINK="Rezept im Chat verlinken",RECIPE_CHAT_LINK_HELP="Den Rezeptlink in den Chat einfügen. Zum Senden Eingabe drücken.",RECIPE_CHAT_LINK_UNAVAILABLE="Der Rezeptlink ist noch nicht verfügbar. Versuche es später erneut."},
+frFR={RECIPE_CHAT_LINK="Lier la recette dans le chat",RECIPE_CHAT_LINK_HELP="Insérer le lien de la recette dans le chat. Appuyez sur Entrée pour envoyer.",RECIPE_CHAT_LINK_UNAVAILABLE="Le lien de la recette est indisponible. Réessayez plus tard."},
+esES={RECIPE_CHAT_LINK="Enlazar receta en el chat",RECIPE_CHAT_LINK_HELP="Insertar el enlace de la receta en el chat. Pulsa Intro para enviarlo.",RECIPE_CHAT_LINK_UNAVAILABLE="El enlace de la receta no está disponible. Inténtalo más tarde."},
+esMX={RECIPE_CHAT_LINK="Enlazar receta en el chat",RECIPE_CHAT_LINK_HELP="Insertar el enlace de la receta en el chat. Pulsa Intro para enviarlo.",RECIPE_CHAT_LINK_UNAVAILABLE="El enlace de la receta no está disponible. Inténtalo más tarde."},
+itIT={RECIPE_CHAT_LINK="Collega ricetta in chat",RECIPE_CHAT_LINK_HELP="Inserisci il collegamento della ricetta in chat. Premi Invio per inviare.",RECIPE_CHAT_LINK_UNAVAILABLE="Il collegamento della ricetta non è disponibile. Riprova più tardi."},
+ptBR={RECIPE_CHAT_LINK="Vincular receita no bate-papo",RECIPE_CHAT_LINK_HELP="Insere o link da receita no bate-papo. Pressione Enter para enviar.",RECIPE_CHAT_LINK_UNAVAILABLE="O link da receita está indisponível. Tente novamente mais tarde."},
+koKR={RECIPE_CHAT_LINK="대화창에 제조법 링크",RECIPE_CHAT_LINK_HELP="대화창에 제조법 링크를 넣습니다. Enter 키를 눌러 전송하세요.",RECIPE_CHAT_LINK_UNAVAILABLE="제조법 링크를 사용할 수 없습니다. 잠시 후 다시 시도하세요."},
+zhCN={RECIPE_CHAT_LINK="在聊天中链接配方",RECIPE_CHAT_LINK_HELP="将配方链接插入聊天框。按 Enter 发送。",RECIPE_CHAT_LINK_UNAVAILABLE="配方链接暂不可用，请稍后重试。"},
+zhTW={RECIPE_CHAT_LINK="在聊天中連結配方",RECIPE_CHAT_LINK_HELP="將配方連結插入聊天框。按 Enter 傳送。",RECIPE_CHAT_LINK_UNAVAILABLE="配方連結暫不可用，請稍後再試。"},
+enGB={RECIPE_CHAT_LINK="Link recipe in chat",RECIPE_CHAT_LINK_HELP="Insert the recipe link into chat. Press Enter to send.",RECIPE_CHAT_LINK_UNAVAILABLE="The recipe link is unavailable. Try again shortly."},
+}
+for locale,values in pairs(recipeChatLinks) do
+    for key,value in pairs(values) do F.Locales[locale][key]=value end
 end

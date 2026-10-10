@@ -112,17 +112,6 @@ function T.FitButton(button,width)
     end
     return height
 end
-function T.ShowTooltip(owner,title,line,anchor)
-    if not T.tooltip then T.tooltip=CreateFrame('GameTooltip','ForeverNetTooltip',UIParent,'GameTooltipTemplate') end
-    local tip=T.tooltip
-    tip:SetOwner(owner,anchor or 'ANCHOR_RIGHT'); tip:SetText(title)
-    if line then tip:AddLine(line,.86,.85,.80,true) end
-    for _,region in ipairs({tip:GetRegions()}) do
-        if region:GetObjectType()=='FontString' then T.Font(region,12) end
-    end
-    tip:Show()
-end
-function T.HideTooltip() if T.tooltip then T.tooltip:Hide() end end
 function T.Color(text,tone)
     local color=T.colors[tone or 'text'] or T.colors.text
     text:SetTextColor(color[1],color[2],color[3])

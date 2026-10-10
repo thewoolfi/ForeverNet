@@ -96,7 +96,7 @@ function T.Render()
     end
     if snapshot.step then
         local step=snapshot.step
-        entries[#entries+1]={title=F.L('TRACK_NEXT_CRAFT'),text=string.format(F.L('CHAIN_MAKE_ITEM'),
+        entries[#entries+1]={item=step.item,title=F.L('TRACK_NEXT_CRAFT'),text=string.format(F.L('CHAIN_MAKE_ITEM'),
             F.Catalog.ItemName(step.item,step.name),step.quantity)..'\n'..F.L('CRAFTER')..(step.owner==F.me and F.L('YOU') or step.owner)}
     end
     local y=0
@@ -113,6 +113,7 @@ function T.Render()
             row.search:SetScript('OnLeave',F.Theme.HideTooltip)
             T.rows[i]=row
         end
+        F.Theme.BindItemTooltip(row,entry.item,entry.title,entry.text)
         row.item=entry.item; row.search:SetText(F.L('TRACK_SEARCH'))
         row:ClearAllPoints(); row:SetPoint('TOPLEFT',0,-y)
         row.icon:SetShown(not not entry.item); if entry.item then row.icon:SetTexture(F.Catalog.Icon(entry.item)) end

@@ -157,9 +157,9 @@ def run_transport_tests(client):
     settle()
     assert bob.globals().ForeverNet.db.profiles['PartyAlice-Realm'].recipes.changed.name=='Latest manual revision'
     print('PASS automatic/manual refresh: interval, disabled timer, manual catch-up, edit debounce and profile coalescing')
-    bob.execute("ForeverNet.version='1.1.1'; assert(ForeverNet.Net.Sync())")
+    bob.execute("ForeverNet.version='1.1.2'; assert(ForeverNet.Net.Sync())")
     settle()
-    assert alice.globals().ForeverNet.Updates.latest=='1.1.1'
+    assert alice.globals().ForeverNet.Updates.latest=='1.1.2'
     carol.execute('''
         C_ChatInfo.RegisterAddonMessagePrefix=function() return Enum.RegisterAddonMessagePrefixResult.MaxPrefixes end
         ForeverNet.Net.Start(); assert(not ForeverNet.Net.available)

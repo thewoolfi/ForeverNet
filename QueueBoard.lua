@@ -115,7 +115,7 @@ function U.RenderQueue()
     for item,count in pairs(plan.missing) do if not materials[item] then materials[item]={quantity=count,stock=0,alternatives={}} end end
     local e=U.selectedEntry; local goal=e and e.kind=='goal' and Q.data.goals[e.index]
     U.Show('',goal and C.ItemName(goal.item)..' x'..goal.quantity or F.L('PAGE_queue'),string.format(F.L('VIS_QUEUE_MINI'),#plan.goals,#F.Keys(plan.missing)))
-    U.hero:SetTexture(goal and C.Icon(goal.item) or 'Interface\\Icons\\INV_Misc_Note_05')
+    U.detailItem=goal and goal.item; U.hero:SetTexture(goal and C.Icon(goal.item) or 'Interface\\Icons\\INV_Misc_Note_05')
     U.crafter:SetText(F.L('TRACK_SHOW')); U.crafter:Show(); U.enqueue:Hide()
     local b=U.EnsureQueueBoard(); U.chainRows={}
     b.bar:SetPoint('TOPLEFT',0,0); b.bar:Show()
@@ -168,7 +168,7 @@ function U.RenderQueue()
             row:ClearAllPoints(); row:SetPoint('TOPLEFT',0,-y); row.icon:SetTexture(C.Icon(step.item)); row.title:SetText(C.ItemName(step.item,step.name))
             row.owner:ClearAllPoints(); row.owner:SetPoint('TOPLEFT',44,-(row.title:GetStringHeight()+12))
             row.owner:SetText(step.owner==F.me and F.L('YOU') or step.owner); T.Color(row.owner,i==nextCraft and 'good' or 'muted')
-            row.count:SetText('x'..step.quantity); hint(row,row.title:GetText(),F.L('MANUAL_CRAFT'))
+            row.count:SetText('x'..step.quantity); T.BindItemTooltip(row,step.item,row.title:GetText(),F.L('MANUAL_CRAFT'))
             local top=math.max(44,row.title:GetStringHeight()+row.owner:GetStringHeight()+18,row.count:GetStringHeight()+16)
             local height=U.DrawIngredients(row,step.reagents,top)+12
             row:SetHeight(height); row:Show(); y=y+height+10
@@ -183,11 +183,13 @@ function U.RenderQueue()
         b.next.icon:SetTexture(C.Icon(nextStep.item)); b.next.title:SetText(C.ItemName(nextStep.item,nextStep.name)..' x'..nextStep.quantity)
         b.next.detail:ClearAllPoints(); b.next.detail:SetPoint('TOPLEFT',44,-(28+b.next.title:GetStringHeight()))
         b.next.detail:SetText(F.L(nextCraft and 'VIS_READY' or 'VIS_GET')); T.Color(b.next.detail,nextCraft and 'good' or 'muted')
+        T.BindItemTooltip(b.next,nextStep.item,C.ItemName(nextStep.item,nextStep.name),b.next.detail:GetText())
         local height=math.max(62,b.next.title:GetStringHeight()+b.next.detail:GetStringHeight()+38)
         b.next:SetHeight(height); b.next:Show(); y=y+height+18
     elseif plan.complete then
         b.next:ClearAllPoints(); b.next:SetPoint('TOPLEFT',0,-y); b.next.caption:SetText(F.L('VIS_READY'))
         b.next.icon:SetTexture('Interface\\Buttons\\UI-CheckBox-Check'); b.next.title:SetText(F.L('ALREADY_OWNED')); b.next.detail:SetText('')
+        T.BindItemTooltip(b.next,nil,F.L('ALREADY_OWNED'))
         b.next:SetHeight(64); b.next:Show(); y=y+82
     end
     local tiles={}

@@ -14,6 +14,8 @@ ForeverNet connects your profession recipes with crafters in your guild or home 
 
 [Changes since 1.0.0](docs/RELEASE-1.1.0.md)
 
+[Upcoming 1.1.1 changes](docs/RELEASE-1.1.1.md): native item descriptions on hover, with planning hints below; restored recipe chat-link buttons in the native profession list.
+
 - Character overview with professions, rank/max skill and progress only in the left sidebar; queue/network state and saved-bank status on the right. Profession rows open filtered recipes.
 - Recipe catalog grouped by profession, search and combined filters. One item row retains all known recipe/crafter variants; your character never appears as a duplicate network member.
 - Other players' profiles grouped by profession. Favorite up to 5 profiles, 5 recipe items and 5 independent market-watch items; favorites appear first and are saved between sessions.
@@ -76,6 +78,8 @@ Code: [MIT](LICENSE), Copyright 2026 Andrew Woolfi. Bundled Noto Sans CJK deriva
 ForeverNet объединяет ваши рецепты с возможностями мастеров гильдии или обычной группы. Рассчитывайте одну вещь или общую очередь, учитывайте сумки и сохранённый личный банк, запрашивайте помощь с недостающими компонентами.
 
 ### Возможности
+
+[Изменения будущего выпуска 1.1.1](docs/RELEASE-1.1.1.md): штатное описание предмета при наведении, с данными планирования ниже; возвращены кнопки ссылки на рецепт в штатном списке профессии.
 
 - Профессии на главной только слева: ранг/максимум, полосы навыка, давность сканирования и переход к отфильтрованным рецептам. Справа — состояние очереди, сети и сохранённого банка.
 - Каталог по профессиям, поиск и совместимые фильтры. Один предмет занимает одну строку со всеми известными вариантами рецепта/мастера; свой персонаж не дублируется в сети.

@@ -7,13 +7,53 @@ local function change(callback)
     F.localProfile.professions, F.localProfile.recipes, F.localProfile.camps = candidate.professions, candidate.recipes, candidate.camps
     F.Touch(); F.Print(F.L('Профиль обновлён. /fn sync — отправить.')); F.UI.Status()
 end
+local function securityState()
+    if not issecurevariable then return end
+    local result={}
+    local function inspect(label,object,key)
+        if not object then return end
+        local ok,secure,source=pcall(issecurevariable,object,key)
+        if ok and type(secure)=='boolean' then
+            result[label]={secure=secure,source=type(source)=='string' and source:sub(1,64) or nil}
+        end
+    end
+    inspect('ContainerFrameItemButton_OnClick',_G,'ContainerFrameItemButton_OnClick')
+    inspect('C_Container.UseContainerItem',C_Container,'UseContainerItem')
+    inspect('BankFrame',_G,'BankFrame'); inspect('BankPanel',_G,'BankPanel')
+    inspect('BankFrame.GetActiveBankType',BankFrame,'GetActiveBankType')
+    inspect('BankFrame.BankPanel',BankFrame,'BankPanel')
+    local panel=BankPanel or BankFrame and BankFrame.BankPanel
+    inspect('BankPanel.bankType',panel,'bankType')
+    return next(result) and result or nil
+end
+function F.ProtectedContext()
+    local get=C_CVar and C_CVar.GetCVar or GetCVar
+    local ok,logging=false,nil
+    if get then ok,logging=pcall(get,'taintLog') end
+    local combat
+    if InCombatLockdown then combat=not not InCombatLockdown() end
+    return {security=securityState(),taintLog=ok and type(logging)=='string' and logging or nil,
+        bankOpened=F.Bank.lastOpened,bankClosed=F.Bank.lastClosed,bankScanned=F.Bank.lastScanned,
+        bankScans=F.Bank.scanCount,bankOpen=not not F.Bank.open,auctionOpen=not not F.Auction.open,
+        professionOpen=F.ProfessionActions.page and not not F.ProfessionActions.page:IsVisible() or false,
+        uiPage=F.UI.page,uiView=F.UI.view,uiOpen=F.UI.frame and not not F.UI.frame:IsShown() or false,
+        inCombat=combat}
+end
+function F.BankTrace(stage)
+    local d=F.db and F.db.diagnostics
+    if not d or d.taintOriginal==nil then return end
+    d.bankTrace=type(d.bankTrace)=='table' and d.bankTrace or {}
+    local record=F.ProtectedContext(); record.stage=stage; record.seen=F.Now()
+    d.bankTrace[#d.bankTrace+1]=record
+    while #d.bankTrace>12 do table.remove(d.bankTrace,1) end
+end
 function F.ProtectedAction(event,addon,action)
     if addon~=F.name or not F.db then return end
     F.db.diagnostics=type(F.db.diagnostics)=='table' and F.db.diagnostics or {}
     local d=F.db.diagnostics
     d.protectedActions=type(d.protectedActions)=='table' and d.protectedActions or {}
     local record={event=event,action=type(action)=='string' and action:sub(1,256) or 'UNKNOWN',seen=F.Now(),
-        bankOpen=not not F.Bank.open,auctionOpen=not not F.Auction.open}
+        bankOpen=not not F.Bank.open,auctionOpen=not not F.Auction.open,context=F.ProtectedContext(),bankTrace=F.Copy(d.bankTrace)}
     if debugstack then local ok,stack=pcall(debugstack,2,12,12); if ok and type(stack)=='string' then record.stack=stack:sub(1,4096) end end
     d.protectedActions[#d.protectedActions+1]=record
     while #d.protectedActions>5 do table.remove(d.protectedActions,1) end
@@ -34,11 +74,21 @@ function F.TaintDiagnostics(mode)
         local changed,result=pcall(set,'taintLog',value)
         if not changed or result==false then F.Print('taintLog: change failed'); return end
         if mode=='on' then if d.taintOriginal==nil then d.taintOriginal=tostring(current or '0') end
-        else d.taintOriginal=nil end
+        else d.taintOriginal=nil; d.bankTrace=nil end
         F.Print('taintLog='..value..' / Logs/taint.log'); return
     end
     F.Print('ADDON_ACTION / bank='..tostring(F.Bank.open==true)..' / auction='..tostring(F.Auction.open==true))
+    if get then local ok,value=pcall(get,'taintLog'); if ok then F.Print('taintLog='..tostring(value)) end end
     for _,record in ipairs(d.protectedActions or {}) do F.Print(tostring(record.event)..' / '..tostring(record.action)) end
+    local latest=d.protectedActions and d.protectedActions[#d.protectedActions]
+    if latest and latest.context then
+        local c=latest.context
+        if c.bankScanned then F.Print('Last bank scan before error: '..math.max(0,latest.seen-c.bankScanned)..'s') end
+        for _,key in ipairs(F.Keys(c.security or {})) do
+            local state=c.security[key]
+            if state.secure==false then F.Print(key..' / secure=false / source='..tostring(state.source or 'unknown')) end
+        end
+    end
     F.Print('/fn taint on | /fn taint off')
 end
 function F.Command(input)
@@ -106,10 +156,11 @@ frame:SetScript('OnEvent', function(self, event, ...)
     if event == 'ADDON_LOADED' then
         local name = ...; if name ~= F.name then return end
         if not F.Init() then return end
-        F.Net.Start(); F.Updates.Start(); F.Minimap.Init(); F.ProfessionActions.Start(); F.Auction.Start(); F.Tracker.Start(); self:RegisterEvent('CHAT_MSG_ADDON')
+        F.Net.Start(); F.Updates.Start(); F.Minimap.Init(); F.ProfessionActions.Start(); F.ProfessionLinks.Start(); F.Auction.Start(); F.Tracker.Start(); self:RegisterEvent('CHAT_MSG_ADDON')
         for _,event in ipairs({'BANKFRAME_OPENED','BANKFRAME_CLOSED','PLAYERBANKSLOTS_CHANGED','BANK_TABS_CHANGED','BAG_CONTAINER_UPDATE'}) do self:RegisterEvent(event) end
         self:RegisterEvent('GROUP_ROSTER_UPDATE'); self:RegisterEvent('PLAYER_GUILD_UPDATE'); self:RegisterEvent('PLAYER_ENTERING_WORLD')
         self:RegisterEvent('PLAYER_LOGIN'); self:RegisterEvent('BAG_UPDATE_DELAYED'); self:RegisterEvent('GET_ITEM_INFO_RECEIVED')
+        self:RegisterEvent('ITEM_DATA_LOAD_RESULT')
         for _,event in ipairs({'TRADE_SKILL_SHOW','TRADE_SKILL_CLOSE','TRADE_SKILL_LIST_UPDATE','TRADE_SKILL_DATA_SOURCE_CHANGED'}) do self:RegisterEvent(event) end
         self:RegisterEvent('ADDON_ACTION_BLOCKED'); self:RegisterEvent('ADDON_ACTION_FORBIDDEN')
         self:SetScript('OnUpdate', function(_, elapsed) F.Net.Tick(elapsed); F.Updates.Tick(elapsed); F.UI.Tick(elapsed); F.Bank.Tick(elapsed); F.Tracker.Tick(elapsed); F.ProfessionActions.Tick(elapsed); F.Automation.Tick(elapsed) end)
@@ -124,5 +175,5 @@ frame:SetScript('OnEvent', function(self, event, ...)
         F.Updates.ScheduleAll(1)
         if F.db.settings.sharing then F.Net.ScheduleSync() end
         F.UI.DataChanged()
-    else F.Automation.Event(event); F.Bank.Event(event); F.UI.DataChanged() end
+    else F.Theme.TooltipEvent(event,...); F.Automation.Event(event); F.Bank.Event(event); F.UI.DataChanged() end
 end)

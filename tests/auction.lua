@@ -126,3 +126,25 @@ A.Scan=function(items) scanned=items; return true end
 A.scanButton.scripts.OnClick()
 assert(#scanned==3 and scanned[1]=='item:700' and scanned[2]=='item:701' and scanned[3]=='item:702')
 A.Scan,F.Queue.Build=savedScan,savedBuild
+
+-- Our auction results keep each item independently hoverable at narrow widths.
+local tooltip=F.Theme
+mockItemTooltips={[2318]={{'Leather'},{'Native item description'}}}
+F.Queue.Build=function() return {missing={['item:2318']=3}} end
+A.panel:Show()
+for _,style in ipairs({'modern','classic'}) do
+    tooltip.SetStyle(style)
+    for _,locale in ipairs(F.LocaleOrder) do
+        F.db.settings.locale=locale; A.panel:SetWidth(380); A.Render()
+        local row=A.resultRows[1]
+        assert(row:IsVisible() and row:GetHeight()>=row.text:GetStringHeight())
+        assert(row.text:GetWidth()+38<=row:GetWidth() and not A.results:IsShown())
+        row.scripts.OnEnter(row); assert(tooltip.itemHover.id==2318 and tooltip.tooltip:NumLines()>=4)
+        local native=false
+        for _,line in ipairs(tooltip.tooltip.tooltipLines) do if line:GetText()=='Native item description' then native=true end end
+        assert(native)
+    end
+end
+F.Queue.Build=function() return {missing={}} end
+A.Render(); assert(not A.resultRows[1]:IsShown() and A.results:IsShown() and not tooltip.itemHover)
+F.Queue.Build=savedBuild

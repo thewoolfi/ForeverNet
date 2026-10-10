@@ -177,12 +177,26 @@ function A.Render()
     if A.progress:GetText()~='' then y=y+A.progress:GetStringHeight()+8 end
     A.scroll:ClearAllPoints(); A.scroll:SetPoint('TOPLEFT',14,-y); A.scroll:SetPoint('BOTTOMRIGHT',-28,14)
     A.scrollChild:SetWidth(width-42); A.results:SetWidth(width-48)
-    local plan=F.Queue.Build(); local lines={}
-    for _,item in ipairs(F.Keys(plan.missing)) do
-        lines[#lines+1]=F.Catalog.ItemName(item)..' x'..plan.missing[item]..'\n'..F.UI.PriceText(item,plan.missing[item])
+    local plan=F.Queue.Build(); local items=F.Keys(plan.missing)
+    A.resultRows=A.resultRows or {}
+    for _,row in ipairs(A.resultRows) do row:Hide() end
+    local top=0
+    for i,item in ipairs(items) do
+        local row=A.resultRows[i]
+        if not row then
+            row=CreateFrame('Frame',nil,A.scrollChild)
+            row.icon=row:CreateTexture(nil,'ARTWORK'); row.icon:SetSize(28,28); row.icon:SetPoint('TOPLEFT',0,-2)
+            row.text=text(row,680,38,0,14); A.resultRows[i]=row
+        end
+        row:ClearAllPoints(); row:SetPoint('TOPLEFT',0,-top); row:SetWidth(width-48)
+        row.icon:SetTexture(F.Catalog.Icon(item)); row.text:SetWidth(width-86); row.text:SetHeight(0)
+        local price=F.UI.PriceText(item,plan.missing[item])
+        row.text:SetText(F.Catalog.Safe(F.Catalog.ItemName(item)..' x'..plan.missing[item]..'\n'..price))
+        F.Theme.BindItemTooltip(row,item,F.Catalog.ItemName(item),price)
+        local height=math.max(32,row.text:GetStringHeight()); row:SetHeight(height); row:Show(); top=top+height+10
     end
-    A.results:SetText(F.Catalog.Safe(#lines>0 and table.concat(lines,'\n\n') or F.L('MARKET_NO_TARGETS')))
-    A.scrollChild:SetHeight(math.max(300,A.results:GetStringHeight()+20))
+    A.results:SetText(F.L('MARKET_NO_TARGETS')); A.results:SetShown(#items==0)
+    A.scrollChild:SetHeight(math.max(300,#items>0 and top+10 or A.results:GetStringHeight()+20))
 end
 function A.LayoutPanel()
     if not A.panel or not A.host then return end

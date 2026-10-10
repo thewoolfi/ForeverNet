@@ -344,3 +344,25 @@ For other addons, the behavior was verified by listing installed AddOns and usin
 For the wallet overlap, rg MoneyFrame/Inset in work/reference/AuctionHouseFrame.xml found MoneyFrameInset at 11–15 (bottom=3/top=27), MoneyFrameBorder at 17–21 (height=19/bottom=6), and native sell/auction panels above that border at 122/168. A.LayoutPanel reserves at least 36 units and increases it with the actual native strip heights, on attach and render in both themes. Native money widgets are never hidden, reparented or modified. Reference checkout: Gethe/wow-ui-source forever e3ecc27b64d30fdc735a3f6579b866858f9f9df1, local evidence copies in work/reference excluded from the package.
 
 Validation covers the metadata-only channel with profile sharing disabled, all membership scopes, malformed/self guards, delayed/coalesced/cancelled replies, five failed-send attempts, once-per-session notices, muted notices, upgraded-version cleanup and fresh-runtime reminders. Wallet reserve is checked in both themes with normal/increased native heights. Screenshots are user-supplied captures, cleaned with the built-in image_gen tool; they were enlarged by that tool, with labels/layout checked, and retain the captured version number. No claim of reproducing native taint or continuous web monitoring is made.
+
+## Native item tooltips (local 1.1.1)
+
+ItemTooltip.lua centralizes owned text/item tooltips, native item rendering, planning footers and asynchronous cache handling. Bindings cover the catalog, plans, queue, profiles, market, tracker and auction result rows. [Implementation, native sources and validation](ITEM-TOOLTIPS.md) documents the pinned source lookup and lifecycle details. This is a local prepared version; publication requires a new explicit user request.
+
+
+## Restored recipe chat links (local 1.1.1, 2026-10-10)
+
+ProfessionLinks.lua and its localized tooltip text are restored in ForeverNet at the user’s request. Native profession rows have a small recipe-to-chat-draft button; the separate ForeverLink takes precedence when both addons are loaded. [Implementation, native-source lookup and checks](PROFESSION-LINKS.md) describes row reuse and handoff. The earlier 1.0.0 extraction notes are historical. No publication was requested.
+
+
+## Intermittent bag item-use diagnostics (local 1.1.1, 2026-10-10)
+
+The user's fresh reload → personal bank → close bank → bag-use test did not reproduce the earlier ADDON_ACTION_FORBIDDEN / UseContainerItem block. The taint log exists but was still empty when checked; SavedVariables confirms the explicit taint-on request. This does not establish a fix or the absence of an intermittent error.
+
+Bootstrap.ProtectedContext records own UI/page/view, known profession/auction visibility, combat state when the API exists, actual taintLog CVar and session-only bank open/close/successful-scan times/count. Optional issecurevariable inspections are wrapped in pcall and keep only boolean/security-source strings: global bag click handler, container item-use function, BankFrame/BankPanel references, native bank-type method and bankType field. Native methods and fields are not replaced, invoked to perform an action, hidden or repaired. A reported security owner is evidence for a field's state, not proof of the first cause.
+
+While the user has explicitly enabled logging, BankTrace retains at most twelve before-read/after-read/after-addon-refresh/open/close records privately. No trace is collected by default. On a ForeverNet-attributed forbidden/blocked action, the existing five-record ring captures an isolated copy of this trace and current context alongside the stack. Later scans cannot overwrite that error's context. Taint-off restores the original CVar and clears the live trace; existing error records remain for inspection. There is no periodic security polling, native bag click hook, automatic item use or automatic logging activation. SavedVariables and Config.wtf are not edited from disk while the game runs.
+
+Native path evidence came from earlier pinned Gethe Forever references under work/reference/bank-taint: rg ContainerFrameItemButton_OnClick/UseContainerItem showed Mainline ContainerFrame.lua near 1603 calling BankFrame:GetActiveBankType before item use. This explains why bank state is sampled; it does not identify a taint source. Camelot BankFrame.lua and Professions/auction references document the surrounding UI. New optional security inspection uses the client's read-only issecurevariable API and stores no frame objects. Source lookup uses the same e3ecc27b64d30fdc735a3f6579b866858f9f9df1 pinned tree as the earlier bank investigation.
+
+All 54 main Lua 5.1 groups pass after this extension. The diagnostic test simulates a security-state change between bank data read and addon UI refresh, verifies source/timing snapshots, twelve-stage/five-error limits, copy isolation, actual logging level, disabled/unsupported API handling, no native bank writes and unchanged protected item-use APIs. This is diagnostic regression coverage, not a reproduction or confirmed resolution of the native block.

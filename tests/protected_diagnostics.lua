@@ -32,3 +32,40 @@ F.Command('taint off'); assert(value=='1' and not F.db.diagnostics.taintOriginal
 C_CVar.SetCVar=function() error('CVar unavailable') end
 F.Command('taint on'); assert(not F.db.diagnostics.taintOriginal)
 assert(forbidden==0 and F.Codec.Encode(F.localProfile)==initial)
+
+-- Capture a bounded read-only sequence across bank reads and addon refreshes.
+local secure=true
+BankPanel=setmetatable({bankType=1},{__newindex=function() error('No native bank panel writes') end})
+issecurevariable=function(object,key)
+    if object==BankPanel and key=='bankType' then return secure,secure and nil or 'ReportedSource' end
+    return true
+end
+InCombatLockdown=function() return false end
+F.db.diagnostics.taintOriginal='0'; value='2'
+C_CVar.SetCVar=function(_,v) value=v end
+local refresh=F.Settings.Refresh
+F.Settings.Refresh=function() secure=false end -- Simulate a state change; do not edit native fields.
+F.Bank.Event('BANKFRAME_OPENED'); clock=clock+1; F.Bank.Tick(.31)
+clock=clock+2; F.Bank.Event('BANKFRAME_CLOSED')
+local trace=F.db.diagnostics.bankTrace
+assert(#trace==5 and trace[1].stage=='bank:open' and trace[2].stage=='scan:before')
+assert(trace[3].stage=='scan:read' and trace[3].security['BankPanel.bankType'].secure)
+assert(trace[4].stage=='scan:ui' and trace[4].security['BankPanel.bankType'].source=='ReportedSource')
+assert(trace[5].stage=='bank:close' and not trace[5].bankOpen)
+F.Settings.Refresh=refresh
+F.ProtectedAction('ADDON_ACTION_FORBIDDEN',F.name,'UseContainerItem()')
+local captured=F.db.diagnostics.protectedActions[5]
+assert(captured.context.bankScanned==clock-2 and captured.context.bankClosed==clock and captured.context.bankScans==2)
+assert(captured.context.inCombat==false and captured.context.taintLog=='2')
+assert(captured.context.security['BankPanel.bankType'].secure==false)
+assert(captured.bankTrace[4].security['BankPanel.bankType'].source=='ReportedSource')
+for i=1,30 do F.BankTrace('test') end
+assert(#F.db.diagnostics.bankTrace==12 and #captured.bankTrace==5) -- Snapshot is isolated from later events.
+local count=#chatMessages; F.Command('taint status')
+local text=table.concat(chatMessages,'\n')
+assert(#chatMessages>count and text:find('taintLog=2',1,true) and text:find('ReportedSource',1,true))
+assert(C_Container.UseContainerItem==protected and forbidden==0 and BankPanel.bankType==1)
+F.Command('taint off'); assert(value=='0' and not F.db.diagnostics.bankTrace)
+F.BankTrace('disabled'); assert(not F.db.diagnostics.bankTrace)
+issecurevariable=nil; assert(not F.ProtectedContext().security)
+issecurevariable=function() error('Unavailable') end; assert(not F.ProtectedContext().security)

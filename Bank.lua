@@ -8,6 +8,7 @@ function B.Count(item)
 end
 function B.Scan()
     if not B.open or F.db.settings.autoBank==false then return false end
+    F.BankTrace('scan:before')
     local api,bank=C_Container,C_Bank
     local kind=Enum and Enum.BankType and Enum.BankType.Character
     if not api or not bank or not kind or not bank.FetchPurchasedBankTabIDs or not bank.CanUseBank or
@@ -30,14 +31,17 @@ function B.Scan()
         end
     end
     F.db.banks=F.db.banks or {}; F.db.banks[F.me]={items=items,seen=F.Now()}
+    B.lastScanned=F.Now(); B.scanCount=(B.scanCount or 0)+1
+    F.BankTrace('scan:read')
     F.UI.DataChanged(); if F.Settings then F.Settings.Refresh() end
+    F.BankTrace('scan:ui')
     return true
 end
 function B.Event(event)
-    if event=='BANKFRAME_OPENED' then B.open=true; B.pending=.3; B.retries=10
+    if event=='BANKFRAME_OPENED' then B.open=true; B.lastOpened=F.Now(); B.pending=.3; B.retries=10; F.BankTrace('bank:open')
     elseif event=='BANKFRAME_CLOSED' then
         if B.open and B.pending then pcall(B.Scan) end
-        B.open=false; B.pending=nil
+        B.open=false; B.lastClosed=F.Now(); B.pending=nil; F.BankTrace('bank:close')
     elseif B.open and (event=='BAG_UPDATE_DELAYED' or event=='BAG_CONTAINER_UPDATE' or event=='PLAYERBANKSLOTS_CHANGED' or event=='BANK_TABS_CHANGED') then
         if event=='BAG_UPDATE_DELAYED' then pcall(B.Scan) end
         B.pending=.3; B.retries=10

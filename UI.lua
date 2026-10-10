@@ -62,6 +62,8 @@ function U.Ensure()
     local right=CreateFrame('Frame',nil,frame,'BackdropTemplate'); U.right=right
     right:SetPoint('TOPLEFT',270,-93); right:SetSize(496,357); skin(right)
     U.hero=right:CreateTexture(nil,'ARTWORK'); U.hero:SetSize(40,40); U.hero:SetPoint('TOPLEFT',14,-12)
+    U.heroHover=CreateFrame('Frame',nil,right); U.heroHover:SetAllPoints(U.hero)
+    F.Theme.BindItemTooltip(U.heroHover,function() return U.detailItem end,function() return U.detailItem and C.ItemName(U.detailItem) or '' end)
     U.detailTitle=label(right,'GameFontNormalLarge',66,-14,397,'')
     U.detailTitle:SetHeight(22)
     U.summary=label(right,'GameFontHighlightSmall',66,-39,397,'')
@@ -87,6 +89,7 @@ function U.Ensure()
     U.chosen=chosen
     chosen:SetPoint('TOPLEFT',14,-479); chosen:SetSize(248,48); skin(chosen,true)
     U.itemIcon=chosen:CreateTexture(nil,'ARTWORK'); U.itemIcon:SetSize(28,28); U.itemIcon:SetPoint('LEFT',8,0)
+    F.Theme.BindItemTooltip(chosen,function() return U.target and U.target.item end,function() return U.target and C.ItemName(U.target.item) or '' end)
     U.item=label(chosen,'GameFontHighlightSmall',43,-8,193,'')
     U.item:SetHeight(36)
     U.qtyLabel=label(frame,'GameFontNormalSmall',280,-461,68,'')
@@ -166,6 +169,7 @@ function U.FindCrafters(item,quantity)
 end
 function U.SetTarget(item,quantity,owner,recipeID)
     U.Ensure(); U.target={item=item,owner=owner,recipeID=recipeID}
+    F.Theme.HideTooltipFor(U.chosen)
     U.settingTarget=true; U.qty:SetText(amount(quantity or 1)); U.settingTarget=false
     U.UpdateActions()
 end
@@ -199,7 +203,10 @@ function U.Show(text,title,subtitle,tone)
     for _,card in ipairs(U.profileCards or {}) do card:Hide() end
     for _,row in ipairs(U.sourceRows or {}) do row:Hide() end
     U.bodyText:Show(); for _,card in ipairs(U.cards or {}) do card:Hide() end
-    U.hero:SetTexture(U.selectedEntry and U.selectedEntry.item and C.Icon(U.selectedEntry.item) or 'Interface\\Icons\\INV_Misc_EngGizmos_01')
+    F.Theme.HideTooltipFor(U.heroHover)
+    local entry=U.view~='help' and U.view~='commands' and U.selectedEntry
+    U.detailItem=entry and entry.item
+    U.hero:SetTexture(U.detailItem and C.Icon(U.detailItem) or 'Interface\\Icons\\INV_Misc_EngGizmos_01')
     U.accept:Hide(); U.done:Hide(); U.cancel:Hide(); U.crafter:Hide(); U.enqueue:Hide()
     U.detailTitle:SetText(C.Safe(title or F.L('PAGE_'..U.page)))
     U.summary:SetText(C.Safe(subtitle or ''))
@@ -412,7 +419,8 @@ function U.RefreshRows()
             b.fill:SetPoint('BOTTOMLEFT',40,8); b.fill:SetHeight(3)
             b:SetScript('OnEnter',function(self)
                 self:SetBackdropBorderColor(.95,.75,.22,1)
-                if self.entry.kind=='profession' then
+                if self.entry.item then F.Theme.ShowItemTooltip(self,self.entry.item,self.entry.title,self.entry.subtitle)
+                elseif self.entry.kind=='profession' then
                     local scans=F.db.professionScans and F.db.professionScans[F.me] or {}
                     local scan=scans[self.entry.profession]
                     F.Theme.ShowTooltip(self,self.entry.title,scan and F.Integer(scan.seen,0,2147483647) and string.format(F.L('SCAN_AGE'),math.max(0,math.floor((F.Now()-scan.seen)/60))) or F.L('SCAN_UNKNOWN'))
@@ -421,6 +429,7 @@ function U.RefreshRows()
             b:SetScript('OnLeave',function(self) F.Theme.HideTooltip(); self:SetBackdropBorderColor(self.selected and .95 or .52,self.selected and .75 or .38,.18,1) end)
             U.rows[i]=b
         end
+        F.Theme.HideTooltipFor(b)
         b.entry,b.selected=entry,U.selectionKey==entry.key
         b.label:SetWidth(starPage and 136 or 158); b.favorite:SetShown(starPage)
         if starPage then
@@ -571,7 +580,7 @@ function U.RenderPlayer(entry,profile)
                             card.detail=label(card,'GameFontHighlightSmall',48,0,156,''); card.detail:SetWordWrap(true)
                             card:SetScript('OnEnter',function(self)
                                 self:SetBackdropBorderColor(.95,.75,.22,1)
-                                F.Theme.ShowTooltip(self,C.Safe(self.entry.title),F.L('PROFILE_RECIPE_HINT'))
+                                F.Theme.ShowItemTooltip(self,self.entry.item,C.Safe(self.entry.title),F.L('PROFILE_RECIPE_HINT'))
                             end)
                             card:SetScript('OnLeave',function(self)
                                 self:SetBackdropBorderColor(self.blueprint and .68 or .52,self.blueprint and .4 or .38,self.blueprint and .9 or .18,1)
@@ -645,7 +654,7 @@ function U.RenderFinder()
     local context=U.finder
     if not context then U.Show(F.L('EMPTY_crafters'),F.L('PAGE_crafters')); return end
     U.Show('',C.ItemName(context.item),string.format(F.L('FINDER_COUNT'),#U.entries))
-    U.hero:SetTexture(C.Icon(context.item)); U.crafter:SetText(F.L('FINDER_NETWORK')); U.crafter:Show()
+    U.detailItem=context.item; U.hero:SetTexture(C.Icon(context.item)); U.crafter:SetText(F.L('FINDER_NETWORK')); U.crafter:Show()
     local channel=F.Net.Channel()
     local rows={{section=true,title=F.L('PAGE_crafters'),hint=F.L('FINDER_HELP')..'\n'..F.L('NETWORK_CHANNEL')..
         (channel and F.L('CHANNEL_'..channel) or F.L('NETWORK_NO_CHANNEL'))}}
@@ -963,7 +972,7 @@ function U.RenderMarket()
     local quantity=U.Quantity()
     if not F.Integer(quantity,1,10000) then U.Show(F.L('QUANTITY_ERROR'),entry.title); return end
     U.Show('',entry.title,F.L('PAGE_market'))
-    U.hero:SetTexture(C.Icon(entry.item))
+    U.detailItem=entry.item; U.hero:SetTexture(C.Icon(entry.item))
     local days=U.historyDays or 30
     local rows={{key='market/'..entry.item,item=entry.item,title=entry.title,text=U.ShortPrice(entry.item,quantity),hint=U.PriceText(entry.item,quantity),
         actions={{text=F.L('MARKET_SCAN'),enabled=F.Auction.open==true,run=function()
@@ -1073,7 +1082,10 @@ function U.ShowSourceRows(entries,offset)
             row.track=row:CreateTexture(nil,'BACKGROUND'); row.track:SetColorTexture(.22,.19,.14,1); row.track:SetSize(414,4); row.track:SetPoint('BOTTOMLEFT',10,5)
             row.fill=row:CreateTexture(nil,'ARTWORK'); row.fill:SetHeight(4); row.fill:SetPoint('BOTTOMLEFT',10,5)
             row:EnableMouse(true)
-            row:SetScript('OnEnter',function(self) if self.entry.hint then F.Theme.ShowTooltip(self,self.entry.title,self.entry.hint) end end)
+            row:SetScript('OnEnter',function(self)
+                if self.entry.item then F.Theme.ShowItemTooltip(self,self.entry.item,self.entry.title,self.entry.hint)
+                elseif self.entry.hint then F.Theme.ShowTooltip(self,self.entry.title,self.entry.hint) end
+            end)
             row:SetScript('OnLeave',F.Theme.HideTooltip)
             row.buttons={}
             for j=1,2 do
@@ -1249,6 +1261,7 @@ function U.ShowCards(entries,offset)
                 card.detail=label(card,'GameFontHighlightSmall',42,-30,162,''); card.detail:SetWordWrap(true)
                 U.cards[i]=card
             end
+            F.Theme.BindItemTooltip(card,entry.item,entry.title,entry.text)
             card:ClearAllPoints(); card:SetPoint('TOPLEFT',(i-start)*222,-y); card.icon:SetTexture(C.Icon(entry.item))
             card.title:SetHeight(0); card.detail:SetHeight(0)
             card.title:SetText(C.Safe(entry.title)); card.detail:SetText(C.Safe(entry.text))

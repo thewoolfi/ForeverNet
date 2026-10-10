@@ -6,9 +6,8 @@ local function text(parent,size,gold)
     T.Text(region,gold,size); region:SetJustifyH('LEFT'); region:SetWordWrap(true)
     return region
 end
-local function tip(widget,title,detail)
-    widget:SetScript('OnEnter',function() T.ShowTooltip(widget,title,detail) end)
-    widget:SetScript('OnLeave',T.HideTooltip)
+local function tip(widget,title,detail,item)
+    T.BindItemTooltip(widget,item,title,detail)
 end
 function U.HideGraphics()
     for _,group in ipairs({U.visualStats or {},U.visualTiles or {}}) do
@@ -47,7 +46,7 @@ function U.ShowVisualStats(entries,offset)
         local valueHeight=card.value:GetStringHeight()
         card.caption:ClearAllPoints(); card.caption:SetPoint('TOPLEFT',8,-(valueHeight+14))
         height=math.max(height,valueHeight+card.caption:GetStringHeight()+22)
-        T.Color(card.value,entry.tone or 'heading'); tip(card,entry.title,entry.hint); card:Show()
+        T.Color(card.value,entry.tone or 'heading'); tip(card,entry.item and C.ItemName(entry.item) or entry.title,entry.hint,entry.item); card:Show()
     end
     for i=#entries+1,#U.visualStats do U.visualStats[i]:Hide() end
     for i=1,#entries do U.visualStats[i]:SetHeight(height) end
@@ -87,7 +86,7 @@ function U.ShowVisualTiles(entries,offset)
                 tile.fill:SetWidth(math.max(1,196*math.min(1,(entry.current or 0)/entry.maximum)))
                 tile.fill:SetColorTexture(color[1],color[2],color[3],1)
             end
-            tip(tile,entry.title,entry.hint); tile:Show(); pair[#pair+1]=tile
+            tip(tile,entry.title,entry.hint,entry.item); tile:Show(); pair[#pair+1]=tile
         end
         for _,tile in ipairs(pair) do tile:SetHeight(height) end
         y=y+height+8
@@ -112,7 +111,7 @@ function U.DrawIngredients(row,reagents,top)
         widget:ClearAllPoints(); widget:SetPoint('TOPLEFT',10+((i-1)%7)*59,-y)
         widget.icon:SetTexture(C.Icon(item)); widget.count:SetText(tostring(reagents[item]))
         widget:SetHeight(28+widget.count:GetStringHeight()+4); height=math.max(height,widget:GetHeight())
-        tip(widget,C.ItemName(item),'x'..reagents[item]); widget:Show()
+        tip(widget,C.ItemName(item),'x'..reagents[item],item); widget:Show()
     end
     return #keys>0 and y+height+4 or top
 end
@@ -138,7 +137,7 @@ function U.RenderRecipe(entry)
     local owned=F.Adapter.StockCount(entry.item)
     local batches=math.ceil(math.max(0,qty-owned)/r.quantity)
     U.Show('',entry.title,who(entry.owner))
-    U.hero:SetTexture(C.Icon(entry.item))
+    U.detailItem=entry.item; U.hero:SetTexture(C.Icon(entry.item))
     U.crafter:SetText(F.L('CHANGE_CRAFTER')); U.crafter:SetShown(#entry.providers>1)
     U.crafter:SetScript('OnEnter',function(self)
         local names,seen={},{}
@@ -148,7 +147,7 @@ function U.RenderRecipe(entry)
     U.crafter:SetScript('OnLeave',T.HideTooltip)
     U.enqueue:SetText(F.L('QUEUE_ADD')); U.enqueue:Show()
     local y=U.ShowVisualStats({
-        {title=F.L('VIS_TARGET'),value=tostring(qty),icon=C.Icon(entry.item)},
+        {item=entry.item,title=F.L('VIS_TARGET'),value=tostring(qty),icon=C.Icon(entry.item)},
         {title=F.L('VIS_OWNED'),value=tostring(owned),icon='Interface\\Icons\\INV_Misc_Bag_08',tone=owned>=qty and 'good' or 'muted'},
         {title=F.L('VIS_CRAFTS'),value=tostring(batches),icon='Interface\\Icons\\Trade_Engineering',hint=string.format(F.L('RECIPE_OVERVIEW'),qty,owned,r.quantity,batches)},
     })
@@ -197,7 +196,7 @@ function U.RenderPlan()
     local p=U.planData
     U.recipeOptionsRendered={}
     U.Show('',C.ItemName(p.target)..' x'..p.quantity,F.L(p.complete and (#p.steps>0 and 'VIS_READY' or 'VIS_OWNED') or 'VIS_GET'),p.complete and 'good' or 'missing')
-    U.hero:SetTexture(C.Icon(p.target))
+    U.detailItem=p.target; U.hero:SetTexture(C.Icon(p.target))
     local y=U.ShowVisualStats({
         {title=F.L('VIS_GET'),value=tostring(#F.Keys(p.missing)),icon='Interface\\Icons\\INV_Misc_Bag_08',tone=next(p.missing) and 'missing' or 'good'},
         {title=F.L('VIS_CRAFTS'),value=tostring(#p.steps),icon='Interface\\Icons\\Trade_Engineering'},

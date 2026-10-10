@@ -27,7 +27,10 @@ function region:GetWidth() return self.width end
 function region:GetHeight() return self.height end
 function region:GetObjectType() return self.kind end
 function region:Show() self.shown = true end
-function region:Hide() self.shown = false end
+function region:Hide()
+    local wasShown=self.shown; self.shown=false
+    if wasShown and self.scripts and self.scripts.OnHide then self.scripts.OnHide(self) end
+end
 function region:IsShown() return self.shown end
 function region:IsVisible() return self.shown and (not self.parent or not self.parent.IsVisible or self.parent:IsVisible()) end
 function region:SetShown(shown) self.shown = shown end
@@ -176,10 +179,31 @@ function specific.GameTooltip:SetOwner(owner,anchor) self.owner,self.anchor=owne
 function specific.GameTooltip:SetText(value)
     if not self.title then self.title=self:CreateFontString(nil,'OVERLAY','GameFontNormal'); self.title:SetWidth(260) end
     self.title:SetText(value)
+    self.tooltipLines={self.title}
 end
-function specific.GameTooltip:AddLine(value)
+function specific.GameTooltip:AddLine(value,r,g,b)
     if not self.line then self.line=self:CreateFontString(nil,'OVERLAY','GameFontHighlight'); self.line:SetWidth(260) end
     self.line:SetText(value)
+    self.tooltipLines=self.tooltipLines or {}
+    local row=self:CreateFontString(nil,'OVERLAY','GameFontHighlight'); row:SetWidth(260); row:SetText(value)
+    row:SetTextColor(r or 1,g or 1,b or 1,1); self.tooltipLines[#self.tooltipLines+1]=row
+end
+function specific.GameTooltip:ClearLines()
+    self.tooltipLines={}; if self.title then self.title:SetText('') end; if self.line then self.line:SetText('') end
+end
+function specific.GameTooltip:ClearHandlerInfo() self.primaryInfo=nil end
+function specific.GameTooltip:NumLines() return #(self.tooltipLines or {}) end
+function specific.GameTooltip:GetPrimaryTooltipInfo() return self.primaryInfo end
+function specific.GameTooltip:SetItemByID(id)
+    assert(type(id)=='number'); self.nativeItem=id
+    local rows=mockItemTooltips and mockItemTooltips[id]
+    if not rows then return false end
+    self:SetText(rows[1][1]); self.title:SetTextColor(unpack(rows[1][2] or {1,1,1,1}))
+    for i=2,#rows do self:AddLine(rows[i][1],unpack(rows[i][2] or {1,1,1})) end
+    self.primaryInfo={getterName='GetItemByID'}; return true
+end
+function specific.GameTooltip:SetHyperlink(link)
+    self.nativeLink=link; return specific.GameTooltip.SetItemByID(self,tonumber(link:match('^item:(%d+)$')))
 end
 C_ChatInfo = {RegisterAddonMessagePrefix = function() return true end, SendAddonMessage = function() end}
 
