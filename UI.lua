@@ -848,7 +848,7 @@ function U.Status()
     local previous
     for _,page in ipairs({'home','recipes','queue','market','network','requests','chain','settings'}) do
         local nav=U.navigation[page]
-        nav:SetShown((page~='chain' and page~='requests') or U.page==page)
+        nav:SetShown(page~='chain' or U.page==page)
         if nav:IsShown() then
             nav:ClearAllPoints()
             if previous then nav:SetPoint('TOPLEFT',previous,'BOTTOMLEFT',0,-3) else nav:SetPoint('TOPLEFT',U.frame,'TOPRIGHT',-3,-U.paneTop) end

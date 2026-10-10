@@ -161,6 +161,7 @@ frame:SetScript('OnEvent', function(self, event, ...)
         self:RegisterEvent('GROUP_ROSTER_UPDATE'); self:RegisterEvent('PLAYER_GUILD_UPDATE'); self:RegisterEvent('PLAYER_ENTERING_WORLD')
         self:RegisterEvent('PLAYER_LOGIN'); self:RegisterEvent('BAG_UPDATE_DELAYED'); self:RegisterEvent('GET_ITEM_INFO_RECEIVED')
         self:RegisterEvent('ITEM_DATA_LOAD_RESULT')
+        self:RegisterEvent('MODIFIER_STATE_CHANGED'); self:RegisterEvent('PLAYER_EQUIPMENT_CHANGED')
         for _,event in ipairs({'TRADE_SKILL_SHOW','TRADE_SKILL_CLOSE','TRADE_SKILL_LIST_UPDATE','TRADE_SKILL_DATA_SOURCE_CHANGED'}) do self:RegisterEvent(event) end
         self:RegisterEvent('ADDON_ACTION_BLOCKED'); self:RegisterEvent('ADDON_ACTION_FORBIDDEN')
         self:SetScript('OnUpdate', function(_, elapsed) F.Net.Tick(elapsed); F.Updates.Tick(elapsed); F.UI.Tick(elapsed); F.Bank.Tick(elapsed); F.Tracker.Tick(elapsed); F.ProfessionActions.Tick(elapsed); F.Automation.Tick(elapsed) end)
@@ -168,6 +169,7 @@ frame:SetScript('OnEvent', function(self, event, ...)
         SlashCmdList.FOREVERNET = F.Command
         F.Updates.Startup()
     elseif event == 'CHAT_MSG_ADDON' then F.Updates.Receive(...); F.Net.Receive(...)
+    elseif event=='MODIFIER_STATE_CHANGED' then F.Theme.TooltipEvent(event,...)
     elseif event=='ADDON_ACTION_BLOCKED' or event=='ADDON_ACTION_FORBIDDEN' then F.ProtectedAction(event,...)
     elseif event == 'PLAYER_LOGIN' then F.Minimap.Init(); F.Updates.Login(); if F.db.settings.sharing then F.Net.ScheduleSync() end
     elseif event=='GROUP_ROSTER_UPDATE' or event=='PLAYER_GUILD_UPDATE' or event=='PLAYER_ENTERING_WORLD' then

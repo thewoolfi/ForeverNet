@@ -9,7 +9,7 @@ for _,locale in ipairs(F.LocaleOrder) do
     assert(U.rows[1].entry.maximum==75 and U.rows[1].fill:IsShown())
     assert(U.visualTiles[1].entry.title==F.L('PAGE_queue'))
     assert(not U.navigation.chain:IsShown() and U.sharing:GetText()=='')
-    assert(not U.navigation.requests:IsShown())
+    assert(U.navigation.requests:IsShown())
     U.rows[1].scripts.OnClick(U.rows[1]); assert(U.page=='recipes' and U.recipeFilters.profession=='skill:165')
     U.Select(U.entries[1])
     assert(U.visualStats[1].value:GetText()=='1' and U.visualStats[2].value:GetText()=='0')

@@ -381,4 +381,7 @@ print('PASS native item tooltips: armor/stats/effects/requirements/colors, hint 
 profession_links=client('ProfessionLinksTest')
 profession_links.execute((ROOT/'tests/profession_links.lua').read_text(encoding='utf-8'))
 print('PASS restored recipe chat links: native rows, recycled/highest-learned recipes, reserved widths, draft-only chat, loading/API fallbacks, 12 locales and independent-addon handoff')
+comparison=client('ItemComparisonTest')
+comparison.execute((ROOT/'tests/item_comparison.lua').read_text(encoding='utf-8'))
+print('PASS Shift item comparison: native equipped/delta delegation, paired slots, modifier events without repaint, equipment/cache refresh, private frames, cleanup/API fallbacks and both styles across 12 locales')
 print('All Lua 5.1 checks passed. Client rendering still requires an in-game check.')

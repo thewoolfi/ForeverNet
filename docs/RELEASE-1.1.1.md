@@ -2,6 +2,8 @@
 
 ## English — changes since 1.1.0
 
+- Hold Shift while hovering equipment to compare it with currently equipped items, including native stat differences and paired-slot comparisons. Pressing or releasing Shift updates the comparison without moving the mouse.
+- Restored Requests as a permanent sidebar tab for direct access from every page.
 - Added native WoW item tooltips: armor, stats, effects and requirements now appear when hovering an item. Planning quantities, bank counts and price hints remain below the description.
 - Tooltips cover recipes, network cards, sidebar items, selected items, production chains and reagents, queue materials/crafts, market, tracker and auction results. Uncached items show a loading message and refresh when data arrives; reused and hidden cards clear stale tooltips.
 - Restored recipe chat-link buttons beside recipe names in the native profession window. Click to insert the recipe link into a chat draft, then press Enter to send. With ForeverLink enabled, its existing button is used without a duplicate.
@@ -14,6 +16,8 @@ Descriptions use base item IDs from the catalog, without a particular inventory 
 
 ## Русский — изменения после 1.1.0
 
+- Удерживайте Shift при наведении на экипировку для сравнения с надетыми вещами: штатная разница характеристик и сравнение парных слотов. Нажатие и отпускание Shift обновляют подсказки без движения мыши.
+- Вкладка «Запросы» снова постоянно отображается в боковой панели и открывается напрямую с любой страницы.
 - Добавлены штатные подсказки предметов WoW: при наведении видны броня, характеристики, эффекты и требования. Количества для плана, запасы банка и подсказки о цене остаются ниже описания.
 - Подсказки работают в рецептах, карточках сети, списках слева, выбранном предмете, цепочках и реагентах, материалах и крафтах очереди, рынке, трекере и результатах аукциона. Для незагруженных предметов показывается сообщение о загрузке с последующим обновлением; скрытые и повторно используемые карточки очищают старую подсказку.
 - Возвращены кнопки ссылки на рецепт рядом с названиями в штатном окне профессии. Нажмите кнопку для вставки ссылки в черновик чата, затем Enter для отправки. При включённом ForeverLink используется его кнопка без дубля.

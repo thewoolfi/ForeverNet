@@ -130,6 +130,10 @@ function CreateFrame(kind, name, parent, template)
     local f = object(kind)
     f.template=template
     f.parent=parent
+    if template=='ShoppingTooltipTemplate' then
+        f.CompareHeader=object('Frame')
+        f.CompareHeader.Label=object('FontString'); f.CompareHeader.Label:SetText('Equipped')
+    end
     if template=='AuctionHouseFrameDisplayModeTabTemplate' then
         -- Inherited PanelTabButtonTemplate declares parentArray="Tabs".
         parent.Tabs=parent.Tabs or {}; parent.Tabs[#parent.Tabs+1]=f
