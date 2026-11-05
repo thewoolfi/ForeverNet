@@ -605,20 +605,33 @@ function U.BankBadges()
         end
 
         -- 8. Query container APIs
-        if not itemID and bagID and slotID then
-            if getItemID then
+        local itemQuality=nil
+        if bagID and slotID then
+            if get then
+                local ok,info=pcall(get,bagID,slotID)
+                if ok and type(info)=='table' then
+                    if type(info.itemID)=='number' and info.itemID>0 then itemID=info.itemID end
+                    if type(info.quality)=='number' then itemQuality=info.quality end
+                elseif ok and type(info)=='string' then
+                    local _,_,_,q=get(bagID,slotID)
+                    itemQuality=q
+                end
+            end
+            if not itemID and getItemID then
                 local ok,id=pcall(getItemID,bagID,slotID)
                 if ok and type(id)=='number' and id>0 then itemID=id end
             end
-            if not itemID and get then
-                local ok,info=pcall(get,bagID,slotID)
-                if ok and type(info)=='table' and type(info.itemID)=='number' and info.itemID>0 then
-                    itemID=info.itemID
-                end
-            end
         end
 
-        U.MaterialBadge(texture,itemID and ('item:'..itemID) or nil)
+        if not itemQuality and itemID and F.Catalog and F.Catalog.ItemQuality then
+            itemQuality=F.Catalog.ItemQuality(itemID)
+        end
+
+        if itemQuality==0 then
+            U.MaterialBadge(texture,nil)
+        else
+            U.MaterialBadge(texture,itemID and ('item:'..itemID) or nil)
+        end
         if texture and texture.foreverNetBadge then
             U.bankBadges=U.bankBadges or {}
             U.bankBadges[texture.foreverNetBadge]=true
@@ -781,16 +794,29 @@ function U.BagBadges()
 
                 if texture and okBag and okSlot and type(bagID)=='number' and type(slotID)=='number' then
                     if containerShown and (not button.IsShown or button:IsShown()) then
-                        local itemID
-                        if getItemID then
+                        local itemID, itemQuality
+                        if get then
+                            local got,info=pcall(get,bagID,slotID)
+                            if got and type(info)=='table' then
+                                itemID=info.itemID
+                                itemQuality=info.quality
+                            elseif got and type(info)=='string' then
+                                local _,_,_,q=get(bagID,slotID)
+                                itemQuality=q
+                            end
+                        end
+                        if not itemID and getItemID then
                             local ok,id=pcall(getItemID,bagID,slotID)
                             if ok and type(id)=='number' and id>0 then itemID=id end
                         end
-                        if not itemID and get then
-                            local got,info=pcall(get,bagID,slotID)
-                            itemID=got and type(info)=='table' and info.itemID or nil
+                        if not itemQuality and itemID and F.Catalog and F.Catalog.ItemQuality then
+                            itemQuality=F.Catalog.ItemQuality(itemID)
                         end
-                        U.MaterialBadge(texture,itemID and ('item:'..itemID) or nil)
+                        if itemQuality==0 then
+                            U.MaterialBadge(texture,nil)
+                        else
+                            U.MaterialBadge(texture,itemID and ('item:'..itemID) or nil)
+                        end
                     else
                         U.MaterialBadge(texture,nil)
                     end

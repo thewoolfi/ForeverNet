@@ -14,7 +14,7 @@
 ## Notes-zhTW: 專業技能共享網路與製作規劃
 ## Author: Andrew Woolfi
 ## X-License: MIT
-## Version: 1.2.0
+## Version: 1.2.1
 ## X-ReleaseType: Release
 ## X-Compatibility: Forever 1.60.1 (70124); in-game validation in progress
 ## SavedVariables: ForeverNetDB

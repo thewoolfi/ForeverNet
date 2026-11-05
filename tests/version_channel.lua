@@ -13,13 +13,13 @@ assert(#F.Net.queue==0 and next(F.localProfile.recipes)==nil) -- No profile shar
 for i=1,20 do assert(V.CheckNow()) end
 V.Tick(0); assert(#sent==1); V.Tick(10); assert(#sent==2 and next(V.pending)==nil)
 local baseline=#chatMessages
-V.Receive(V.prefix,'1|1.2.1','GUILD','New-Realm')
-assert(V.latest=='1.2.1' and #chatMessages==baseline+1 and F.db.newerAddonVersion.source=='New-Realm')
-V.Receive(V.prefix,'1|1.2.2','GUILD','Newer-Realm')
-assert(V.latest=='1.2.2' and #chatMessages==baseline+1) -- One notice/session; keep highest for the next login.
+V.Receive(V.prefix,'1|1.2.9','GUILD','New-Realm')
+assert(V.latest=='1.2.9' and #chatMessages==baseline+1 and F.db.newerAddonVersion.source=='New-Realm')
+V.Receive(V.prefix,'1|1.3.0','GUILD','Newer-Realm')
+assert(V.latest=='1.3.0' and #chatMessages==baseline+1) -- One notice/session; keep highest for the next login.
 for _,text in ipairs({'1|1.0.3|code','1|invalid','2|1.0.3',string.rep('1',100)}) do V.Receive(V.prefix,text,'GUILD','Bad-Realm') end
 V.Receive(V.prefix,'1|9.0.0','GUILD',F.me); V.Receive(V.prefix,'1|9.0.0','WHISPER','Other-Realm')
-assert(V.latest=='1.2.2')
+assert(V.latest=='1.3.0')
 -- Reply coalescing and cancellation in crowded guilds.
 V.Receive(V.prefix,'1|0.4.0','GUILD','Old-Realm'); assert(V.pending.GUILD and V.pending.GUILD.reply)
 V.Receive(V.prefix,'1|0.4.0','GUILD','Another-Realm'); assert(#F.Keys(V.pending)==1)
@@ -34,7 +34,7 @@ raid=true; V.ScheduleAll(0); assert(not V.ChannelAvailable('PARTY')); V.Tick(10)
 assert(sent[#sent].channel=='RAID' or sent[#sent-1].channel=='RAID')
 party,raid,instanceGroup=false,false,false
 local ok,why=V.CheckNow(); assert(not ok and why==F.L('UPDATE_VERSION_NO_CHANNEL'))
-V.Receive(V.prefix,'1|9.0.0','GUILD','NotMyGuild-Realm'); assert(V.latest=='1.2.2')
+V.Receive(V.prefix,'1|9.0.0','GUILD','NotMyGuild-Realm'); assert(V.latest=='1.3.0')
 guild=true; V.pending,V.lastSent={},{}
 local attempts=0
 C_ChatInfo.SendAddonMessage=function() attempts=attempts+1; return 11 end

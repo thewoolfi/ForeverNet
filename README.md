@@ -4,13 +4,15 @@
 
 ## English
 
-**1.2.0 Release** · Forever 1.60.1 (70124), Interface 16001
+**1.2.1 Release** · Forever 1.60.1 (70124), Interface 16001
 
-[Download](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.2.0) · [Support Andrew Woolfi](https://boosty.to/andrewwoolfi)
+[Download](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.2.1) · [Support Andrew Woolfi](https://boosty.to/andrewwoolfi)
 
 ForeverNet connects your profession recipes with crafters in your guild or home group. Build a plan for one item or a shared queue, account for carried materials and your saved personal bank, and request help for missing components.
 
 ### Features
+
+[Changes in 1.2.1](docs/RELEASE-1.2.1.md): fix for vendor junk / poor quality items marked with crafting hammer badge; cleaned catalog ranges.
 
 [Changes in 1.2.0](docs/RELEASE-1.2.0.md): crafting-material badges across bags and bank, trade goods and shadowgem detection for all professions, bank materials overview card, and badge settings toggle.
 
@@ -71,13 +73,15 @@ Code: [MIT](LICENSE), Copyright 2026 Andrew Woolfi. Bundled Noto Sans CJK deriva
 
 ## Русский
 
-**1.2.0 Release** · Forever 1.60.1 (70124), Interface 16001
+**1.2.1 Release** · Forever 1.60.1 (70124), Interface 16001
 
-[Скачать](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.2.0) · [Поддержать Andrew Woolfi](https://boosty.to/andrewwoolfi)
+[Скачать](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.2.1) · [Поддержать Andrew Woolfi](https://boosty.to/andrewwoolfi)
 
 ForeverNet объединяет ваши рецепты с возможностями мастеров гильдии или обычной группы. Рассчитывайте одну вещь или общую очередь, учитывайте сумки и сохранённый личный банк, запрашивайте помощь с недостающими компонентами.
 
 ### Возможности
+
+[Изменения в 1.2.1](docs/RELEASE-1.2.1.md): исправление ошибочной подсветки серого мусора молоточками; очистка диапазонов каталога от экипировки и серой добычи.
 
 [Изменения в 1.2.0](docs/RELEASE-1.2.0.md): значки ремесленных материалов в сумках и личном банке, распознавание хозтоваров и реагентов для всех профессий, карточка материалов банка и настройка отображения значков.
 

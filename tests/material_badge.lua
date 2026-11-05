@@ -42,6 +42,23 @@ assert(C.IsReagentFamily('item:2447'), 'reagents are not a reagent family')
 assert(not C.IsReagentFamily('item:6948'), 'a miscellaneous item counts as a reagent family')
 assert(not C.IsReagentFamily('item:19019'), 'a weapon counts as a reagent family')
 
+-- Vendor junk (quality 0 / poor) must NEVER be craft materials or show badges.
+assert(not C.IsCraftMaterial('item:7073'), 'Broken Fang (grey junk) was marked as material')
+assert(not C.IsCraftMaterial('item:7074'), 'Chipped Claw (grey junk) was marked as material')
+assert(not C.IsCraftMaterial('item:2590'), 'Forest Spider Webbing was marked as material')
+assert(not C.IsCraftMaterial('item:4361'), 'Bent Copper Tube was marked as material')
+
+-- Item with quality 0 reported via API is rejected even if in a recipe
+local savedQuality=C_Item.GetItemQualityByID
+C_Item.GetItemQualityByID=function(id) if id==99999 then return 0 end return nil end
+F.localProfile.recipes['spell:junktest']={name='JunkTest',output='item:9500',quantity=1,
+    profession='skill:202',blueprint=false,reagents={['item:99999']=1},stations={}}
+C.InvalidateMaterials()
+assert(not C.IsCraftMaterial('item:99999'), 'quality 0 item in recipe must not be marked as material')
+F.localProfile.recipes['spell:junktest']=nil
+C_Item.GetItemQualityByID=savedQuality
+C.InvalidateMaterials()
+
 -- Known materials are marked even with nothing scanned.
 assert(C.IsCraftMaterial('item:2589'), 'a bundled material was not marked')
 assert(C.IsCraftMaterial('item:4359'), 'a bundled material was not marked')
@@ -256,6 +273,10 @@ assert(bagButton.icon.foreverNetBadge.shown, 'reopened container did not restore
 C_Container.GetContainerItemInfo=function() return {itemID=88888,stackCount=1} end
 U.BagBadges()
 assert(not bagButton.icon.foreverNetBadge.shown)
+-- A slot holding a grey junk item (quality 0) never shows a badge even if itemID is a known material.
+C_Container.GetContainerItemInfo=function() return {itemID=9501,quality=0,stackCount=1} end
+U.BagBadges()
+assert(not bagButton.icon.foreverNetBadge.shown, 'junk item with quality 0 showed badge')
 C_Container.GetContainerItemInfo=function() return nil end
 U.BagBadges()
 assert(not bagButton.icon.foreverNetBadge.shown)

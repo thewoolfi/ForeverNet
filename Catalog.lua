@@ -61,56 +61,28 @@ C.REAGENT_CLASS=5
 -- Well-known materials, so common goods are marked even before the client has cached
 -- their data. Kept short on purpose: the item class covers the rest.
 C.KNOWN_MATERIALS={
-    [2589]=true,[2590]=true,[2591]=true,[2592]=true,[4306]=true,[4338]=true,[14047]=true,[14256]=true,
-    [774]=true,[818]=true,[1206]=true,[1210]=true,[1705]=true,[3864]=true,[5498]=true,[5500]=true,
-    [2320]=true,[2321]=true,[4291]=true,[6260]=true,[14341]=true,[8343]=true,
-    [2770]=true,[2771]=true,[2772]=true,[2775]=true,[2776]=true,[3858]=true,[3860]=true,[7911]=true,
-    [2835]=true,[2836]=true,[2838]=true,[2840]=true,[2841]=true,[2842]=true,[3575]=true,[3576]=true,
-    [12359]=true,[12360]=true,[12655]=true,[23445]=true,[23446]=true,[23447]=true,
-    [4359]=true,[4360]=true,[4361]=true,[2840]=true,[2842]=true,[3577]=true,[6037]=true,
-    [2318]=true,[2319]=true,[4231]=true,[4232]=true,[4233]=true,[4234]=true,[4235]=true,[4236]=true,
-    [4237]=true,[4238]=true,[4239]=true,[4240]=true,[4241]=true,[4242]=true,[4243]=true,[4244]=true,
-    [4245]=true,[4246]=true,[4247]=true,[4248]=true,[4249]=true,[4250]=true,[4251]=true,[4252]=true,
-    [4253]=true,[4254]=true,[4255]=true,[4256]=true,[4257]=true,[4258]=true,[4259]=true,[4260]=true,
-    [4261]=true,[4262]=true,[4263]=true,[4264]=true,[4265]=true,[4266]=true,[4267]=true,[4268]=true,
-    [4269]=true,[4270]=true,[4271]=true,[4272]=true,[4273]=true,[4274]=true,[4275]=true,[4276]=true,
-    [4277]=true,[4278]=true,[4279]=true,[4280]=true,[4281]=true,[4282]=true,[4283]=true,[4284]=true,
-    [4285]=true,[4286]=true,[4287]=true,[4288]=true,[4289]=true,[4290]=true,[4292]=true,[4293]=true,
-    [4294]=true,[4295]=true,[4296]=true,[4297]=true,[4298]=true,[4299]=true,[4300]=true,[4301]=true,
-    [4302]=true,[4303]=true,[4304]=true,[4305]=true,[4307]=true,[4308]=true,[4309]=true,[4310]=true,
-    [4311]=true,[4312]=true,[4313]=true,[4314]=true,[4315]=true,[4316]=true,[4317]=true,[4318]=true,
-    [4319]=true,[4320]=true,[4321]=true,[4322]=true,[4323]=true,[4324]=true,[4325]=true,[4326]=true,
-    [4327]=true,[4328]=true,[4329]=true,[4330]=true,[4331]=true,[4332]=true,[4333]=true,[4334]=true,
-    [4335]=true,[4336]=true,[4337]=true,[4339]=true,[4340]=true,[4341]=true,[4342]=true,[4343]=true,
-    [4344]=true,[4345]=true,[4346]=true,[4347]=true,[4348]=true,[4349]=true,[4350]=true,[4351]=true,
-    [4352]=true,[4353]=true,[4354]=true,[4355]=true,[4356]=true,[4357]=true,[4358]=true,[4362]=true,
-    [4363]=true,[4364]=true,[4365]=true,[4366]=true,[4367]=true,[4368]=true,[4369]=true,[4370]=true,
-    [4371]=true,[4372]=true,[4373]=true,[4374]=true,[4375]=true,[4376]=true,[4377]=true,[4378]=true,
-    [4379]=true,[4380]=true,[4381]=true,[4382]=true,[4383]=true,[4384]=true,[4385]=true,[4386]=true,
-    [4387]=true,[4388]=true,[4389]=true,[4390]=true,[4391]=true,[4392]=true,[4393]=true,[4394]=true,
-    [4395]=true,[4396]=true,[4397]=true,[4398]=true,[4399]=true,[4400]=true,[4401]=true,[4402]=true,
-    [4403]=true,[4404]=true,[4405]=true,[4406]=true,[4407]=true,[4408]=true,[4409]=true,[4410]=true,
-    [4470]=true,[4471]=true,[4472]=true,[4473]=true,[4474]=true,[4475]=true,[4476]=true,[4477]=true,
-    [4478]=true,[4479]=true,[4480]=true,[4481]=true,[4482]=true,[4483]=true,[4484]=true,[4485]=true,
-    [4486]=true,[4487]=true,[4488]=true,[4489]=true,[4490]=true,[4491]=true,[4492]=true,[4493]=true,
-    [4494]=true,[4495]=true,[4496]=true,[4497]=true,[4498]=true,[4499]=true,[4500]=true,
-    [6219]=true,[5956]=true,[2880]=true,[2901]=true,[3466]=true,[3859]=true,[3860]=true,
-    [7067]=true,[7068]=true,[7069]=true,[7070]=true,[7071]=true,[7072]=true,[7073]=true,[7074]=true,
-    [7075]=true,[7076]=true,[7077]=true,[7078]=true,[7079]=true,[7080]=true,[7081]=true,[7082]=true,
-    [7909]=true,[7910]=true,[7971]=true,[7972]=true,[7973]=true,[7974]=true,
-    [11370]=true,[11371]=true,[11382]=true,[11754]=true,[12361]=true,[12363]=true,[12364]=true,
-    [12662]=true,[12799]=true,[12800]=true,[12808]=true,[12809]=true,[12810]=true,[12811]=true,
-    [13463]=true,[13464]=true,[13465]=true,[13466]=true,[13467]=true,[13468]=true,
-    [14227]=true,[15407]=true,[15408]=true,[15409]=true,[15410]=true,[15411]=true,[15412]=true,
-    [15413]=true,[15414]=true,[15415]=true,[15416]=true,[15417]=true,
-    [17010]=true,[17011]=true,[17012]=true,[17194]=true,[17195]=true,[17196]=true,[17197]=true,
-    [17198]=true,[17202]=true,[17203]=true,[17204]=true,
-    [18562]=true,[18567]=true,[18588]=true,[18590]=true,[18591]=true,
-    [21752]=true,[21884]=true,[21885]=true,[21886]=true,[21887]=true,[22445]=true,[22446]=true,
-    [22447]=true,[22448]=true,[22449]=true,[22450]=true,[22451]=true,[22452]=true,[22456]=true,
-    [22457]=true,[22458]=true,[22459]=true,[22460]=true,[22461]=true,[22462]=true,[22463]=true,
-    [23571]=true,[23572]=true,[23573]=true,[23574]=true,[23575]=true,[23576]=true,
-    [23781]=true,[23782]=true,[23783]=true,[23784]=true,[23785]=true,[23786]=true,[23787]=true,
+    [774]=true,[818]=true,[1206]=true,[1210]=true,[1705]=true,[2318]=true,[2319]=true,[2320]=true,
+    [2321]=true,[2589]=true,[2592]=true,[2770]=true,[2771]=true,[2772]=true,[2775]=true,[2776]=true,
+    [2835]=true,[2836]=true,[2838]=true,[2840]=true,[2841]=true,[2842]=true,[2880]=true,[3466]=true,
+    [3575]=true,[3576]=true,[3577]=true,[3858]=true,[3859]=true,[3860]=true,[3864]=true,[4231]=true,
+    [4232]=true,[4234]=true,[4235]=true,[4236]=true,[4291]=true,[4304]=true,[4306]=true,[4338]=true,
+    [4359]=true,[4360]=true,[4371]=true,[5498]=true,[5500]=true,[6037]=true,[6219]=true,[6260]=true,
+    [7067]=true,[7068]=true,[7069]=true,[7070]=true,[7071]=true,[7072]=true,[7075]=true,[7076]=true,
+    [7077]=true,[7078]=true,[7079]=true,[7080]=true,[7081]=true,[7082]=true,[7909]=true,[7910]=true,
+    [7911]=true,[7912]=true,[7971]=true,[7972]=true,[7973]=true,[7974]=true,[8170]=true,[8171]=true,
+    [8172]=true,[8343]=true,[10505]=true,[10561]=true,[10620]=true,[11370]=true,[11371]=true,[11382]=true,
+    [11754]=true,[12359]=true,[12360]=true,[12361]=true,[12363]=true,[12364]=true,[12365]=true,[12655]=true,
+    [12662]=true,[12799]=true,[12800]=true,[12808]=true,[12809]=true,[12810]=true,[12811]=true,[13463]=true,
+    [13464]=true,[13465]=true,[13466]=true,[13467]=true,[13468]=true,[14047]=true,[14227]=true,[14256]=true,
+    [14341]=true,[14342]=true,[15407]=true,[15408]=true,[15410]=true,[15411]=true,[15412]=true,[15413]=true,
+    [15414]=true,[15415]=true,[15416]=true,[15417]=true,[17010]=true,[17011]=true,[17012]=true,[17194]=true,
+    [17195]=true,[17196]=true,[17197]=true,[17198]=true,[17202]=true,[17203]=true,[17204]=true,[18562]=true,
+    [18567]=true,[18588]=true,[18590]=true,[18591]=true,[21752]=true,[21884]=true,[21885]=true,[21886]=true,
+    [21887]=true,[22445]=true,[22446]=true,[22447]=true,[22448]=true,[22449]=true,[22450]=true,[22451]=true,
+    [22452]=true,[22456]=true,[22457]=true,[22458]=true,[22459]=true,[22460]=true,[22461]=true,[22462]=true,
+    [22463]=true,[23445]=true,[23446]=true,[23447]=true,[23571]=true,[23572]=true,[23573]=true,[23574]=true,
+    [23575]=true,[23576]=true,[23781]=true,[23782]=true,[23783]=true,[23784]=true,[23785]=true,[23786]=true,
+    [23787]=true,
 }
 -- Positional capture cannot be used here: these client calls return nil in the middle
 -- of the list, and a nil ends the list for positional assignment, so the class id
@@ -171,13 +143,33 @@ function C.KnownRecipeOutput(id)
     end
     return false
 end
+function C.ItemQuality(id)
+    local numeric=type(id)=='string' and tonumber(id:match('^item:(%d+)$')) or (type(id)=='number' and id)
+    if not numeric then return nil end
+    if C_Item and C_Item.GetItemQualityByID then
+        local ok,q=pcall(C_Item.GetItemQualityByID,numeric)
+        if ok and type(q)=='number' then return q end
+    end
+    local get=C_Item and C_Item.GetItemInfo or GetItemInfo
+    if get then
+        local ok,name,link,quality=pcall(get,numeric)
+        if ok and type(quality)=='number' then return quality end
+    end
+    return nil
+end
 function C.IsCraftMaterial(id)
     if type(id)~='string' or id:match('^item:%d+$')==nil then return false end
+    local numeric=tonumber(id:match('^item:(%d+)$'))
+    if not numeric then return false end
+
+    -- Poor/grey items (quality 0) are vendor trash and never crafting reagents.
+    local q=C.ItemQuality(numeric)
+    if q==0 then return false end
+
     local key=C.MaterialCacheKey()
     if key~=C.materialCacheKey then C.materialCache={}; C.materialCacheKey=key end
     local cached=C.materialCache[id]
     if cached~=nil then return cached end
-    local numeric=tonumber(id:match('^item:(%d+)$'))
     local found=false
     -- 1. Any item belonging to trade goods or reagents family (covers all professions).
     if C.IsReagentFamily(id) then found=true end
