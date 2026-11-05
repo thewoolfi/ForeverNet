@@ -181,6 +181,7 @@ function U.UpdateActions()
     local valid=target and F.ID(target.item) and F.Integer(qty,1,10000)
     U.item:SetText(C.Safe(target and C.ItemName(target.item) or F.L('CHOOSE_RECIPE')))
     U.itemIcon:SetTexture(target and C.Icon(target.item) or 'Interface\\Icons\\INV_Misc_QuestionMark')
+    U.MaterialBadge(U.itemIcon,target and target.item or nil)
     U.plan:SetEnabled(not not valid and U.page~='crafters')
     U.plan:SetText(F.L(U.page=='chain' and U.planData and 'CHAIN_REFRESH' or 'Собрать цепочку'))
     local canRequest=valid and U.page~='requests' and U.page~='crafters' and F.db.settings.sharing and F.Net.available and F.Net.Channel()
@@ -207,6 +208,7 @@ function U.Show(text,title,subtitle,tone)
     local entry=U.view~='help' and U.view~='commands' and U.selectedEntry
     U.detailItem=entry and entry.item
     U.hero:SetTexture(U.detailItem and C.Icon(U.detailItem) or 'Interface\\Icons\\INV_Misc_EngGizmos_01')
+    U.MaterialBadge(U.hero,U.detailItem)
     U.accept:Hide(); U.done:Hide(); U.cancel:Hide(); U.crafter:Hide(); U.enqueue:Hide()
     U.detailTitle:SetText(C.Safe(title or F.L('PAGE_'..U.page)))
     U.summary:SetText(C.Safe(subtitle or ''))
@@ -447,6 +449,7 @@ function U.RefreshRows()
             b:SetBackdropColor(b.selected and .18 or .085,b.selected and .16 or .078,b.selected and .12 or .066,1)
         end
         b.icon:SetTexture(entry.icon or entry.item and C.Icon(entry.item) or 'Interface\\Icons\\INV_Misc_GroupLooking')
+        U.MaterialBadge(b.icon,entry.item)
         b:SetBackdropBorderColor(b.selected and .95 or .52,b.selected and .75 or .38,.18,1)
         b:SetScript('OnClick',function(self) U.Select(self.entry) end); b:Show()
     end
@@ -595,6 +598,7 @@ function U.RenderPlayer(entry,profile)
                         card.entry,card.owner,card.blueprint=r,entry.owner,r.recipe.blueprint
                         card:ClearAllPoints(); card:SetPoint('TOPLEFT',col*222,-y)
                         card.icon:SetTexture(C.Icon(r.item)); card.title:SetHeight(0); card.title:SetText(C.Safe(r.title))
+                        U.MaterialBadge(card.icon,r.item)
                         local titleHeight=card.title:GetStringHeight()
                         card.detail:ClearAllPoints(); card.detail:SetPoint('TOPLEFT',48,-(titleHeight+12)); card.detail:SetHeight(0)
                         card.detail:SetText(C.Safe(r.recipe.blueprint and 'Blueprint  /  x'..r.recipe.quantity or F.L('RECIPE')..'  /  x'..r.recipe.quantity))
@@ -654,7 +658,7 @@ function U.RenderFinder()
     local context=U.finder
     if not context then U.Show(F.L('EMPTY_crafters'),F.L('PAGE_crafters')); return end
     U.Show('',C.ItemName(context.item),string.format(F.L('FINDER_COUNT'),#U.entries))
-    U.detailItem=context.item; U.hero:SetTexture(C.Icon(context.item)); U.crafter:SetText(F.L('FINDER_NETWORK')); U.crafter:Show()
+    U.detailItem=context.item; U.hero:SetTexture(C.Icon(context.item)); U.MaterialBadge(U.hero,context.item); U.crafter:SetText(F.L('FINDER_NETWORK')); U.crafter:Show()
     local channel=F.Net.Channel()
     local rows={{section=true,title=F.L('PAGE_crafters'),hint=F.L('FINDER_HELP')..'\n'..F.L('NETWORK_CHANNEL')..
         (channel and F.L('CHANNEL_'..channel) or F.L('NETWORK_NO_CHANNEL'))}}
@@ -972,7 +976,7 @@ function U.RenderMarket()
     local quantity=U.Quantity()
     if not F.Integer(quantity,1,10000) then U.Show(F.L('QUANTITY_ERROR'),entry.title); return end
     U.Show('',entry.title,F.L('PAGE_market'))
-    U.detailItem=entry.item; U.hero:SetTexture(C.Icon(entry.item))
+    U.detailItem=entry.item; U.hero:SetTexture(C.Icon(entry.item)); U.MaterialBadge(U.hero,entry.item)
     local days=U.historyDays or 30
     local rows={{key='market/'..entry.item,item=entry.item,title=entry.title,text=U.ShortPrice(entry.item,quantity),hint=U.PriceText(entry.item,quantity),
         actions={{text=F.L('MARKET_SCAN'),enabled=F.Auction.open==true,run=function()
@@ -1067,7 +1071,15 @@ function U.ChooseSource(item,choice)
 end
 function U.ShowSourceRows(entries,offset)
     U.sourceRows=U.sourceRows or {}; U.chainRows=entries
-    for _,row in ipairs(U.sourceRows) do row:Hide() end
+    for _,row in ipairs(U.sourceRows) do
+        row:Hide()
+        if row.icon and row.icon.foreverNetBadge then
+            row.icon.foreverNetBadge:Hide()
+            if U.badgeLayer and U.badgeLayer.activeBadges then
+                U.badgeLayer.activeBadges[row.icon.foreverNetBadge]=nil
+            end
+        end
+    end
     U.bodyText:Hide()
     local y=offset or 0
     for i,entry in ipairs(entries) do
@@ -1116,21 +1128,33 @@ function U.ShowSourceRows(entries,offset)
             local expanded=U.visualExpanded and U.visualExpanded[key]
             row.more:SetShown(entry.hint~=nil or entry.actions~=nil or entry.extraAction~=nil)
         row.more.key,row.more.hint=key,entry.hint
-            row.more:SetText(expanded and '-' or '+')
+            -- A named control reads better than a bare "+" glyph, which the game
+            -- font renders as a small grey square.
+            row.more.expandKey=expanded and 'BANK_COLLAPSE' or 'BANK_EXPAND'
+            row.more:SetText(F.L(row.more.expandKey))
             if not expanded then
                 entry={}
                 for k,v in pairs(original) do entry[k]=v end
                 entry.actions,entry.extraAction=nil,nil
             end
-        else row.more:Hide(); row.more.key,row.more.hint=nil,nil end
+        else row.more:Hide(); row.more.key,row.more.hint,row.more.expandKey=nil,nil,nil end
         local passive=not entry.section and (not entry.actions or #entry.actions==0) and not entry.extraAction
         if entry.section then F.Theme.Section(row) elseif passive then row:SetBackdrop(nil) else skin(row,true) end
         row.divider:SetShown(passive)
         local x=entry.item and (passive and 42 or 56) or 10
+        -- The expand control is sized to its label and kept inside the row, so the
+        -- title has to know how much room is actually left.
+        local moreWidth=0
+        if row.more:IsShown() then
+            moreWidth=math.max(74,F.Theme.ButtonWidth(row.more))
+            row.more:SetSize(moreWidth,22)
+            row.more:ClearAllPoints(); row.more:SetPoint('TOPRIGHT',-8,-8)
+        end
         row.icon:SetSize(passive and 26 or 36,passive and 26 or 36)
         row.icon:ClearAllPoints(); row.icon:SetPoint('TOPLEFT',passive and 8 or 10,passive and -8 or -10)
         row.icon:SetShown(entry.item~=nil); if entry.item then row.icon:SetTexture(C.Icon(entry.item)) end
-        row.title:ClearAllPoints(); row.title:SetPoint('TOPLEFT',x,-10); row.title:SetWidth(424-x-(row.more:IsShown() and 30 or 0))
+        U.MaterialBadge(row.icon,entry.item)
+        row.title:ClearAllPoints(); row.title:SetPoint('TOPLEFT',x,-10); row.title:SetWidth(math.max(60,424-x-(moreWidth>0 and moreWidth+12 or 0)))
         row.title:SetHeight(0); row.title:SetText(C.Safe(entry.title or '')); row.title:SetShown(entry.title and entry.title~='')
         local inline=false
         local widths,total={},0
@@ -1247,7 +1271,15 @@ end
 
 function U.ShowCards(entries,offset)
     U.cards=U.cards or {}
-    for _,card in ipairs(U.cards) do card:Hide() end
+    for _,card in ipairs(U.cards) do
+        card:Hide()
+        if card.icon and card.icon.foreverNetBadge then
+            card.icon.foreverNetBadge:Hide()
+            if U.badgeLayer and U.badgeLayer.activeBadges then
+                U.badgeLayer.activeBadges[card.icon.foreverNetBadge]=nil
+            end
+        end
+    end
     local y=offset or 0
     for start=1,#entries,2 do
         local pair,rowHeight={},0
@@ -1263,6 +1295,7 @@ function U.ShowCards(entries,offset)
             end
             F.Theme.BindItemTooltip(card,entry.item,entry.title,entry.text)
             card:ClearAllPoints(); card:SetPoint('TOPLEFT',(i-start)*222,-y); card.icon:SetTexture(C.Icon(entry.item))
+            U.MaterialBadge(card.icon,entry.item)
             card.title:SetHeight(0); card.detail:SetHeight(0)
             card.title:SetText(C.Safe(entry.title)); card.detail:SetText(C.Safe(entry.text))
             local titleHeight=card.title:GetStringHeight()

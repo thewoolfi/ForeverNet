@@ -116,6 +116,7 @@ function U.RenderQueue()
     local e=U.selectedEntry; local goal=e and e.kind=='goal' and Q.data.goals[e.index]
     U.Show('',goal and C.ItemName(goal.item)..' x'..goal.quantity or F.L('PAGE_queue'),string.format(F.L('VIS_QUEUE_MINI'),#plan.goals,#F.Keys(plan.missing)))
     U.detailItem=goal and goal.item; U.hero:SetTexture(goal and C.Icon(goal.item) or 'Interface\\Icons\\INV_Misc_Note_05')
+    U.MaterialBadge(U.hero,goal and goal.item or nil)
     U.crafter:SetText(F.L('TRACK_SHOW')); U.crafter:Show(); U.enqueue:Hide()
     local b=U.EnsureQueueBoard(); U.chainRows={}
     b.bar:SetPoint('TOPLEFT',0,0); b.bar:Show()
@@ -166,6 +167,7 @@ function U.RenderQueue()
                 b.steps[i]=row
             end
             row:ClearAllPoints(); row:SetPoint('TOPLEFT',0,-y); row.icon:SetTexture(C.Icon(step.item)); row.title:SetText(C.ItemName(step.item,step.name))
+            U.MaterialBadge(row.icon,step.item)
             row.owner:ClearAllPoints(); row.owner:SetPoint('TOPLEFT',44,-(row.title:GetStringHeight()+12))
             row.owner:SetText(step.owner==F.me and F.L('YOU') or step.owner); T.Color(row.owner,i==nextCraft and 'good' or 'muted')
             row.count:SetText('x'..step.quantity); T.BindItemTooltip(row,step.item,row.title:GetText(),F.L('MANUAL_CRAFT'))
@@ -181,6 +183,7 @@ function U.RenderQueue()
     if nextStep then
         b.next:ClearAllPoints(); b.next:SetPoint('TOPLEFT',0,-y); b.next.caption:SetText(F.L('QB_NEXT'))
         b.next.icon:SetTexture(C.Icon(nextStep.item)); b.next.title:SetText(C.ItemName(nextStep.item,nextStep.name)..' x'..nextStep.quantity)
+        U.MaterialBadge(b.next.icon,nextStep.item)
         b.next.detail:ClearAllPoints(); b.next.detail:SetPoint('TOPLEFT',44,-(28+b.next.title:GetStringHeight()))
         b.next.detail:SetText(F.L(nextCraft and 'VIS_READY' or 'VIS_GET')); T.Color(b.next.detail,nextCraft and 'good' or 'muted')
         T.BindItemTooltip(b.next,nextStep.item,C.ItemName(nextStep.item,nextStep.name),b.next.detail:GetText())
@@ -189,6 +192,7 @@ function U.RenderQueue()
     elseif plan.complete then
         b.next:ClearAllPoints(); b.next:SetPoint('TOPLEFT',0,-y); b.next.caption:SetText(F.L('VIS_READY'))
         b.next.icon:SetTexture('Interface\\Buttons\\UI-CheckBox-Check'); b.next.title:SetText(F.L('ALREADY_OWNED')); b.next.detail:SetText('')
+        U.MaterialBadge(b.next.icon,nil)
         T.BindItemTooltip(b.next,nil,F.L('ALREADY_OWNED'))
         b.next:SetHeight(64); b.next:Show(); y=y+82
     end

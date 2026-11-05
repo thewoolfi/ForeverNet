@@ -668,6 +668,26 @@ koKR={'아이템 정보 불러오는 중…','아이템 정보를 사용할 수 
 zhCN={'正在加载物品信息…','物品信息不可用。'},
 zhTW={'正在載入物品資訊…','物品資訊無法使用。'}}
 itemTooltips.enGB=itemTooltips.enUS; itemTooltips.esMX=itemTooltips.esES
+
+-- Bank material list on the home page. Registered into F.Locales the same way as
+-- every other block here, otherwise F.L would fall back to the key name.
+local bankMaterials={
+enUS={'Materials in bank: %d','The saved bank holds no crafting materials yet.','More','Less'},
+ruRU={'Материалов в банке: %d','В сохранённом банке пока нет крафтовых материалов.','Подробнее','Свернуть'},
+deDE={'Materialien in der Bank: %d','Die gespeicherte Bank enthält noch keine Handwerksmaterialien.','Mehr','Weniger'},
+frFR={'Matériaux en banque : %d','La banque enregistrée ne contient pas encore de matériaux d’artisanat.','Plus','Moins'},
+esES={'Materiales en el banco: %d','El banco guardado aún no contiene materiales de fabricación.','Más','Menos'},
+itIT={'Materiali in banca: %d','La banca salvata non contiene ancora materiali da creazione.','Altro','Meno'},
+ptBR={'Materiais no banco: %d','O banco salvo ainda não contém materiais de fabricação.','Mais','Menos'},
+koKR={'은행 재료: %d개','저장된 은행에 아직 제작 재료가 없습니다.','자세히','접기'},
+zhCN={'银行中的材料：%d','保存的银行中还没有制作材料。','详情','收起'},
+zhTW={'銀行中的材料：%d','儲存的銀行中還沒有製作材料。','詳情','收合'}}
+bankMaterials.enGB=bankMaterials.enUS; bankMaterials.esMX=bankMaterials.esES
+local bankMaterialKeys={'BANK_MATERIAL_LIST','BANK_MATERIAL_EMPTY','BANK_EXPAND','BANK_COLLAPSE'}
+for locale,values in pairs(bankMaterials) do
+    F.Locales[locale]=F.Locales[locale] or {}
+    for i,key in ipairs(bankMaterialKeys) do F.Locales[locale][key]=values[i] end
+end
 for locale,values in pairs(itemTooltips) do
     F.Locales[locale].ITEM_TOOLTIP_LOADING=values[1]; F.Locales[locale].ITEM_TOOLTIP_UNAVAILABLE=values[2]
 end
@@ -704,3 +724,23 @@ enGB={RECIPE_CHAT_LINK="Link recipe in chat",RECIPE_CHAT_LINK_HELP="Insert the r
 for locale,values in pairs(recipeChatLinks) do
     for key,value in pairs(values) do F.Locales[locale][key]=value end
 end
+
+local materialBadgeSettings={
+enUS={'Crafting material badges on items','Shows a hammer badge on item icons in bags, bank, and addon windows when an item is a crafting reagent.'},
+ruRU={'Значки материалов крафта на предметах','Показывает значок молоточка на предметах в сумках, банке и окне аддона, если предмет используется в профессиях.'},
+deDE={'Handwerksmaterial-Symbole auf Gegenständen','Zeigt ein Hammersymbol auf Gegenständen in Taschen, Bank und Addon-Fenstern an, wenn es sich um Handwerksmaterial handelt.'},
+frFR={'Insignes de matériaux d\'artisanat sur les objets','Affiche un marteau sur les objets dans les sacs, la banque et les fenêtres de l\'addon si l\'objet est un composant d\'artisanat.'},
+esES={'Distintivos de materiales de profesión en objetos','Muestra un distintivo de martillo en los objetos de bolsas, banco y ventanas del addon cuando son materiales de profesión.'},
+itIT={'Distintivi materiali d\'artigianato sugli oggetti','Mostra un martello sulle icone degli oggetti in borse, banca e finestre dell\'addon quando l\'oggetto è un reagente.'},
+ptBR={'Emblemas de materiais de criação nos itens','Mostra um martelo nos ícones de itens nas bolsas, banco e janelas do addon quando o item for um reagente de profissão.'},
+koKR={'아이템 아이콘에 제작 재료 표시','아이템이 전문 기술 재료인 경우 가방, 은행 및 애드온 창의 아이콘에 망치 표시를 보여줍니다.'},
+zhCN={'物品图标上的制造材料标记','当物品是制造材料时，在背包、银行和插件窗口的物品图标上显示小锤子标记。'},
+zhTW={'物品圖示上的製造材料標記','當物品是製造材料時，在背包、銀行和插件視窗的物品圖示上顯示小錘子標記。'},
+}
+materialBadgeSettings.enGB=materialBadgeSettings.enUS; materialBadgeSettings.esMX=materialBadgeSettings.esES
+for locale,values in pairs(materialBadgeSettings) do
+    F.Locales[locale]=F.Locales[locale] or {}
+    F.Locales[locale].SETTING_MATERIAL_BADGES=values[1]
+    F.Locales[locale].MATERIAL_BADGES_HINT=values[2]
+end
+

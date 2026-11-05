@@ -4,15 +4,15 @@
 
 ## English
 
-**1.1.1 Release** · Forever 1.60.1 (70124), Interface 16001
+**1.2.0 Release** · Forever 1.60.1 (70124), Interface 16001
 
-[Download](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.1.1) · [Support Andrew Woolfi](https://boosty.to/andrewwoolfi)
+[Download](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.2.0) · [Support Andrew Woolfi](https://boosty.to/andrewwoolfi)
 
 ForeverNet connects your profession recipes with crafters in your guild or home group. Build a plan for one item or a shared queue, account for carried materials and your saved personal bank, and request help for missing components.
 
 ### Features
 
-[Changes since 1.0.0](docs/RELEASE-1.1.0.md)
+[Changes in 1.2.0](docs/RELEASE-1.2.0.md): crafting-material badges across bags and bank, trade goods and shadowgem detection for all professions, bank materials overview card, and badge settings toggle.
 
 [Changes in 1.1.1](docs/RELEASE-1.1.1.md): native item descriptions and Shift equipment comparison on hover, with planning hints below; restored recipe chat-link buttons in the native profession list.
 
@@ -71,13 +71,15 @@ Code: [MIT](LICENSE), Copyright 2026 Andrew Woolfi. Bundled Noto Sans CJK deriva
 
 ## Русский
 
-**1.1.1 Release** · Forever 1.60.1 (70124), Interface 16001
+**1.2.0 Release** · Forever 1.60.1 (70124), Interface 16001
 
-[Скачать](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.1.1) · [Поддержать Andrew Woolfi](https://boosty.to/andrewwoolfi)
+[Скачать](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.2.0) · [Поддержать Andrew Woolfi](https://boosty.to/andrewwoolfi)
 
 ForeverNet объединяет ваши рецепты с возможностями мастеров гильдии или обычной группы. Рассчитывайте одну вещь или общую очередь, учитывайте сумки и сохранённый личный банк, запрашивайте помощь с недостающими компонентами.
 
 ### Возможности
+
+[Изменения в 1.2.0](docs/RELEASE-1.2.0.md): значки ремесленных материалов в сумках и личном банке, распознавание хозтоваров и реагентов для всех профессий, карточка материалов банка и настройка отображения значков.
 
 [Изменения в 1.1.1](docs/RELEASE-1.1.1.md): штатное описание и сравнение экипировки по Shift при наведении, с данными планирования ниже; возвращены кнопки ссылки на рецепт в штатном списке профессии.
 

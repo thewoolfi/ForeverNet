@@ -190,6 +190,7 @@ function A.Render()
         end
         row:ClearAllPoints(); row:SetPoint('TOPLEFT',0,-top); row:SetWidth(width-48)
         row.icon:SetTexture(F.Catalog.Icon(item)); row.text:SetWidth(width-86); row.text:SetHeight(0)
+        F.UI.MaterialBadge(row.icon,item)
         local price=F.UI.PriceText(item,plan.missing[item])
         row.text:SetText(F.Catalog.Safe(F.Catalog.ItemName(item)..' x'..plan.missing[item]..'\n'..price))
         F.Theme.BindItemTooltip(row,item,F.Catalog.ItemName(item),price)

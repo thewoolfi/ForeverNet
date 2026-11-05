@@ -118,7 +118,7 @@ function S.Open()
             local b=CreateFrame('Button',nil,content,'UIPanelButtonTemplate'); b:SetSize(146,24); F.Theme.Button(b)
             b:SetScript('OnClick',function() F.Theme.SetStyle(style) end); S.styles[style]=b
         end
-        local choices={{'sharing','SETTING_SHARE'},{'autoBank','SETTING_AUTOBANK'},{'useBank','SETTING_USEBANK'},{'showMinimap','SETTING_MINIMAP'},{'autoSync','SETTING_AUTOSYNC'},{'autoScan','SETTING_AUTOSCAN'},{'autoSources','SETTING_AUTOSOURCES'}}
+        local choices={{'sharing','SETTING_SHARE'},{'autoBank','SETTING_AUTOBANK'},{'useBank','SETTING_USEBANK'},{'showMinimap','SETTING_MINIMAP'},{'autoSync','SETTING_AUTOSYNC'},{'autoScan','SETTING_AUTOSCAN'},{'autoSources','SETTING_AUTOSOURCES'},{'materialBadges','SETTING_MATERIAL_BADGES'}}
         for i,choice in ipairs(choices) do
             local check=CreateFrame('CheckButton',nil,content,'UICheckButtonTemplate')
             check:SetSize(28,28); check:SetPoint('TOPLEFT',24,-55-(i-1)*34)
@@ -126,8 +126,11 @@ function S.Open()
             check.label=check:CreateFontString(nil,'OVERLAY','GameFontHighlight'); check.label:SetPoint('TOPLEFT',check,'TOPRIGHT',4,-5)
             check.label:SetWidth(426); check.label:SetJustifyH('LEFT'); check.label:SetWordWrap(true)
             F.Theme.Text(check.label,false,14)
-            if check.key=='autoSources' or check.key=='autoScan' then
-                check:SetScript('OnEnter',function(self) F.Theme.ShowTooltip(self,F.L(self.locale),F.L(self.key=='autoSources' and 'SOURCE_COST_HELP' or 'SCAN_HINT')) end)
+            if check.key=='autoSources' or check.key=='autoScan' or check.key=='materialBadges' then
+                check:SetScript('OnEnter',function(self)
+                    local help=self.key=='autoSources' and 'SOURCE_COST_HELP' or (self.key=='autoScan' and 'SCAN_HINT' or 'MATERIAL_BADGES_HINT')
+                    F.Theme.ShowTooltip(self,F.L(self.locale),F.L(help))
+                end)
                 check:SetScript('OnLeave',F.Theme.HideTooltip)
             end
             check:SetScript('OnClick',function(self)
@@ -138,6 +141,9 @@ function S.Open()
                 if self.key=='autoSync' then
                     F.Net.pendingSync,F.Net.pendingPublish,F.Net.autoElapsed=nil,nil,0
                     if self:GetChecked() then F.Net.ScheduleSync() end
+                end
+                if self.key=='materialBadges' then
+                    if F.UI and F.UI.UpdateBadges then F.UI.UpdateBadges() end
                 end
                 F.UI.DataChanged(); S.Refresh()
             end)

@@ -6,6 +6,26 @@ function B.Count(item)
     local snapshot=B.Snapshot()
     return snapshot and snapshot.items[item] or 0
 end
+-- Crafting materials only: bank tabs also hold gear, quest items and junk that
+-- the profession plan never uses. Sorted by amount, largest first.
+function B.Materials()
+    local snapshot=B.Snapshot()
+    if not snapshot then return {} end
+    local result={}
+    for _,item in ipairs(F.Keys(snapshot.items)) do
+        if F.Catalog.IsCraftMaterial(item) then
+            result[#result+1]={item=item,count=snapshot.items[item]}
+        end
+    end
+    table.sort(result,function(a,b)
+        if a.count~=b.count then return a.count>b.count end
+        return a.item<b.item
+    end)
+    return result
+end
+function B.MaterialCount()
+    return #B.Materials()
+end
 function B.Scan()
     if not B.open or F.db.settings.autoBank==false then return false end
     F.BankTrace('scan:before')
@@ -34,17 +54,51 @@ function B.Scan()
     B.lastScanned=F.Now(); B.scanCount=(B.scanCount or 0)+1
     F.BankTrace('scan:read')
     F.UI.DataChanged(); if F.Settings then F.Settings.Refresh() end
+    if F.UI and F.UI.BankBadges then pcall(F.UI.BankBadges) end
     F.BankTrace('scan:ui')
     return true
 end
 function B.Event(event)
-    if event=='BANKFRAME_OPENED' then B.open=true; B.lastOpened=F.Now(); B.pending=.3; B.retries=10; F.BankTrace('bank:open')
-    elseif event=='BANKFRAME_CLOSED' then
+    if event=='BANKFRAME_CLOSED' then
         if B.open and B.pending then pcall(B.Scan) end
         B.open=false; B.lastClosed=F.Now(); B.pending=nil; F.BankTrace('bank:close')
+        if F.UI and F.UI.HideBankBadges then pcall(F.UI.HideBankBadges) end
+        if F.UI and F.UI.BagBadges then pcall(F.UI.BagBadges) end
+        return
+    end
+    -- Bags redraw independently of the bank window, so the crafting badge is
+    -- refreshed for every bag change, not only while the bank is open.
+    if (event=='BAG_UPDATE_DELAYED' or event=='BAG_CONTAINER_UPDATE' or event=='BAG_UPDATE' or event=='BAG_OPEN' or event=='BAG_CLOSED' or event=='PLAYERBANKSLOTS_CHANGED' or event=='BANK_TABS_CHANGED') and F.UI and F.UI.BagBadges then
+        -- Containers are populated while the client draws them, so make sure each one
+        -- is watched and then sweep once the buttons exist.
+        if F.UI.HookBagContainers then pcall(F.UI.HookBagContainers) end
+        pcall(F.UI.BagBadges)
+        if (event=='BAG_OPEN' or event=='BAG_CONTAINER_UPDATE') and C_Timer and C_Timer.After then
+            C_Timer.After(0.1,function() if F.UI and F.UI.BagBadges then pcall(F.UI.BagBadges) end end)
+        end
+    end
+    -- Opening the bags or the bank can happen without a container event reaching
+    -- us, so each of those frames also gets one pass when it appears.
+    if event=='BANKFRAME_OPENED' and F.UI then
+        if F.UI.HookBagContainers then pcall(F.UI.HookBagContainers) end
+        if F.UI.BagBadges then pcall(F.UI.BagBadges) end
+        if F.UI.BankBadges then pcall(F.UI.BankBadges) end
+        if C_Timer and C_Timer.After then
+            C_Timer.After(0.15,function()
+                if F.UI and F.UI.BagBadges then pcall(F.UI.BagBadges) end
+                if F.UI and F.UI.BankBadges then pcall(F.UI.BankBadges) end
+            end)
+            C_Timer.After(0.4,function()
+                if F.UI and F.UI.BagBadges then pcall(F.UI.BagBadges) end
+                if F.UI and F.UI.BankBadges then pcall(F.UI.BankBadges) end
+            end)
+        end
+    end
+    if event=='BANKFRAME_OPENED' then B.open=true; B.lastOpened=F.Now(); B.pending=.3; B.retries=10; F.BankTrace('bank:open')
     elseif B.open and (event=='BAG_UPDATE_DELAYED' or event=='BAG_CONTAINER_UPDATE' or event=='PLAYERBANKSLOTS_CHANGED' or event=='BANK_TABS_CHANGED') then
         if event=='BAG_UPDATE_DELAYED' then pcall(B.Scan) end
         B.pending=.3; B.retries=10
+        if F.UI and F.UI.BankBadges then pcall(F.UI.BankBadges) end
     end
 end
 function B.Tick(elapsed)
@@ -53,6 +107,7 @@ function B.Tick(elapsed)
     B.pending=nil
     local ok,success=pcall(B.Scan)
     if (not ok or not success) and B.open and (B.retries or 0)>0 then B.retries=B.retries-1; B.pending=.5 end
+    if F.UI and F.UI.BankBadges then pcall(F.UI.BankBadges) end
 end
 function B.Status()
     local snapshot=B.Snapshot()

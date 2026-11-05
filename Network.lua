@@ -301,7 +301,9 @@ function N.Receive(prefix, text, channel, sender)
         -- A retained favorite can outlive the sender's SavedVariables/reinstall.
         -- After freshness expires, accept a new session with a reset revision.
         if previous and previous.rev > message.data.rev and not F.ProfileStale(previous) then return end
-        message.data.seen = now; F.db.profiles[sender] = message.data; F.UI.DataChanged()
+        message.data.seen = now; F.db.profiles[sender] = message.data
+        if F.Catalog and F.Catalog.InvalidateMaterials then F.Catalog.InvalidateMaterials() end
+        F.UI.DataChanged()
     elseif message.kind == 'HELLO' then
         if type(message.data)=='table' then F.Updates.Observe(message.data.version,sender) end
         if not N.hello[sender] or now - N.hello[sender] >= 30 then

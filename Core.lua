@@ -1,6 +1,6 @@
 local addonName, F = ...
 _G.ForeverNet = F
-F.name, F.version = addonName, '1.1.1'
+F.name, F.version = addonName, '1.2.0'
 F.icon = 'Interface\\Icons\\INV_Scroll_03'
 F.MAX_RECIPES, F.PEER_TTL = 1000, 1800
 F.MAX_FAVORITES=5
@@ -180,5 +180,6 @@ end
 function F.Touch()
     F.localProfile.rev = F.localProfile.rev + 1
     F.localProfile.seen = F.Now()
+    if F.Catalog and F.Catalog.InvalidateMaterials then F.Catalog.InvalidateMaterials() end
     if F.Net then F.Net.ProfileChanged() end
 end

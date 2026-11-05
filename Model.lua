@@ -53,9 +53,15 @@ function F.Prune()
         end
     end
     local now = F.Now()
+    local pruned=false
     for owner,profile in pairs(F.db.profiles) do
-        if owner~=F.me and F.ProfileStale(profile) and not F.IsFavorite('profiles',owner) then F.db.profiles[owner]=nil end
+        if owner~=F.me and F.ProfileStale(profile) and not F.IsFavorite('profiles',owner) then
+            F.db.profiles[owner]=nil; pruned=true
+        end
     end
+    -- Dropped peers take their recipes with them, so the crafting-material test
+    -- has to be recalculated rather than served from the cache.
+    if pruned and F.Catalog and F.Catalog.InvalidateMaterials then F.Catalog.InvalidateMaterials() end
     for id, r in pairs(F.db.requests) do
         if r.expires <= now then F.db.requests[id] = nil
         else

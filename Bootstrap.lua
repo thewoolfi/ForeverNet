@@ -99,6 +99,7 @@ function F.Command(input)
         elseif cmd == 'settings' then F.Settings.Open()
         elseif cmd == 'updates' then F.Updates.Open()
         elseif cmd == 'netstatus' then F.Net.Diagnostics()
+        elseif cmd == 'badgetest' then F.UI.BagDiagnose()
         elseif cmd == 'taint' then F.TaintDiagnostics(a)
         elseif cmd == 'track' then F.Tracker.Toggle()
         elseif cmd == 'show' then F.UI.Status()
@@ -110,6 +111,13 @@ function F.Command(input)
             F.db.settings.sharing = a == 'on'
             if a == 'off' then F.Net.queue, F.Net.buffers = {}, {} end
             F.UI.Status()
+        elseif cmd == 'badges' then
+            assert(a == 'on' or a == 'off', 'badges on|off')
+            F.db.settings.materialBadges = a == 'on'
+            if F.UI and F.UI.UpdateBadges then F.UI.UpdateBadges() end
+            if F.UI and F.UI.DataChanged then F.UI.DataChanged() end
+            if F.Settings and F.Settings.Refresh then F.Settings.Refresh() end
+            F.Print(F.L('SETTING_MATERIAL_BADGES') .. ': ' .. F.L(a == 'on' and 'включён' or 'выключен'))
         elseif cmd == 'sync' then
             local sent,why=F.Net.Sync()
             F.Print(sent and F.L('Синхронизация поставлена в очередь.') or why)
@@ -157,7 +165,8 @@ frame:SetScript('OnEvent', function(self, event, ...)
         local name = ...; if name ~= F.name then return end
         if not F.Init() then return end
         F.Net.Start(); F.Updates.Start(); F.Minimap.Init(); F.ProfessionActions.Start(); F.ProfessionLinks.Start(); F.Auction.Start(); F.Tracker.Start(); self:RegisterEvent('CHAT_MSG_ADDON')
-        for _,event in ipairs({'BANKFRAME_OPENED','BANKFRAME_CLOSED','PLAYERBANKSLOTS_CHANGED','BANK_TABS_CHANGED','BAG_CONTAINER_UPDATE'}) do self:RegisterEvent(event) end
+        if F.UI and F.UI.HookBagContainers then pcall(F.UI.HookBagContainers) end
+        for _,event in ipairs({'BANKFRAME_OPENED','BANKFRAME_CLOSED','PLAYERBANKSLOTS_CHANGED','BANK_TABS_CHANGED','BAG_CONTAINER_UPDATE','BAG_OPEN','BAG_CLOSED','BAG_UPDATE'}) do self:RegisterEvent(event) end
         self:RegisterEvent('GROUP_ROSTER_UPDATE'); self:RegisterEvent('PLAYER_GUILD_UPDATE'); self:RegisterEvent('PLAYER_ENTERING_WORLD')
         self:RegisterEvent('PLAYER_LOGIN'); self:RegisterEvent('BAG_UPDATE_DELAYED'); self:RegisterEvent('GET_ITEM_INFO_RECEIVED')
         self:RegisterEvent('ITEM_DATA_LOAD_RESULT')
@@ -171,11 +180,19 @@ frame:SetScript('OnEvent', function(self, event, ...)
     elseif event == 'CHAT_MSG_ADDON' then F.Updates.Receive(...); F.Net.Receive(...)
     elseif event=='MODIFIER_STATE_CHANGED' then F.Theme.TooltipEvent(event,...)
     elseif event=='ADDON_ACTION_BLOCKED' or event=='ADDON_ACTION_FORBIDDEN' then F.ProtectedAction(event,...)
-    elseif event == 'PLAYER_LOGIN' then F.Minimap.Init(); F.Updates.Login(); if F.db.settings.sharing then F.Net.ScheduleSync() end
+    elseif event == 'PLAYER_LOGIN' then
+        F.Minimap.Init(); F.Updates.Login()
+        if F.UI and F.UI.HookBagContainers then pcall(F.UI.HookBagContainers) end
+        if F.UI and F.UI.BagBadges then pcall(F.UI.BagBadges) end
+        if F.db.settings.sharing then F.Net.ScheduleSync() end
     elseif event=='GROUP_ROSTER_UPDATE' or event=='PLAYER_GUILD_UPDATE' or event=='PLAYER_ENTERING_WORLD' then
         F.RefreshIdentityAliases(); F.CleanSelfAliases()
         F.Updates.ScheduleAll(1)
         if F.db.settings.sharing then F.Net.ScheduleSync() end
         F.UI.DataChanged()
+    elseif event=='GET_ITEM_INFO_RECEIVED' or event=='ITEM_DATA_LOAD_RESULT' then
+        if F.Catalog and F.Catalog.InvalidateMaterials then F.Catalog.InvalidateMaterials() end
+        if F.UI and F.UI.BagBadges then pcall(F.UI.BagBadges) end
+        F.Theme.TooltipEvent(event,...); F.UI.DataChanged()
     else F.Theme.TooltipEvent(event,...); F.Automation.Event(event); F.Bank.Event(event); F.UI.DataChanged() end
 end)

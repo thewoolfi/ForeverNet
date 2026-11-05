@@ -117,6 +117,7 @@ function T.Render()
         row.item=entry.item; row.search:SetText(F.L('TRACK_SEARCH'))
         row:ClearAllPoints(); row:SetPoint('TOPLEFT',0,-y)
         row.icon:SetShown(not not entry.item); if entry.item then row.icon:SetTexture(F.Catalog.Icon(entry.item)) end
+        F.UI.MaterialBadge(row.icon,entry.item)
         row.title:ClearAllPoints(); row.title:SetPoint('TOPLEFT',entry.item and 28 or 0,-4)
         row.title:SetWidth(entry.item and 274 or 302); row.title:SetText(F.Catalog.Safe(entry.title))
         local titleHeight=row.title:GetStringHeight()

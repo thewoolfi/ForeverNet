@@ -25,6 +25,14 @@ function region:SetWidth(w) self.width = w end
 function region:SetHeight(h) self.height = h end
 function region:GetWidth() return self.width end
 function region:GetHeight() return self.height end
+-- Screen geometry. The client reports real numbers once a region is laid out; the
+-- stub reports the size with a fixed origin so callers that position relative to
+-- another region (the crafting badge) can be exercised.
+function region:GetLeft() return self.width and 10 or nil end
+function region:GetBottom() return self.height and 10 or nil end
+function region:GetRight() return self.width and (10 + self.width) or nil end
+function region:GetTop() return self.height and (10 + self.height) or nil end
+function region:GetParent() return self.parent end
 function region:GetObjectType() return self.kind end
 function region:Show() self.shown = true end
 function region:Hide()
@@ -67,6 +75,11 @@ function font:SetTextColor(...) self.color={...} end
 for _, method in ipairs({'SetJustifyH', 'SetJustifyV', 'SetWordWrap', 'SetFontObject'}) do font[method] = function() end end
 
 local widget = {}
+-- Frames report their own screen box too; the badge positions itself absolutely.
+function widget:GetLeft() return 0 end
+function widget:GetBottom() return 0 end
+function widget:GetRight() return self.width or 0 end
+function widget:GetTop() return self.height or 0 end
 function widget:SetScript(event, callback) self.scripts[event] = callback end
 function widget:HookScript(event,callback)
     local prior=self.scripts[event]
@@ -93,9 +106,18 @@ function scroll:EnableMouseWheel(value) self.mouseWheelEnabled=value end
 local texture = {SetTexture = function(self, value) self.texture = value end}
 function texture:GetTexture() return self.texture end
 function texture:GetAtlas() return self.atlas end
+-- Regions carry a draw layer and sublevel in the client; code that prefers the
+-- artwork layer over border art needs both to be readable.
+function texture:GetDrawLayer() return self.drawLayer or 'ARTWORK' end
+function texture:SetDrawLayer(layer,sublevel) self.drawLayer=layer; self.drawSublevel=sublevel end
 function texture:GetTexCoord() return unpack(self.texCoord or {0,1,0,1}) end
 function texture:GetVertexColor() return unpack(self.vertex or {1,1,1,1}) end
 function texture:SetVertexColor(...) self.vertex={...} end
+function texture:AddMaskTexture(mask) self.masks=self.masks or {}; self.masks[#self.masks+1]=mask end
+function texture:GetMaskTexture(i) return (self.masks or {})[i or 1] end
+-- The client lets a texture carry child textures; the crafting badge is drawn as
+-- one. Keep this explicit so the behaviour stays mirrored rather than assumed.
+function texture:CreateTexture() return object('Texture') end
 local line = {}
 function line:SetThickness(value) self.thickness=value end
 function line:SetStartPoint(...) self.start={...} end
@@ -122,14 +144,22 @@ function button:GetFontString()
     self.buttonText:SetFontObject(self:GetNormalFontObject()); self.buttonText:SetText(self:GetText())
     return self.buttonText
 end
-function widget:CreateTexture() return object('Texture') end
+function widget:CreateTexture()
+    local t=object('Texture'); t.parent=self
+    self.regions=self.regions or {}; self.regions[#self.regions+1]=t
+    return t
+end
 function widget:CreateLine() return object('Line') end
+function widget:CreateMaskTexture() local m=object('Texture'); m.isMask=true; return m end
 function widget:SetID(id) self.id=id end
 function widget:GetID() return self.id end
 function CreateFrame(kind, name, parent, template)
     local f = object(kind)
     f.template=template
     f.parent=parent
+    -- The client publishes a named frame as a global, which is how code reaches
+    -- ContainerFrame1..N and other Blizzard frames.
+    if name then f.name=name; _G[name]=f end
     if template=='ShoppingTooltipTemplate' then
         f.CompareHeader=object('Frame')
         f.CompareHeader.Label=object('FontString'); f.CompareHeader.Label:SetText('Equipped')
@@ -178,7 +208,13 @@ for _,state in ipairs({'Normal','Highlight','Disabled'}) do
     button['Get'..state..'FontObject']=function(self) return self[key] or _G[state=='Disabled' and 'GameFontDisable' or state=='Highlight' and 'GameFontHighlight' or 'GameFontNormal'] end
     button['Set'..state..'FontObject']=function(self,value) self[key]=value end
 end
+-- Item classification, as the client exposes it. Tests may override
+-- GetItemInfoInstant to describe specific items; by default nothing is known.
+C_Item = C_Item or {}
+C_Item.GetItemInfoInstant = C_Item.GetItemInfoInstant or function() return nil end
 function widget:GetRegions() return unpack(self.regions or {}) end
+function widget:GetNumRegions() return #(self.regions or {}) end
+function widget:GetRegion(i) return (self.regions or {})[i] end
 function specific.GameTooltip:SetOwner(owner,anchor) self.owner,self.anchor=owner,anchor end
 function specific.GameTooltip:SetText(value)
     if not self.title then self.title=self:CreateFontString(nil,'OVERLAY','GameFontNormal'); self.title:SetWidth(260) end
@@ -228,10 +264,14 @@ function button:SetChecked(v) self.checked=v end
 function button:GetChecked() return self.checked end
 
 function widget:SetFrameStrata(value) self.strata=value end
+function widget:GetFrameStrata() return self.strata or 'MEDIUM' end
+function widget:SetFrameLevel(level) self.frameLevel=level end
+function widget:GetFrameLevel() return self.frameLevel or 1 end
 function widget:SetClampedToScreen(value) self.clamped=value end
 function widget:SetBackdrop(value) self.backdrop=value end
 function widget:SetBackdropColor(...) self.backdropColor={...} end
 function texture:SetColorTexture(...) self.color={...} end
+function texture:GetColorTexture() return unpack(self.color or {}) end
 function texture:SetAtlas(value) self.atlas=value end
 C_Texture={GetAtlasInfo=function(atlas)
     if atlas:find('Profession%-background%-card%-') or atlas=='Professions-Recipe-Background' then return {width=300,height=280} end
