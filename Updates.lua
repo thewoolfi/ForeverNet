@@ -133,8 +133,13 @@ function V.Open()
         V.downloadLabel=label(-274,'GameFontNormal')
         V.link=CreateFrame('EditBox',nil,frame,'InputBoxTemplate')
         V.link:SetSize(490,24); V.link:SetPoint('TOPLEFT',33,-300); V.link:SetAutoFocus(false)
-        V.link:SetFontObject('GameFontHighlightSmall'); V.link:SetText(V.releasesURL)
+        local fo = _G['GameFontHighlightSmall'] or GameFontHighlightSmall
+        if fo and type(fo) ~= 'string' then pcall(V.link.SetFontObject, V.link, fo) end
+        if V.link.SetFont then pcall(V.link.SetFont, V.link, STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", 12, "") end
+        V.link:SetText(V.releasesURL)
         F.Theme.Font(V.link,12)
+        if V.link.SetTextInsets then V.link:SetTextInsets(6, 6, 0, 0) end
+        if V.link.SetTextColor then V.link:SetTextColor(1, 1, 1, 1) end
         V.link:SetScript('OnMouseUp',function(self) self:SetFocus(); self:HighlightText() end)
         V.link:SetScript('OnEditFocusGained',function(self) self:HighlightText() end)
         V.link:SetScript('OnEscapePressed',function(self) self:ClearFocus() end)

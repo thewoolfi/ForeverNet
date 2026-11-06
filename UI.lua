@@ -46,7 +46,9 @@ function U.Ensure()
     left:SetPoint('TOPLEFT',14,-93); left:SetSize(248,357); skin(left,true)
     U.searchLabel=label(left,'GameFontNormalSmall',14,-10,222,'')
     U.search=CreateFrame('EditBox',nil,left,'InputBoxTemplate')
-    U.search:SetFontObject('GameFontHighlightSmall')
+    local foSmall = _G['GameFontHighlightSmall'] or GameFontHighlightSmall
+    if foSmall and type(foSmall) ~= 'string' then pcall(U.search.SetFontObject, U.search, foSmall) end
+    if U.search.SetFont then pcall(U.search.SetFont, U.search, STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", 12, "") end
     F.Theme.Font(U.search,12)
     U.search:SetSize(124,22); U.search:SetPoint('TOPLEFT',16,-29); U.search:SetAutoFocus(false)
     U.filterButton=button(left,'',150,-29,82,function() if U.page=='queue' then U.QueueMenu() else U.OpenFilters() end end)
@@ -94,7 +96,9 @@ function U.Ensure()
     U.item:SetHeight(36)
     U.qtyLabel=label(frame,'GameFontNormalSmall',280,-461,68,'')
     U.qty=CreateFrame('EditBox',nil,frame,'InputBoxTemplate')
-    U.qty:SetFontObject('GameFontHighlightSmall')
+    local foSmall = _G['GameFontHighlightSmall'] or GameFontHighlightSmall
+    if foSmall and type(foSmall) ~= 'string' then pcall(U.qty.SetFontObject, U.qty, foSmall) end
+    if U.qty.SetFont then pcall(U.qty.SetFont, U.qty, STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", 12, "") end
     F.Theme.Font(U.qty,12)
     U.qty:SetSize(55,24); U.qty:SetPoint('TOPLEFT',285,-487); U.qty:SetNumeric(true); U.qty:SetAutoFocus(false); U.qty:SetText('1')
     U.qty:SetScript('OnTextChanged',function()
@@ -127,7 +131,7 @@ function U.Ensure()
         nav:EnableMouse(true)
         if previousTab then nav:SetPoint('TOPLEFT',previousTab,'BOTTOMLEFT',0,-3)
         else nav:SetPoint('TOPLEFT',frame,'TOPRIGHT',-3,-93) end
-        nav.Icon:SetTexture('Interface\\Icons\\'..icons[i]); nav:SetFillToInterior(true,40); nav:SetChecked(false)
+        nav.iconPath='Interface\\Icons\\'..icons[i]; nav.Icon:SetTexture(nav.iconPath); nav:SetFillToInterior(true,40); nav:SetChecked(false)
         F.Theme.SideTab(nav)
         nav:SetCustomOnMouseUpHandler(function(_,mouse,inside)
             if mouse=='LeftButton' and inside then
@@ -142,6 +146,134 @@ function U.Ensure()
         nav:SetScript('OnLeave',F.Theme.HideTooltip)
         previousTab=nav
     end
+
+    -- EllesmereUI / FojjiCore Left Navigation Sidebar
+    local sidebar = CreateFrame('Frame', nil, frame, 'BackdropTemplate')
+    sidebar:SetPoint('TOPLEFT', 0, 0); sidebar:SetPoint('BOTTOMLEFT', 0, 36)
+    sidebar:SetWidth(190)
+    sidebar:SetBackdrop({bgFile='Interface\\Buttons\\WHITE8X8', edgeFile='Interface\\Buttons\\WHITE8X8',
+        tile=false, edgeSize=1, insets={left=0, right=1, top=0, bottom=0}})
+    sidebar:SetBackdropColor(0.020, 0.030, 0.048, 1)
+    sidebar:SetBackdropBorderColor(0.075, 0.114, 0.165, 0.9)
+    U.neonSidebar = sidebar
+
+    local logo = sidebar:CreateTexture(nil, 'ARTWORK')
+    logo:SetSize(28, 28); logo:SetPoint('TOPLEFT', 14, -12)
+    logo:SetTexture(F.icon)
+    sidebar.logo = logo
+
+    local brandTitle = sidebar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    brandTitle:SetPoint('TOPLEFT', 48, -12)
+    F.Theme.Text(brandTitle, true, 15)
+    brandTitle:SetText('ForeverNet')
+    sidebar.brandTitle = brandTitle
+
+    local brandSub = sidebar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+    brandSub:SetPoint('TOPLEFT', 48, -28)
+    F.Theme.Text(brandSub, false, 11)
+    brandSub:SetText('|cff00e5ffv' .. F.version .. '|r |cff64748bP2P|r')
+    sidebar.brandSub = brandSub
+
+    local sideDiv = sidebar:CreateTexture(nil, 'ARTWORK')
+    sideDiv:SetPoint('TOPLEFT', 10, -48); sideDiv:SetPoint('TOPRIGHT', -10, -48); sideDiv:SetHeight(1)
+    sideDiv:SetColorTexture(0.075, 0.114, 0.165, 0.9)
+    sidebar.sideDiv = sideDiv
+
+    U.neonMenu = {}
+    local menuDefs = {
+        {header = 'РЕЖИМЫ КРАФТА'},
+        {page = 'home', icon = 'INV_Misc_Head_Human_01', title = 'Персонаж'},
+        {page = 'recipes', icon = 'INV_Scroll_03', title = 'Рецепты'},
+        {page = 'queue', icon = 'INV_Misc_Note_05', title = 'Очередь'},
+        {page = 'chain', icon = 'INV_Misc_EngGizmos_01', title = 'Цепочка'},
+        {header = 'СЕТЬ И РЫНОК'},
+        {page = 'market', icon = 'INV_Misc_Coin_01', title = 'Рынок'},
+        {page = 'network', icon = 'INV_Misc_GroupLooking', title = 'Сеть'},
+        {page = 'requests', icon = 'INV_Misc_Note_01', title = 'Запросы'},
+        {header = 'СИСТЕМА'},
+        {page = 'settings', icon = 'Trade_Engineering', title = 'Настройки'},
+        {page = 'loot', icon = 'INV_Misc_Bag_08', title = 'Сброс лута'},
+        {page = 'updates', icon = 'INV_Misc_Note_02', title = 'Обновления'},
+    }
+
+    local menuY = 56
+    for _, def in ipairs(menuDefs) do
+        if def.header then
+            local hdr = sidebar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+            hdr:SetPoint('TOPLEFT', 14, -menuY)
+            F.Theme.Text(hdr, true, 10)
+            hdr:SetText('|cff64748b' .. def.header .. '|r')
+            menuY = menuY + 18
+        else
+            local btn = CreateFrame('Button', nil, sidebar, 'BackdropTemplate')
+            btn:SetSize(174, 26); btn:SetPoint('TOPLEFT', 8, -menuY)
+            btn:SetBackdrop({bgFile='Interface\\Buttons\\WHITE8X8', edgeFile='Interface\\Buttons\\WHITE8X8',
+                tile=false, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
+            btn:SetBackdropColor(0, 0, 0, 0)
+            btn:SetBackdropBorderColor(0, 0, 0, 0)
+
+            local activeBar = btn:CreateTexture(nil, 'OVERLAY')
+            activeBar:SetPoint('TOPLEFT', 0, 1); activeBar:SetPoint('BOTTOMLEFT', 0, -1); activeBar:SetWidth(3)
+            activeBar:SetColorTexture(0.0, 0.85, 1.0, 1)
+            activeBar:Hide()
+            btn.activeBar = activeBar
+
+            local ic = btn:CreateTexture(nil, 'ARTWORK')
+            ic:SetSize(16, 16); ic:SetPoint('LEFT', 8, 0)
+            ic:SetTexture('Interface\\Icons\\' .. def.icon)
+            btn.icon = ic
+
+            local text = btn:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+            text:SetPoint('LEFT', 30, 0); text:SetPoint('RIGHT', -6, 0)
+            text:SetJustifyH('LEFT')
+            F.Theme.Text(text, false, 12)
+            btn.text = text
+            btn.rawTitle = def.title
+            btn.page = def.page
+
+            btn:SetScript('OnEnter', function(self)
+                if U.page ~= self.page then
+                    self:SetBackdropColor(1, 1, 1, 0.04)
+                end
+            end)
+            btn:SetScript('OnLeave', function(self)
+                if U.page ~= self.page then
+                    self:SetBackdropColor(0, 0, 0, 0)
+                end
+            end)
+            btn:SetScript('OnClick', function(self)
+                if self.page == 'settings' then
+                    if U.setDialog then U.setDialog:Hide() end
+                    F.Settings.Open()
+                elseif self.page == 'loot' then
+                    F.LootAdvisor.Show()
+                elseif self.page == 'updates' then
+                    F.Updates.Open()
+                else
+                    U.Navigate(self.page)
+                end
+            end)
+
+            U.neonMenu[def.page] = btn
+            menuY = menuY + 28
+        end
+    end
+
+    local statusDiv = sidebar:CreateTexture(nil, 'ARTWORK')
+    statusDiv:SetPoint('BOTTOMLEFT', 10, 52); statusDiv:SetPoint('BOTTOMRIGHT', -10, 52); statusDiv:SetHeight(1)
+    statusDiv:SetColorTexture(0.075, 0.114, 0.165, 0.9)
+    sidebar.statusDiv = statusDiv
+
+    local statNet = sidebar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+    statNet:SetPoint('BOTTOMLEFT', 16, 30); statNet:SetJustifyH('LEFT')
+    F.Theme.Text(statNet, false, 11)
+    sidebar.statNet = statNet
+
+    local statDb = sidebar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+    statDb:SetPoint('BOTTOMLEFT', 16, 12); statDb:SetJustifyH('LEFT')
+    F.Theme.Text(statDb, false, 11)
+    sidebar.statDb = statDb
+    sidebar:Hide()
     U.frame=frame; frame:Hide(); UISpecialFrames[#UISpecialFrames+1]='ForeverNetWindow'
     frame:SetScript('OnHide',function()
         F.Theme.HideTooltip()
@@ -175,9 +307,11 @@ function U.SetTarget(item,quantity,owner,recipeID)
 end
 function U.UpdateActions()
     if not U.frame then return end
+    local isNeon = F.Theme.IsNeon()
+    local prefix = isNeon and '|cff00e5ff▌|r ' or ''
     local target,qty=U.target,U.Quantity()
     local goal=U.page=='queue' and U.selectedEntry and U.selectedEntry.kind=='goal' and F.Queue.data.goals[U.selectedEntry.index]
-    U.qtyLabel:SetText(F.L(goal and goal.mode=='stock' and 'RESTOCK_TARGET' or 'QUANTITY_FIELD'))
+    U.qtyLabel:SetText(prefix..F.L(goal and goal.mode=='stock' and 'RESTOCK_TARGET' or 'QUANTITY_FIELD'))
     local valid=target and F.ID(target.item) and F.Integer(qty,1,10000)
     U.item:SetText(C.Safe(target and C.ItemName(target.item) or F.L('CHOOSE_RECIPE')))
     U.itemIcon:SetTexture(target and C.Icon(target.item) or 'Interface\\Icons\\INV_Misc_QuestionMark')
@@ -192,7 +326,17 @@ function U.UpdateActions()
     elseif not F.db.settings.sharing then hint='ENABLE_TO_REQUEST'
     elseif not F.Net.Channel() then hint='JOIN_TO_REQUEST'
     else hint='FOOTER_FLOW' end
-    U.footer:SetText(F.L(hint))
+    local hintText = F.L(hint)
+    local browsing = U.page=='home' or U.page=='network' or U.page=='market' or U.page=='queue' or U.view=='help' or U.view=='commands'
+    if isNeon then
+        if browsing then
+            U.footer:SetText('|cff00e5ff●|r |cff38bdf8/fn|r |cff64748b— ForeverNet v' .. F.version .. '|r')
+        else
+            U.footer:SetText('|cff00e5ff●|r |cff38bdf8/fn|r |cff64748b— ForeverNet v' .. F.version .. '|r   |cff94a3b8' .. hintText .. '|r')
+        end
+    else
+        U.footer:SetText(hintText)
+    end
 end
 function U.Show(text,title,subtitle,tone)
     if U.HideGraphics then U.HideGraphics() end
@@ -210,7 +354,9 @@ function U.Show(text,title,subtitle,tone)
     U.hero:SetTexture(U.detailItem and C.Icon(U.detailItem) or 'Interface\\Icons\\INV_Misc_EngGizmos_01')
     U.MaterialBadge(U.hero,U.detailItem)
     U.accept:Hide(); U.done:Hide(); U.cancel:Hide(); U.crafter:Hide(); U.enqueue:Hide()
-    U.detailTitle:SetText(C.Safe(title or F.L('PAGE_'..U.page)))
+    local isNeon = F.Theme.IsNeon()
+    local prefix = isNeon and '|cff00e5ff▌|r ' or ''
+    U.detailTitle:SetText(prefix..C.Safe(title or F.L('PAGE_'..U.page)))
     U.summary:SetText(C.Safe(subtitle or ''))
     if tone=='good' or tone=='missing' then F.Theme.Color(U.summary,tone)
     else F.Theme.Text(U.summary) end
@@ -220,12 +366,130 @@ function U.Show(text,title,subtitle,tone)
 end
 function U.LayoutMain(browsing)
     local T=F.Theme
+    local isNeon = T.IsNeon()
+
+    if isNeon then
+        U.frame:SetSize(950, 580)
+        if U.neonSidebar then U.neonSidebar:Show() end
+
+        if U.frame.TitleText then U.frame.TitleText:Hide() end
+        if U.frame.portrait then U.frame.portrait:Hide() end
+        if U.frame.portraitFrame then U.frame.portraitFrame:Hide() end
+
+        -- Hide legacy right-hand side tabs in neon
+        for _, nav in pairs(U.navigation) do nav:Hide() end
+
+        -- Position Heading at top of content area
+        U.heading:SetHeight(0); U.heading:ClearAllPoints()
+        U.heading:SetPoint('TOPLEFT', 215, -14); U.heading:SetWidth(380)
+
+        -- Contextual Subtitle
+        if not U.neonSub then
+            local sub = U.frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+            F.Theme.Text(sub, false, 11)
+            U.neonSub = sub
+        end
+        U.neonSub:ClearAllPoints()
+        U.neonSub:SetPoint('TOPLEFT', 215, -34); U.neonSub:SetWidth(380); U.neonSub:SetJustifyH('LEFT')
+        local descs = {
+            home = 'Профессии, навыки и изученные рецепты персонажа',
+            recipes = 'База изученных рецептов сети и материалы',
+            queue = 'Очередь создания предметов и расчет компонентов',
+            chain = 'Подетальное дерево крафта и цепочки переработки',
+            market = 'Анализ рыночных цен и история аукциона',
+            network = 'Участники P2P сети и ремесленники',
+            requests = 'Асинхронные запросы на изготовление между игроками',
+        }
+        U.neonSub:SetText('|cff64748b' .. (descs[U.page] or '') .. '|r')
+        U.neonSub:Show()
+
+        -- Action Buttons in Top Right (clean margins, no overlap with CloseButton at -12, -12)
+        U.sync:ClearAllPoints(); U.sync:SetPoint('TOPRIGHT', -44, -14); U.sync:SetSize(90, 24)
+        U.share:ClearAllPoints(); U.share:SetPoint('TOPRIGHT', U.sync, 'TOPLEFT', -6, 0); U.share:SetSize(96, 24)
+        U.scan:ClearAllPoints(); U.scan:SetPoint('TOPRIGHT', U.share, 'TOPLEFT', -6, 0); U.scan:SetSize(124, 24)
+        for _, b in ipairs({U.scan, U.share, U.sync}) do T.FitButton(b, b:GetWidth()) end
+
+        -- Content Bento Panes
+        local top = 56
+        local paneHeight = browsing and 470 or 402
+        U.left:ClearAllPoints(); U.left:SetPoint('TOPLEFT', 205, -top); U.left:SetSize(260, paneHeight)
+        U.right:ClearAllPoints(); U.right:SetPoint('TOPLEFT', U.left, 'TOPRIGHT', 12, 0); U.right:SetSize(460, paneHeight)
+
+        local listTop = math.max(65, 29 + (U.filterButton:IsShown() and U.filterButton:GetHeight() or U.search:GetHeight()) + 10)
+        U.listScroll:ClearAllPoints(); U.listScroll:SetPoint('TOPLEFT', 8, -listTop); U.listScroll:SetPoint('BOTTOMRIGHT', -28, 12)
+
+        -- Search input box skinning (hide brown Blizzard border)
+        if U.search then
+            if U.search.Left then U.search.Left:Hide() end
+            if U.search.Right then U.search.Right:Hide() end
+            if U.search.Middle then U.search.Middle:Hide() end
+            if not U.search.neonBg then
+                local bg = CreateFrame('Frame', nil, U.search, 'BackdropTemplate')
+                bg:SetAllPoints()
+                bg:SetBackdrop({bgFile='Interface\\Buttons\\WHITE8X8', edgeFile='Interface\\Buttons\\WHITE8X8', tile=false, edgeSize=1, insets={left=1,right=1,top=1,bottom=1}})
+                bg:SetBackdropColor(0.024, 0.038, 0.060, 1)
+                bg:SetBackdropBorderColor(0.082, 0.125, 0.180, 0.85)
+                bg:SetFrameLevel(U.search:GetFrameLevel() - 1)
+                U.search.neonBg = bg
+                U.search:HookScript('OnEditFocusGained', function() bg:SetBackdropBorderColor(0.0, 0.80, 1.0, 0.95) end)
+                U.search:HookScript('OnEditFocusLost', function() bg:SetBackdropBorderColor(0.082, 0.125, 0.180, 0.85) end)
+            end
+            U.search.neonBg:Show()
+            U.search:SetTextColor(0.92, 0.96, 1.0, 1)
+        end
+
+        -- Crafting Controls below panes
+        for _, region in ipairs({U.itemLabel, U.chosen, U.qtyLabel, U.qty, U.plan, U.request}) do
+            if not (U.page == 'queue' and (region == U.qty or region == U.qtyLabel)) then
+                region:SetShown(not browsing)
+            end
+        end
+        if not browsing then
+            U.chosen:ClearAllPoints(); U.chosen:SetPoint('TOPLEFT', 205, -top - paneHeight - 8); U.chosen:SetSize(260, 48)
+            U.qtyLabel:ClearAllPoints(); U.qtyLabel:SetPoint('TOPLEFT', U.chosen, 'TOPRIGHT', 14, 10)
+            U.qty:ClearAllPoints(); U.qty:SetPoint('TOPLEFT', U.chosen, 'TOPRIGHT', 14, -10); U.qty:SetSize(55, 24)
+            U.plan:ClearAllPoints(); U.plan:SetPoint('TOPLEFT', U.qty, 'TOPRIGHT', 12, 0); U.plan:SetSize(180, 24)
+            U.request:ClearAllPoints(); U.request:SetPoint('TOPLEFT', U.plan, 'TOPRIGHT', 10, 0); U.request:SetSize(180, 24)
+            T.FitButton(U.plan, 180); T.FitButton(U.request, 180)
+        end
+
+        -- Bottom footer line and controls (anchored outside sidebar)
+        U.footer:ClearAllPoints()
+        U.footer:SetPoint('BOTTOMLEFT', 205, 12)
+        U.footer:SetWidth(450)
+        U.footer:SetJustifyH('LEFT')
+
+        U.help:ClearAllPoints(); U.help:SetPoint('BOTTOMRIGHT', -16, 8); U.help:SetSize(110, 24)
+        U.commands:ClearAllPoints(); U.commands:SetPoint('BOTTOMRIGHT', U.help, 'BOTTOMLEFT', -8, 0); U.commands:SetSize(110, 24)
+        T.FitButton(U.help, 110); T.FitButton(U.commands, 110)
+        return
+    end
+
+    U.frame:SetSize(780, 570)
+    if U.frame.TitleText then U.frame.TitleText:Show() end
+    if U.frame.portrait then U.frame.portrait:Show() end
+    if U.frame.portraitFrame then U.frame.portraitFrame:Show() end
+    U.footer:ClearAllPoints(); U.footer:SetPoint('TOPLEFT', 24, -535); U.footer:SetWidth(450)
+    if U.neonSidebar then U.neonSidebar:Hide() end
+    if U.neonSub then U.neonSub:Hide() end
+    if U.search and U.search.neonBg then
+        U.search.neonBg:Hide()
+        if U.search.Left then U.search.Left:Show() end
+        if U.search.Right then U.search.Right:Show() end
+        if U.search.Middle then U.search.Middle:Show() end
+    end
+
     U.heading:SetHeight(0); U.heading:ClearAllPoints()
     U.heading:SetPoint('TOPLEFT',T.IsClassic() and 78 or 24,-48); U.heading:SetWidth(T.IsClassic() and 310 or 360)
     local headerHeight=U.heading:GetStringHeight()
     for _,b in ipairs({U.scan,U.share,U.sync}) do headerHeight=math.max(headerHeight,T.FitButton(b,b:GetWidth())) end
     local top=math.max(93,48+headerHeight+12)
     U.paneTop=top
+
+    U.scan:ClearAllPoints(); U.scan:SetPoint('TOPLEFT', 405, -48)
+    U.share:ClearAllPoints(); U.share:SetPoint('TOPLEFT', 519, -48)
+    U.sync:ClearAllPoints(); U.sync:SetPoint('TOPLEFT', 633, -48)
+
     local footerHeight=0
     for _,b in ipairs({U.plan,U.request}) do
         footerHeight=math.max(footerHeight,T.FitButton(b,b:GetWidth()))
@@ -238,7 +502,7 @@ function U.LayoutMain(browsing)
     U.left:ClearAllPoints(); U.left:SetPoint('TOPLEFT',14,-top)
     U.right:ClearAllPoints(); U.right:SetPoint('TOPLEFT',270,-top)
     local paneHeight=(browsing and 433 or 357)-(top-93)-footerExtra
-    U.left:SetHeight(paneHeight); U.right:SetHeight(paneHeight)
+    U.left:SetSize(248, paneHeight); U.right:SetSize(496, paneHeight)
     local listTop=math.max(65,29+(U.filterButton:IsShown() and U.filterButton:GetHeight() or U.search:GetHeight())+10)
     U.listScroll:ClearAllPoints(); U.listScroll:SetPoint('TOPLEFT',8,-listTop); U.listScroll:SetPoint('BOTTOMRIGHT',-28,12)
 end
@@ -415,12 +679,16 @@ function U.RefreshRows()
                 U.Status()
             end)
             tooltip(b.favorite,'FAVORITE_HINT')
-            b.progress=b:CreateTexture(nil,'BACKGROUND'); b.progress:SetColorTexture(.22,.20,.16,1)
+            b.progress=b:CreateTexture(nil,'BACKGROUND')
             b.progress:SetPoint('BOTTOMLEFT',40,8); b.progress:SetSize(158,3)
-            b.fill=b:CreateTexture(nil,'ARTWORK'); b.fill:SetColorTexture(.72,.55,.27,1)
+            b.fill=b:CreateTexture(nil,'ARTWORK')
             b.fill:SetPoint('BOTTOMLEFT',40,8); b.fill:SetHeight(3)
             b:SetScript('OnEnter',function(self)
-                self:SetBackdropBorderColor(.95,.75,.22,1)
+                if F.Theme.IsNeon() then
+                    self:SetBackdropBorderColor(0.20, 0.32, 0.48, 0.95)
+                else
+                    self:SetBackdropBorderColor(.95,.75,.22,1)
+                end
                 if self.entry.item then F.Theme.ShowItemTooltip(self,self.entry.item,self.entry.title,self.entry.subtitle)
                 elseif self.entry.kind=='profession' then
                     local scans=F.db.professionScans and F.db.professionScans[F.me] or {}
@@ -428,7 +696,20 @@ function U.RefreshRows()
                     F.Theme.ShowTooltip(self,self.entry.title,scan and F.Integer(scan.seen,0,2147483647) and string.format(F.L('SCAN_AGE'),math.max(0,math.floor((F.Now()-scan.seen)/60))) or F.L('SCAN_UNKNOWN'))
                 end
             end)
-            b:SetScript('OnLeave',function(self) F.Theme.HideTooltip(); self:SetBackdropBorderColor(self.selected and .95 or .52,self.selected and .75 or .38,.18,1) end)
+            b:SetScript('OnLeave',function(self)
+                F.Theme.HideTooltip()
+                if F.Theme.IsNeon() then
+                    if self.selected then
+                        self:SetBackdropBorderColor(0.0, 0.70, 0.95, 0.95)
+                        self:SetBackdropColor(0.040, 0.075, 0.125, 0.98)
+                    else
+                        self:SetBackdropBorderColor(0.090, 0.137, 0.204, 0.85)
+                        self:SetBackdropColor(0.035, 0.055, 0.090, 0.90)
+                    end
+                else
+                    self:SetBackdropBorderColor(self.selected and .95 or .52,self.selected and .75 or .38,.18,1)
+                end
+            end)
             U.rows[i]=b
         end
         F.Theme.HideTooltipFor(b)
@@ -444,13 +725,28 @@ function U.RefreshRows()
         local progress=entry.kind=='profession' and entry.maximum and entry.maximum>0 and type(entry.rank)=='number'
         b.progress:SetShown(not not progress); b.fill:SetShown(not not progress)
         if progress then b.fill:SetWidth(math.max(1,158*math.min(1,entry.rank/entry.maximum))) end
-        if U.page=='queue' then
+        if F.Theme.IsNeon() then
+            b.progress:SetColorTexture(0.060, 0.095, 0.150, 1.0)
+            b.fill:SetColorTexture(0.0, 0.80, 1.0, 1.0)
+            if b.selected then
+                b:SetBackdropBorderColor(0.0, 0.70, 0.95, 0.95)
+                b:SetBackdropColor(0.040, 0.075, 0.125, 0.98)
+            else
+                b:SetBackdropBorderColor(0.090, 0.137, 0.204, 0.85)
+                b:SetBackdropColor(0.035, 0.055, 0.090, 0.90)
+            end
+        elseif U.page=='queue' then
+            b.progress:SetColorTexture(.22,.20,.16,1)
+            b.fill:SetColorTexture(.72,.55,.27,1)
             b:SetBackdropBorderColor(.25,.225,.185,1)
             b:SetBackdropColor(b.selected and .18 or .085,b.selected and .16 or .078,b.selected and .12 or .066,1)
+        else
+            b.progress:SetColorTexture(.22,.20,.16,1)
+            b.fill:SetColorTexture(.72,.55,.27,1)
+            b:SetBackdropBorderColor(b.selected and .95 or .52,b.selected and .75 or .38,.18,1)
         end
         b.icon:SetTexture(entry.icon or entry.item and C.Icon(entry.item) or 'Interface\\Icons\\INV_Misc_GroupLooking')
         U.MaterialBadge(b.icon,entry.item)
-        b:SetBackdropBorderColor(b.selected and .95 or .52,b.selected and .75 or .38,.18,1)
         b:SetScript('OnClick',function(self) U.Select(self.entry) end); b:Show()
     end
     U.list:SetHeight(math.max(280,y)); U.empty:SetShown(#entries==0)
@@ -838,11 +1134,15 @@ function U.OpenFilters()
 end
 function U.Status()
     F.Theme.RefreshFonts(); U.Ensure(); F.Prune()
-    U.heading:SetText(F.L('PAGE_'..U.page))
+    local isNeon = F.Theme.IsNeon()
+    local prefix = isNeon and '|cff00e5ff▌|r ' or ''
+    U.heading:SetText(prefix..F.L('PAGE_'..U.page))
     U.sharing:SetText('')
     U.share:SetScript('OnEnter',function(self) F.Theme.ShowTooltip(self,F.L('SHARE_HINT'),string.format(F.L('NETWORK_SUMMARY'),#C.Recipes(F.db.profiles,''),math.max(0,#F.Keys(F.db.profiles)-1),F.L(F.db.settings.sharing and 'включён' or 'выключен'))..(F.Net.lastError and '\n'..F.Net.lastError or '')) end)
     U.scan:SetText(F.L('Сканировать')); U.share:SetText(F.L(F.db.settings.sharing and 'SHARE_ON' or 'SHARE_OFF')); U.sync:SetText(F.L('Обновить'))
-    U.searchLabel:SetText(F.L('SEARCH_LABEL')); U.itemLabel:SetText(F.L('CHOSEN_ITEM')); U.qtyLabel:SetText(F.L('QUANTITY_FIELD'))
+    U.searchLabel:SetText(prefix..F.L('SEARCH_LABEL')); U.itemLabel:SetText(prefix..F.L('CHOSEN_ITEM'))
+    local goal=U.page=='queue' and U.selectedEntry and U.selectedEntry.kind=='goal' and F.Queue.data.goals[U.selectedEntry.index]
+    U.qtyLabel:SetText(prefix..F.L(goal and goal.mode=='stock' and 'RESTOCK_TARGET' or 'QUANTITY_FIELD'))
     U.filterButton:SetShown(U.page=='recipes' or U.page=='queue'); U.search:SetWidth((U.page=='recipes' or U.page=='queue') and 124 or 210)
     U.filterButton:SetText(U.page=='queue' and F.L('SETS_TITLE') or F.L('FILTER_BUTTON')..(next(U.recipeFilters or {}) and ' *' or ''))
     if U.page~='recipes' and U.filterMenu then U.filterMenu:Hide() end
@@ -852,7 +1152,7 @@ function U.Status()
     local previous
     for _,page in ipairs({'home','recipes','queue','market','network','requests','chain','settings'}) do
         local nav=U.navigation[page]
-        nav:SetShown(page~='chain' or U.page==page)
+        nav:SetShown(not isNeon and (page~='chain' or U.page==page))
         if nav:IsShown() then
             nav:ClearAllPoints()
             if previous then nav:SetPoint('TOPLEFT',previous,'BOTTOMLEFT',0,-3) else nav:SetPoint('TOPLEFT',U.frame,'TOPRIGHT',-3,-U.paneTop) end
@@ -860,13 +1160,38 @@ function U.Status()
         end
         nav:SetChecked(page==U.page or page=='network' and U.page=='crafters'); nav.tooltipText=F.L('PAGE_'..page)
     end
+    if isNeon and U.neonMenu then
+        for page, btn in pairs(U.neonMenu) do
+            local active = (page == U.page or (page == 'network' and U.page == 'crafters'))
+            if btn.activeBar then btn.activeBar:SetShown(active) end
+            if active then
+                btn:SetBackdropColor(0.0, 0.55, 0.90, 0.16)
+                btn:SetBackdropBorderColor(0, 0, 0, 0)
+                if btn.text then btn.text:SetTextColor(0.0, 0.95, 1.0, 1) end
+            else
+                btn:SetBackdropColor(0, 0, 0, 0)
+                btn:SetBackdropBorderColor(0, 0, 0, 0)
+                if btn.text then btn.text:SetTextColor(0.65, 0.75, 0.88, 1) end
+            end
+            if btn.text and btn.rawTitle then
+                btn.text:SetText(btn.rawTitle)
+            end
+        end
+        if U.neonSidebar and U.neonSidebar.statNet then
+            U.neonSidebar.statNet:SetText(F.db.settings.sharing and '|cff10b981●|r |cff38bdf8P2P Онлайн|r' or '|cff64748b○ P2P Офлайн|r')
+            U.neonSidebar.statDb:SetText('|cff64748bБаза:|r |cffffffff' .. #C.Recipes(F.db.profiles,'') .. '|r |cff64748bрец.|r')
+        end
+    end
     U.RefreshRows(); U.UpdateActions(); U.RenderSelection()
     U.LayoutDetails()
     if U.page=='home' or U.page=='queue' or U.page=='market' then
         U.plan:SetEnabled(false); U.request:SetEnabled(false)
-        U.footer:SetText('')
+        U.footer:SetText(isNeon and ('|cff00e5ff●|r |cff38bdf8/fn|r |cff94a3b8— ForeverNet v' .. F.version .. '|r') or '')
     end
-    if U.page=='crafters' then U.footer:SetText(F.L('FINDER_PICK')) end
+    if U.page=='crafters' then
+        local msg = F.L('FINDER_PICK')
+        U.footer:SetText(isNeon and ('|cff00e5ff●|r |cff38bdf8/fn|r |cff94a3b8— ForeverNet v' .. F.version .. '|r   ' .. msg) or msg)
+    end
     U.frame:Show()
 end
 function U.Enqueue()
@@ -893,7 +1218,10 @@ function U.QueueSetDialog(mode,name)
         d:SetPortraitToAsset(F.icon); F.Theme.Background(d); F.Theme.Title(d)
         d.help=label(d,'GameFontHighlightSmall',24,-56,380,''); d.help:SetWordWrap(true)
         d.name=CreateFrame('EditBox',nil,d,'InputBoxTemplate')
-        d.name:SetSize(375,24); d.name:SetAutoFocus(false); d.name:SetFontObject('GameFontHighlight')
+        d.name:SetSize(375,24); d.name:SetAutoFocus(false)
+        local foLarge = _G['GameFontHighlight'] or GameFontHighlight
+        if foLarge and type(foLarge) ~= 'string' then pcall(d.name.SetFontObject, d.name, foLarge) end
+        if d.name.SetFont then pcall(d.name.SetFont, d.name, STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", 14, "") end
         F.Theme.Font(d.name,14)
         d.name:SetScript('OnEscapePressed',function() d:Hide() end)
         d.scroll=F.Theme.ScrollFrame(d)
@@ -1089,9 +1417,9 @@ function U.ShowSourceRows(entries,offset)
             row.icon=row:CreateTexture(nil,'ARTWORK'); row.icon:SetSize(36,36); row.icon:SetPoint('TOPLEFT',10,-10)
             row.title=label(row,'GameFontNormal',10,-10,414,''); row.title:SetWordWrap(true)
             row.detail=label(row,'GameFontHighlightSmall',10,-35,414,''); row.detail:SetWordWrap(true); row.detail:SetSpacing(1)
-            row.divider=row:CreateTexture(nil,'BACKGROUND'); row.divider:SetColorTexture(.5,.35,.14,.3)
+            row.divider=row:CreateTexture(nil,'BACKGROUND')
             row.divider:SetHeight(1); row.divider:SetPoint('BOTTOMLEFT',8,0); row.divider:SetPoint('BOTTOMRIGHT',-8,0)
-            row.track=row:CreateTexture(nil,'BACKGROUND'); row.track:SetColorTexture(.22,.19,.14,1); row.track:SetSize(414,4); row.track:SetPoint('BOTTOMLEFT',10,5)
+            row.track=row:CreateTexture(nil,'BACKGROUND'); row.track:SetSize(414,4); row.track:SetPoint('BOTTOMLEFT',10,5)
             row.fill=row:CreateTexture(nil,'ARTWORK'); row.fill:SetHeight(4); row.fill:SetPoint('BOTTOMLEFT',10,5)
             row:EnableMouse(true)
             row:SetScript('OnEnter',function(self)
@@ -1114,13 +1442,26 @@ function U.ShowSourceRows(entries,offset)
             row.more:SetScript('OnLeave',F.Theme.HideTooltip)
             U.sourceRows[i]=row
         end
+        if F.Theme.IsNeon() then
+            row.divider:SetColorTexture(0.075, 0.114, 0.165, 0.8)
+            row.track:SetColorTexture(0.060, 0.095, 0.150, 1.0)
+            row:SetBackdropColor(0.040, 0.065, 0.105, 0.98)
+            row:SetBackdropBorderColor(0.094, 0.145, 0.210, 0.85)
+        else
+            row.divider:SetColorTexture(.5,.35,.14,.3)
+            row.track:SetColorTexture(.22,.19,.14,1)
+        end
         row:ClearAllPoints(); row:SetPoint('TOPLEFT',0,-y)
         row.entry=entry
         local progress=entry.maximum and entry.maximum>0
         row.track:SetShown(not not progress); row.fill:SetShown(not not progress and (entry.current or 0)>0)
         if progress then
             row.fill:SetWidth(math.max(1,414*math.min(1,(entry.current or 0)/entry.maximum)))
-            row.fill:SetColorTexture(.45,.9,.48,1)
+            if F.Theme.IsNeon() then
+                row.fill:SetColorTexture(0.0, 0.80, 1.0, 1.0)
+            else
+                row.fill:SetColorTexture(.45,.9,.48,1)
+            end
         end
         local original=entry
         if entry.visual then

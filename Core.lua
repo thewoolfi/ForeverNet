@@ -1,6 +1,6 @@
 local addonName, F = ...
 _G.ForeverNet = F
-F.name, F.version = addonName, '1.2.1'
+F.name, F.version = addonName, '1.3.0'
 F.icon = 'Interface\\Icons\\INV_Scroll_03'
 F.MAX_RECIPES, F.PEER_TTL = 1000, 1800
 F.MAX_FAVORITES=5
@@ -122,7 +122,23 @@ function F.Init()
     F.db = ForeverNetDB
     F.db.profiles, F.db.requests = F.db.profiles or {}, F.db.requests or {}
     F.db.settings = F.db.settings or {sharing = false}
-    if F.db.settings.uiStyle~='modern' and F.db.settings.uiStyle~='classic' then F.db.settings.uiStyle='modern' end
+    if F.db.settings.uiStyle == 'bootstrap' then F.db.settings.uiStyle = 'neon' end
+    if F.db.settings.uiStyle~='modern' and F.db.settings.uiStyle~='classic' and F.db.settings.uiStyle~='neon' then F.db.settings.uiStyle='modern' end
+    if F.db.settings.sharing==nil then F.db.settings.sharing=false end
+    if F.db.settings.autoSync==nil then F.db.settings.autoSync=true end
+    if F.db.settings.autoScan==nil then F.db.settings.autoScan=true end
+    if F.db.settings.autoSources==nil then F.db.settings.autoSources=true end
+    if F.db.settings.autoBank==nil then F.db.settings.autoBank=true end
+    if F.db.settings.useBank==nil then F.db.settings.useBank=true end
+    if F.db.settings.materialBadges==nil then F.db.settings.materialBadges=true end
+    if F.db.settings.showMinimap==nil then F.db.settings.showMinimap=true end
+    if F.db.settings.lootAdvisor==nil then F.db.settings.lootAdvisor=true end
+    if F.db.settings.lootInCombat==nil then F.db.settings.lootInCombat=true end
+    if F.db.settings.lootMaxQuality==nil then F.db.settings.lootMaxQuality=0 end
+    if F.db.settings.lootProtectReagents==nil then F.db.settings.lootProtectReagents=true end
+    if F.db.settings.lootProtectGear==nil then F.db.settings.lootProtectGear=true end
+    if type(F.db.settings.lootBlacklist)~='table' then F.db.settings.lootBlacklist={} end
+    if F.db.settings.lootSortMode~='quality' and F.db.settings.lootSortMode~='price' then F.db.settings.lootSortMode='price' end
     F.db.favorites=type(F.db.favorites)=='table' and F.db.favorites or {}
     for _,kind in ipairs({'profiles','recipes','market'}) do
         local saved=type(F.db.favorites[kind])=='table' and F.db.favorites[kind] or {}

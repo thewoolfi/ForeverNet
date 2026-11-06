@@ -96,7 +96,6 @@ function F.Command(input)
     local cmd, a, b = args[1] or 'show', args[2], args[3]
     local ok, err = pcall(function()
         if cmd == 'help' or cmd == 'commands' then F.UI.Commands()
-        elseif cmd == 'settings' then F.Settings.Open()
         elseif cmd == 'updates' then F.Updates.Open()
         elseif cmd == 'netstatus' then F.Net.Diagnostics()
         elseif cmd == 'badgetest' then F.UI.BagDiagnose()
@@ -118,6 +117,25 @@ function F.Command(input)
             if F.UI and F.UI.DataChanged then F.UI.DataChanged() end
             if F.Settings and F.Settings.Refresh then F.Settings.Refresh() end
             F.Print(F.L('SETTING_MATERIAL_BADGES') .. ': ' .. F.L(a == 'on' and 'включён' or 'выключен'))
+        elseif cmd == 'settings' or cmd == 'config' or cmd == 'options' then
+            F.Settings.Open(a)
+        elseif cmd == 'window' or cmd == 'standalone' then
+            if F.Settings and F.Settings.OpenStandalone then F.Settings.OpenStandalone() else F.Settings.Open(a) end
+        elseif cmd == 'style' then
+            if a == 'modern' or a == 'classic' or a == 'neon' then
+                F.Theme.SetStyle(a)
+                F.Print(F.L('SETTING_STYLE') .. ': ' .. F.L(a == 'modern' and 'STYLE_MODERN' or (a == 'classic' and 'STYLE_CLASSIC' or 'STYLE_NEON')))
+            else
+                F.Print('Usage: /fn style [modern|classic|neon]')
+            end
+        elseif cmd == 'loot' then
+            if a == 'on' or a == 'off' then
+                F.db.settings.lootAdvisor = a == 'on'
+                if F.Settings and F.Settings.Refresh then F.Settings.Refresh() end
+                F.Print(F.L('SETTING_LOOT_ADVISOR') .. ': ' .. F.L(a == 'on' and 'включён' or 'выключен'))
+            else
+                if F.LootAdvisor then F.LootAdvisor.Show() end
+            end
         elseif cmd == 'sync' then
             local sent,why=F.Net.Sync()
             F.Print(sent and F.L('Синхронизация поставлена в очередь.') or why)
@@ -164,9 +182,9 @@ frame:SetScript('OnEvent', function(self, event, ...)
     if event == 'ADDON_LOADED' then
         local name = ...; if name ~= F.name then return end
         if not F.Init() then return end
-        F.Net.Start(); F.Updates.Start(); F.Minimap.Init(); F.ProfessionActions.Start(); F.ProfessionLinks.Start(); F.Auction.Start(); F.Tracker.Start(); self:RegisterEvent('CHAT_MSG_ADDON')
+        F.Net.Start(); F.Updates.Start(); F.Minimap.Init(); F.ProfessionActions.Start(); F.ProfessionLinks.Start(); F.Auction.Start(); F.Tracker.Start(); if F.LootAdvisor then F.LootAdvisor.Start() end; if F.Settings and F.Settings.RegisterBlizzardOptions then pcall(F.Settings.RegisterBlizzardOptions) end; self:RegisterEvent('CHAT_MSG_ADDON')
         if F.UI and F.UI.HookBagContainers then pcall(F.UI.HookBagContainers) end
-        for _,event in ipairs({'BANKFRAME_OPENED','BANKFRAME_CLOSED','PLAYERBANKSLOTS_CHANGED','BANK_TABS_CHANGED','BAG_CONTAINER_UPDATE','BAG_OPEN','BAG_CLOSED','BAG_UPDATE'}) do self:RegisterEvent(event) end
+        for _,event in ipairs({'BANKFRAME_OPENED','BANKFRAME_CLOSED','PLAYERBANKSLOTS_CHANGED','BANK_TABS_CHANGED','BAG_CONTAINER_UPDATE','BAG_OPEN','BAG_CLOSED','BAG_UPDATE','LOOT_OPENED','LOOT_CLOSED','UI_ERROR_MESSAGE'}) do self:RegisterEvent(event) end
         self:RegisterEvent('GROUP_ROSTER_UPDATE'); self:RegisterEvent('PLAYER_GUILD_UPDATE'); self:RegisterEvent('PLAYER_ENTERING_WORLD')
         self:RegisterEvent('PLAYER_LOGIN'); self:RegisterEvent('BAG_UPDATE_DELAYED'); self:RegisterEvent('GET_ITEM_INFO_RECEIVED')
         self:RegisterEvent('ITEM_DATA_LOAD_RESULT')
@@ -185,6 +203,7 @@ frame:SetScript('OnEvent', function(self, event, ...)
         if F.UI and F.UI.HookBagContainers then pcall(F.UI.HookBagContainers) end
         if F.UI and F.UI.BagBadges then pcall(F.UI.BagBadges) end
         if F.db.settings.sharing then F.Net.ScheduleSync() end
+        if F.Settings and F.Settings.RegisterBlizzardOptions then pcall(F.Settings.RegisterBlizzardOptions) end
     elseif event=='GROUP_ROSTER_UPDATE' or event=='PLAYER_GUILD_UPDATE' or event=='PLAYER_ENTERING_WORLD' then
         F.RefreshIdentityAliases(); F.CleanSelfAliases()
         F.Updates.ScheduleAll(1)
@@ -193,6 +212,9 @@ frame:SetScript('OnEvent', function(self, event, ...)
     elseif event=='GET_ITEM_INFO_RECEIVED' or event=='ITEM_DATA_LOAD_RESULT' then
         if F.Catalog and F.Catalog.InvalidateMaterials then F.Catalog.InvalidateMaterials() end
         if F.UI and F.UI.BagBadges then pcall(F.UI.BagBadges) end
+        if F.LootAdvisor and F.LootAdvisor.Event then F.LootAdvisor.Event(event,...) end
         F.Theme.TooltipEvent(event,...); F.UI.DataChanged()
-    else F.Theme.TooltipEvent(event,...); F.Automation.Event(event); F.Bank.Event(event); F.UI.DataChanged() end
+    elseif event=='LOOT_OPENED' or event=='LOOT_CLOSED' or event=='UI_ERROR_MESSAGE' then
+        if F.LootAdvisor and F.LootAdvisor.Event then F.LootAdvisor.Event(event,...) end
+    else F.Theme.TooltipEvent(event,...); F.Automation.Event(event); F.Bank.Event(event); if F.LootAdvisor and F.LootAdvisor.Event then F.LootAdvisor.Event(event,...) end; F.UI.DataChanged() end
 end)

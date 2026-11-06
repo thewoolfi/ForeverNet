@@ -4,13 +4,15 @@
 
 ## English
 
-**1.2.1 Release** · Forever 1.60.1 (70124), Interface 16001
+**1.3.0 Release** · Forever 1.60.1 (70124), Interface 16001
 
-[Download](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.2.1) · [Support Andrew Woolfi](https://boosty.to/andrewwoolfi)
+[Download](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.3.0) · [Support Andrew Woolfi](https://boosty.to/andrewwoolfi)
 
 ForeverNet connects your profession recipes with crafters in your guild or home group. Build a plan for one item or a shared queue, account for carried materials and your saved personal bank, and request help for missing components.
 
 ### Features
+
+[Changes in 1.3.0](docs/RELEASE-1.3.0.md): loot discard advisor for full bags with smart screen positioning, Blizzard options category, Neon UI theme and procedural controls.
 
 [Changes in 1.2.1](docs/RELEASE-1.2.1.md): fix for vendor junk / poor quality items marked with crafting hammer badge; cleaned catalog ranges.
 
@@ -73,13 +75,15 @@ Code: [MIT](LICENSE), Copyright 2026 Andrew Woolfi. Bundled Noto Sans CJK deriva
 
 ## Русский
 
-**1.2.1 Release** · Forever 1.60.1 (70124), Interface 16001
+**1.3.0 Release** · Forever 1.60.1 (70124), Interface 16001
 
-[Скачать](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.2.1) · [Поддержать Andrew Woolfi](https://boosty.to/andrewwoolfi)
+[Скачать](https://github.com/thewoolfi/ForeverNet/releases/tag/v1.3.0) · [Поддержать Andrew Woolfi](https://boosty.to/andrewwoolfi)
 
 ForeverNet объединяет ваши рецепты с возможностями мастеров гильдии или обычной группы. Рассчитывайте одну вещь или общую очередь, учитывайте сумки и сохранённый личный банк, запрашивайте помощь с недостающими компонентами.
 
 ### Возможности
+
+[Изменения в 1.3.0](docs/RELEASE-1.3.0.md): помощник освобождения места в сумках при луте с умным позиционированием, категория в меню модификаций Blizzard, стиль Неон и векторные иконки.
 
 [Изменения в 1.2.1](docs/RELEASE-1.2.1.md): исправление ошибочной подсветки серого мусора молоточками; очистка диапазонов каталога от экипировки и серой добычи.
 

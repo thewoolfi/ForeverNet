@@ -882,12 +882,24 @@ function U.ShowVisualTiles(entries,offset)
             tile.detail:SetHeight(0); tile.detail:SetText(C.Safe(entry.text or ''))
             height=math.max(height,tile.title:GetStringHeight()+tile.detail:GetStringHeight()+32)
             local tone=entry.tone or 'muted'; local color=T.colors[tone] or T.colors.muted
-            tile:SetBackdropBorderColor(.22,.20,.17,1); T.Color(tile.detail,tone)
+            if T.IsNeon() then
+                tile:SetBackdropColor(0.040, 0.065, 0.105, 0.98)
+                tile:SetBackdropBorderColor(0.094, 0.145, 0.210, 0.85)
+                tile.track:SetColorTexture(0.060, 0.095, 0.150, 1.0)
+            else
+                tile:SetBackdropBorderColor(.22,.20,.17,1)
+                tile.track:SetColorTexture(.22,.19,.14,1)
+            end
+            T.Color(tile.detail,tone)
             local progress=entry.maximum and entry.maximum>0
             tile.track:SetShown(not not progress); tile.fill:SetShown(not not progress and (entry.current or 0)>0)
             if progress then
                 tile.fill:SetWidth(math.max(1,196*math.min(1,(entry.current or 0)/entry.maximum)))
-                tile.fill:SetColorTexture(color[1],color[2],color[3],1)
+                if T.IsNeon() then
+                    tile.fill:SetColorTexture(0.0, 0.80, 1.0, 1.0)
+                else
+                    tile.fill:SetColorTexture(color[1],color[2],color[3],1)
+                end
             end
             tip(tile,entry.title,entry.hint,entry.item); tile:Show(); pair[#pair+1]=tile
         end

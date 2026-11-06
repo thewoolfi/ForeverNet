@@ -4,7 +4,6 @@ __pycache__/
 *.zip
 work/
 outputs/
-/CHANGELOG.md
 /PROJECT.md
 /docs/CurseForge-en.md
 /docs/CurseForge-ru.md

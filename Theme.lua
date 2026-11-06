@@ -8,8 +8,11 @@ T.fontFiles={koKR='Interface\\AddOns\\ForeverNet\\Fonts\\ForeverNetCJKKR.ttf',
     zhTW='Interface\\AddOns\\ForeverNet\\Fonts\\ForeverNetCJKTC.ttf'}
 T.defaultFont=T.fontFiles.zhCN -- The bundled Sans family includes Latin and Cyrillic.
 T.fonts=setmetatable({}, {__mode='k'})
-function T.Locale() return F.db and F.db.settings.locale or GetLocale() end
-function T.IsClassic() return F.db and F.db.settings.uiStyle=='classic' or false end
+function T.Locale() return F.db and F.db.settings and F.db.settings.locale or GetLocale() end
+function T.Style() return F.db and F.db.settings and F.db.settings.uiStyle or 'modern' end
+function T.IsClassic() return T.Style()=='classic' end
+function T.IsNeon() return T.Style()=='neon' end
+function T.IsBootstrap() return T.IsNeon() end
 local function applyFont(region,record)
     local native=record.file:lower()
     local standard=native:find('frizqt',1,true) or native:find('morpheus',1,true) or native:find('skurri',1,true) or native:find('arialn',1,true)
@@ -140,6 +143,33 @@ function T.Background(frame)
     texture:SetAlpha(0)
     return texture,base
 end
+function T.SkinScrollBar(bar)
+    if not bar then return end
+    local isNeon = T.IsNeon()
+    for _, btnName in ipairs({'ForwardButton', 'BackButton', 'ScrollUpButton', 'ScrollDownButton', 'UpButton', 'DownButton'}) do
+        local btn = bar[btnName] or _G[(bar.GetName and bar:GetName() or '') .. btnName]
+        if btn then
+            if btn.GetNormalTexture and btn:GetNormalTexture() then btn:GetNormalTexture():SetAlpha(isNeon and 0 or 1) end
+            if btn.GetPushedTexture and btn:GetPushedTexture() then btn:GetPushedTexture():SetAlpha(isNeon and 0 or 1) end
+            if btn.GetDisabledTexture and btn:GetDisabledTexture() then btn:GetDisabledTexture():SetAlpha(isNeon and 0 or 1) end
+            if btn.GetHighlightTexture and btn:GetHighlightTexture() then btn:GetHighlightTexture():SetAlpha(isNeon and 0 or 1) end
+        end
+    end
+    local thumb = bar.Thumb or bar.thumb or (bar.GetThumbTexture and bar:GetThumbTexture())
+    if thumb then
+        if isNeon then
+            thumb:SetColorTexture(0.0, 0.75, 1.0, 0.6)
+            if thumb.SetWidth then thumb:SetWidth(6) end
+        end
+    end
+    if not bar.neonTrack and isNeon then
+        local track = bar:CreateTexture(nil, 'BACKGROUND')
+        track:SetPoint('TOPLEFT', bar, 'TOPLEFT', 4, 0)
+        track:SetPoint('BOTTOMRIGHT', bar, 'BOTTOMRIGHT', -4, 0)
+        track:SetColorTexture(0.04, 0.07, 0.12, 0.6)
+        bar.neonTrack = track
+    end
+end
 function T.ScrollFrame(parent)
     local frame=CreateFrame('ScrollFrame',nil,parent)
     frame:EnableMouseWheel(true)
@@ -148,5 +178,6 @@ function T.ScrollFrame(parent)
     bar:SetPoint('BOTTOMLEFT',frame,'BOTTOMRIGHT',10,0)
     ScrollUtil.InitScrollFrameWithScrollBar(frame,bar)
     frame.ScrollBar=bar
+    T.SkinScrollBar(bar)
     return frame
 end
